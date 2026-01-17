@@ -1,70 +1,82 @@
-# Getting Started with Create React App
+# Isso aqui ta tudo errado, tem q refazer :)
+# GradeUFLA - FRONTEND
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Projeto frontend desenvolvido em React . Arquitetura modular e escalável para facilitar manutenção, reuso de componentes e integração com o backend.
 
-## Available Scripts
+🏗️ Estrutura principal
+```
+FRONTEND/
+├── .vscode/
+├── public/
+└── src/
+    ├── components/        # Componentes reutilizáveis (cards, menus, botões)
+    ├── pages/             # Páginas / views (Dashboard, Login, Usuários, Bebedouros)
+    ├── services/          # Chamadas HTTP e integrações com backend
+    ├── models/            # Tipos e interfaces (Usuario, etc.)
+    ├── hooks/             # Hooks personalizados
+    ├── routes/            # Definição de rotas da aplicação
+    ├── styles/            # Estilos globais / temas
+    ├── App.tsx
+    └── index.tsx
+```
 
-In the project directory, you can run:
+📁 Descrição das pastas
+- `src/models` → Modelos e tipos usados na aplicação (`Usuario`, `Bebedouro`).
+- `src/pages` → Páginas do sistema, cada uma pode conter subcomponentes.
+- `src/services` → Serviços responsáveis por chamadas HTTP (ex: `BebedouroService`).
+- `src/components` → Componentes reutilizáveis em toda a aplicação.
+- `src/routes` → Arquivo(s) de roteamento (React Router).
+- `src/hooks` → Hooks customizados para lógica compartilhada.
 
-### `npm start`
+🎨 UI e bibliotecas
+- Sugestão: usar `@mui/material` (Material UI) ou `chakra-ui`.
+- Para mapas: `react-leaflet` com OpenStreetMap para marcações e rotas.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+🧩 Padrões de Git
+Branches:
+- `feat/nome-da-feature` — novas funcionalidades (ex: `feat/login`)
+- `fix/nome-do-bug` — correções durante o desenvolvimento (ex: `fix/valida-email`)
+- `hotfix/nome-do-hotfix` — correções urgentes em produção
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+Commits:
+- `feat:` nova funcionalidade
+- `fix:` correção de bug
+- `docs:` documentação
+- `style:` formatação/estética
+- `refactor:` refatoração
+- `test:` testes
+- `chore:` tarefas de manutenção
 
-### `npm test`
+Exemplos:
+- `feat: adiciona cadastro de usuários`
+- `fix: corrige validação de email`
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+🚀 Como executar (local)
+1. Instalar dependências:
+```
+npm install
+```
+2. Iniciar em modo desenvolvimento:
+```
+npm start
+```
+Acesse: http://localhost:3000 (ou porta configurada).
 
-### `npm run build`
+📦 Build para produção
+```
+npm run build
+```
+O diretório gerado fica em `build/` — pronto para deploy.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+☁️ Deploy (Netlify) — upload manual
+1. Gere o build com `npm run build`.
+2. Acesse Netlify > Sites > Deploys > Deploy site \> Drag and drop do diretório `build/`.
+3. Ou conecte o repositório GitHub para deploy automático.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+📌 Observações
+- Ajuste a arquitetura conforme necessidade do projeto.
+- Integre `eslint`/`prettier` para padronização.
+- Este projeto não possui testes automatizados nesta fase.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Repositório remoto: `git@github.com:oF0kus/GradeUFLA.git`
+```
