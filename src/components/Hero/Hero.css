@@ -1,0 +1,107 @@
+/* ========================================
+   HERO COMPONENT STYLES
+   ======================================== */
+
+.hero-section {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 40px;
+}
+
+.hero-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(0, 240, 181, 0.1);
+  border: 1px solid rgba(0, 240, 181, 0.3);
+  border-radius: 50px;
+  font-size: 0.85rem;
+  color: var(--color-tropical-mint);
+  margin-bottom: 30px;
+}
+
+.badge-icon {
+  font-size: 1rem;
+}
+
+.hero-title {
+  font-size: 3.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 0.2em;
+  color: #fff;
+}
+
+.hero-title-sub {
+  font-size: 3.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 20px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3em;
+  flex-wrap: wrap;
+}
+
+.rotating-text-main {
+  background: var(--color-tropical-mint);
+  color: var(--color-onyx);
+  padding: 0.1em 0.4em;
+  border-radius: 10px;
+  overflow: hidden;
+  display: inline-flex;
+  justify-content: center;
+}
+
+.rotating-text-split {
+  overflow: hidden;
+  padding-bottom: 0.15em;
+}
+
+.hero-subtitle {
+  font-size: 1.1rem;
+  color: var(--color-text-muted);
+  max-width: 500px;
+  margin-bottom: 40px;
+  line-height: 1.6;
+}
+
+.hero-buttons {
+  display: flex;
+  gap: 15px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 2.2rem;
+  }
+
+  .hero-buttons {
+    flex-direction: column;
+    width: 100%;
+    max-width: 250px;
+  }
+
+  .hero-buttons .btn-primary,
+  .hero-buttons .btn-secondary {
+    width: 100%;
+  }
+}
+

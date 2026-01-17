@@ -1,0 +1,162 @@
+/* ========================================
+   MODAL COMPONENT STYLES
+   ======================================== */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal-content {
+  background: var(--color-surface);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  padding: 30px;
+  max-width: 450px;
+  width: 90%;
+  position: relative;
+  animation: slideUp 0.3s ease;
+}
+
+.modal-close {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: var(--color-text-muted);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+.modal-close:hover {
+  background: var(--color-watermelon);
+  color: #fff;
+}
+
+.modal-titulo {
+  color: #fff;
+  font-size: 1.3rem;
+  margin-bottom: 5px;
+}
+
+.modal-codigo {
+  color: var(--color-text-muted);
+  font-family: monospace;
+  margin-bottom: 20px;
+}
+
+.modal-info {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.modal-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.modal-label {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+.modal-value {
+  color: #fff;
+  font-weight: 600;
+}
+
+.modal-horarios {
+  margin-bottom: 20px;
+}
+
+.horarios-lista {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.horario-badge {
+  background: rgba(56, 58, 66, 0.6);
+  color: var(--color-tropical-mint);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+}
+
+.modal-turmas {
+  margin-bottom: 20px;
+}
+
+.turmas-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.turma-item {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.turma-id {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-tropical-mint);
+  margin-bottom: 6px;
+}
+
+.turma-horarios {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.modal-prereq {
+  padding-top: 15px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.prereq-lista {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.prereq-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+}
+
+.prereq-badge--completed {
+  background: rgba(0, 240, 181, 0.2);
+  color: var(--color-tropical-mint);
+}
+
+.prereq-badge--pending {
+  background: rgba(232, 72, 85, 0.2);
+  color: var(--color-watermelon);
+}
+

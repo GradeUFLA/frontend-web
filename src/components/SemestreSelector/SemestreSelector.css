@@ -1,0 +1,39 @@
+/* ========================================
+   SEMESTRE SELECTOR COMPONENT STYLES
+   ======================================== */
+
+.semestre-selector {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  padding: 40px 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.semestre-selector__container {
+  background: var(--color-surface);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  padding: 40px 50px;
+  max-width: 600px;
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
+}
+
+.semestre-selector__title {
+  text-align: center;
+  font-size: 2rem;
+  color: var(--color-text);
+  margin-bottom: 10px;
+}
+
+.semestre-selector__subtitle {
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: 1rem;
+  margin-bottom: 30px;
+}
+

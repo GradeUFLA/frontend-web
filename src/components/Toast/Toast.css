@@ -1,0 +1,72 @@
+/* ========================================
+   TOAST COMPONENT STYLES
+   ======================================== */
+
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.toast {
+  padding: 14px 20px;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 0.9rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  animation: toastSlideIn 0.3s ease, toastFadeOut 0.3s ease 2.7s forwards;
+  max-width: 350px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--color-surface);
+  backdrop-filter: blur(10px);
+}
+
+.toast--error {
+  border: 2px solid var(--color-watermelon);
+  color: var(--color-watermelon);
+}
+
+.toast--success {
+  border: 2px solid var(--color-tropical-mint);
+  color: var(--color-tropical-mint);
+}
+
+.toast--warning {
+  border: 2px solid var(--color-royal-gold);
+  color: var(--color-royal-gold);
+}
+
+.toast__icon {
+  font-size: 1.2rem;
+}
+
+.toast__message {
+  flex: 1;
+}
+
+@keyframes toastSlideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes toastFadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+

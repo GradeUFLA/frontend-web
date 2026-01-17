@@ -1,0 +1,116 @@
+/* ========================================
+   DROPDOWN COMPONENT STYLES
+   ======================================== */
+
+.dropdown-container {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.dropdown-btn {
+  width: 100%;
+  padding: 16px 24px;
+  background: var(--color-surface-light);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+.dropdown-btn:hover {
+  background: rgba(0, 240, 181, 0.1);
+  border-color: var(--color-tropical-mint);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0, 240, 181, 0.2);
+}
+
+.dropdown-arrow {
+  font-size: 0.8rem;
+  transition: transform 0.3s ease;
+  color: var(--color-tropical-mint);
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: var(--color-surface);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  overflow-y: auto;
+  max-height: 300px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  z-index: 100;
+  animation: dropdownFadeIn 0.2s ease;
+}
+
+/* Scrollbar customizada */
+.dropdown-menu::-webkit-scrollbar {
+  width: 8px;
+}
+
+.dropdown-menu::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.dropdown-menu::-webkit-scrollbar-thumb {
+  background: var(--color-tropical-mint);
+  border-radius: 4px;
+}
+
+.dropdown-menu::-webkit-scrollbar-thumb:hover {
+  background: #00d9a4;
+}
+
+.dropdown-item {
+  width: 100%;
+  padding: 14px 24px;
+  background: transparent;
+  border: none;
+  color: #ccc;
+  font-size: 1rem;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.dropdown-item:hover {
+  background: rgba(0, 240, 181, 0.1);
+  color: #fff;
+}
+
+.dropdown-item.selected {
+  background: rgba(0, 240, 181, 0.15);
+  color: var(--color-tropical-mint);
+  font-weight: 600;
+}
+
+/* Error state */
+.dropdown-error .dropdown-btn,
+.dropdown-btn.error {
+  border-color: var(--color-watermelon);
+  animation: shake-dropdown 0.5s ease-in-out;
+}
+
+@keyframes shake-dropdown {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-3px); }
+  20%, 40%, 60%, 80% { transform: translateX(3px); }
+}
+
