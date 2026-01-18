@@ -1,10 +1,10 @@
 import { forwardRef } from 'react';
 import Dropdown from '../Dropdown';
-import { getMatrizesByCurso, getCursoById } from '../../data/cursos';
+import { getMatrizesByCurso, getCursoInfo } from '../../data';
 import './MatrizSelector.css';
 
 const MatrizSelector = forwardRef(({ cursoId, onMatrizSelect, onVoltar }, ref) => {
-  const curso = getCursoById(cursoId);
+  const curso = getCursoInfo(cursoId);
   const matrizes = getMatrizesByCurso(cursoId);
 
   const matrizesOptions = matrizes.map((matriz) => ({
@@ -38,4 +38,3 @@ const MatrizSelector = forwardRef(({ cursoId, onMatrizSelect, onVoltar }, ref) =
 MatrizSelector.displayName = 'MatrizSelector';
 
 export default MatrizSelector;
-

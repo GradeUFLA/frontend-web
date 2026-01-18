@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 // Components
 import {
@@ -13,8 +13,7 @@ import {
 import SetupWizard from './components/SetupWizard';
 
 // Data
-import { getMateriasPorSemestre, getEletivas } from './data';
-import { getCursoById } from './data/cursos';
+import { getMateriasPorSemestre, getEletivas, ensureCsvLoaded, getCursoInfo } from './data';
 
 // Styles
 import './styles/global.css';
@@ -38,19 +37,24 @@ function App() {
   const [materiasAprovadas, setMateriasAprovadas] = useState([]);
   const [materiasNoCalendario, setMateriasNoCalendario] = useState({});
   const [modalMateria, setModalMateria] = useState(null);
+  const [csvLoaded, setCsvLoaded] = useState(false);
 
   // Hook de toast para notificações
   const { toasts, addToast, removeToast } = useToast();
 
   // Obtém dados do curso selecionado
-  const cursoInfo = cursoSelecionado ? getCursoById(cursoSelecionado) : null;
+  const cursoInfo = cursoSelecionado ? getCursoInfo(cursoSelecionado) : null;
 
   // Usa curso + matriz para obter matérias (por enquanto só curso, depois pode expandir)
-  const materiasPorSemestre = cursoSelecionado ? getMateriasPorSemestre(cursoSelecionado) : {};
-  const eletivas = cursoSelecionado ? getEletivas(cursoSelecionado) : [];
+  const materiasPorSemestre = cursoSelecionado ? getMateriasPorSemestre(cursoSelecionado, undefined, matrizSelecionada) : {};
+  const eletivas = cursoSelecionado ? getEletivas(cursoSelecionado, matrizSelecionada) : [];
 
   // Handlers de navegação
-  const handleGetStartedClick = () => {
+  const handleGetStartedClick = async () => {
+    if (!csvLoaded) {
+      await ensureCsvLoaded();
+      setCsvLoaded(true);
+    }
     setEtapa(ETAPAS.SETUP);
     setTimeout(() => {
       calendarioRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -63,7 +67,7 @@ function App() {
     setSemestreAtual(semestre);
 
     // Por padrão, marca todas as matérias de semestres anteriores como aprovadas
-    const materiasCurso = getMateriasPorSemestre(curso);
+    const materiasCurso = getMateriasPorSemestre(curso, undefined, matriz);
     const materiasAnteriores = [];
     for (let i = 1; i < semestre; i++) {
       const materias = materiasCurso[i] || [];
@@ -118,10 +122,51 @@ function App() {
 
   // Handlers do calendário
   const handleAddMateria = (materia) => {
-    setMateriasNoCalendario({
-      ...materiasNoCalendario,
+    // Detect if incoming materia has any Saturday horario (dia === 6) -> treat as ANP
+    const incomingHasSaturday = (materia.horarios || []).some(h => h && h.dia === 6);
+
+    if (incomingHasSaturday) {
+      // Build set of occupied saturday hours (consider ALL existing materias)
+      const occupied = new Set();
+      Object.values(materiasNoCalendario).forEach(m => {
+        (m.horarios || []).forEach(h => {
+          if (h && h.dia === 6) {
+            for (let hour = h.inicio; hour < h.fim; hour++) occupied.add(hour);
+          }
+        });
+      });
+
+      // ANP defaults
+      const defaultStart = 9;
+      const duration = 2;
+      let start = defaultStart;
+      const maxStart = 22 - duration + 1;
+      let chosenStart = null;
+
+      while (start <= maxStart) {
+        let conflict = false;
+        for (let hh = start; hh < start + duration; hh++) {
+          if (occupied.has(hh)) { conflict = true; break; }
+        }
+        if (!conflict) { chosenStart = start; break; }
+        start += duration; // move to next block
+      }
+
+      if (chosenStart === null) {
+        chosenStart = defaultStart; // fallback
+      }
+
+      const horarios = [{ dia: 6, inicio: chosenStart, fim: chosenStart + duration }];
+      const toAdd = { ...materia, turmaId: materia.turmaId || 'ANP', horarios };
+      setMateriasNoCalendario(prev => ({ ...prev, [materia.codigo]: toAdd }));
+      return;
+    }
+
+    // normal add (from drag selection)
+    setMateriasNoCalendario(prev => ({
+      ...prev,
       [materia.codigo]: materia
-    });
+    }));
   };
 
   const handleRemoveMateria = (codigo) => {
@@ -129,6 +174,16 @@ function App() {
     delete novasMaterias[codigo];
     setMateriasNoCalendario(novasMaterias);
   };
+
+  // Aguarda o carregamento do CSV antes de renderizar o aplicativo
+  useEffect(() => {
+    const loadData = async () => {
+      await ensureCsvLoaded();
+      setCsvLoaded(true);
+    };
+
+    loadData();
+  }, []);
 
   return (
     <div className="App">
@@ -211,4 +266,3 @@ function App() {
 }
 
 export default App;
-

@@ -102,6 +102,7 @@
   border-left: 4px solid var(--color-tropical-mint);
   user-select: none;
   position: relative;
+  overflow: visible; /* allow child icons/buttons to render outside without being cropped */
 }
 
 .materia-card:hover {
@@ -139,7 +140,7 @@
 .materia-card__header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center; /* center vertically so small cards don't clip the icon */
   margin-bottom: 6px;
 }
 
@@ -152,22 +153,31 @@
 }
 
 .materia-card__info-btn {
-  background: rgba(255, 255, 255, 0.1);
+  background: transparent; /* make background subtle so icon color is visible */
   border: none;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
   cursor: pointer;
-  font-size: 0.7rem;
-  display: flex;
+  font-size: 0.9rem;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s;
+  transition: all 0.15s;
   flex-shrink: 0;
+  overflow: visible; /* ensure icon isn't clipped on small parents */
+  color: #fff; /* match materia text color */
+  z-index: 20; /* ensure visible above siblings */
 }
 
 .materia-card__info-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.materia-card__info-btn i {
+  color: inherit;
+  font-size: 1.05rem;
+  line-height: 1;
 }
 
 .materia-card__details {
@@ -371,7 +381,8 @@
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-radius: 12px;
-  overflow: hidden;
+  /* allow icons/buttons inside cells to overflow without being cropped by the table element */
+  overflow: visible;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   font-size: 0.8rem;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -480,7 +491,7 @@
   position: relative;
   padding: 2px;
   line-height: 1.1;
-  overflow: hidden;
+  overflow: visible; /* allow remove button to be fully visible when cell is small */
 }
 
 .calendar__cell-subject-name {
@@ -495,8 +506,8 @@
 
 .calendar__cell-remove {
   position: absolute;
-  top: 2px;
-  right: 2px;
+  top: 4px; /* nudge inwards a bit to avoid being half outside small cells */
+  right: 4px;
   background: rgba(0, 0, 0, 0.3);
   border: none;
   color: #fff;
@@ -510,6 +521,7 @@
   justify-content: center;
   opacity: 0;
   transition: all 0.2s;
+  z-index: 30; /* ensure it's above other elements */
 }
 
 .calendar__cell:hover .calendar__cell-remove {
@@ -583,4 +595,3 @@
     max-height: none;
   }
 }
-

@@ -72,4 +72,3 @@ const MateriaModal = ({ materia, materiasAprovadas, onClose }) => {
 };
 
 export default MateriaModal;
-

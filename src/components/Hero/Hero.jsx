@@ -20,7 +20,7 @@ const Hero = ({ onGetStartedClick }) => {
             staggerDuration={0.025}
             splitLevelClassName="rotating-text-split"
             transition={{ type: 'spring', damping: 30, stiffness: 400 }}
-            rotationInterval={4000}
+            rotationInterval={2000} /* acelerado: 1.2s por palavra */
           />
         </h2>
 
@@ -40,4 +40,3 @@ const Hero = ({ onGetStartedClick }) => {
 };
 
 export default Hero;
-

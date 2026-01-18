@@ -107,4 +107,3 @@ const Historico = forwardRef(({
 Historico.displayName = 'Historico';
 
 export default Historico;
-

@@ -14,10 +14,18 @@ const criarTurmaPadrao = (dia1, inicio1, fim1, dia2 = null, inicio2 = null, fim2
 
 // Helper para criar múltiplas turmas
 const criarTurmas = (...turmasConfig) => {
-  return turmasConfig.map((config, idx) => ({
-    id: String.fromCharCode(65 + idx), // A, B, C...
-    horarios: config
-  }));
+  return turmasConfig.map((config, idx) => {
+    const id = String.fromCharCode(65 + idx); // A, B, C...
+    if (Array.isArray(config)) {
+      return { id, horarios: config };
+    }
+    // allow passing an object like { horarios: [...], anp: true }
+    if (config && typeof config === 'object' && Array.isArray(config.horarios)) {
+      return { id, ...config };
+    }
+    // fallback
+    return { id, horarios: [] };
+  });
 };
 
 // ============================================
@@ -31,7 +39,8 @@ const siMateriasPorSemestre = {
       codigo: "GAC124", nome: "Introdução aos Algoritmos", creditos: 6, preRequisitos: [], tipo: "obrigatoria",
       turmas: criarTurmas(
         [{ dia: 1, inicio: 8, fim: 10 }, { dia: 3, inicio: 8, fim: 10 }, { dia: 5, inicio: 8, fim: 10 }],
-        [{ dia: 1, inicio: 14, fim: 16 }, { dia: 3, inicio: 14, fim: 16 }, { dia: 5, inicio: 14, fim: 16 }]
+        [{ dia: 1, inicio: 14, fim: 16 }, { dia: 3, inicio: 14, fim: 16 }, { dia: 5, inicio: 14, fim: 16 }],
+        { horarios: [{ dia: 6, inicio: 9, fim: 11 }], anp: true }
       )
     },
     {
@@ -57,7 +66,8 @@ const siMateriasPorSemestre = {
       codigo: "GMM126", nome: "Funções Elementares", creditos: 4, preRequisitos: [], tipo: "obrigatoria",
       turmas: criarTurmas(
         [{ dia: 2, inicio: 10, fim: 12 }, { dia: 4, inicio: 10, fim: 12 }],
-        [{ dia: 2, inicio: 16, fim: 18 }, { dia: 4, inicio: 16, fim: 18 }]
+        [{ dia: 2, inicio: 16, fim: 18 }, { dia: 4, inicio: 16, fim: 18 }],
+        { horarios: [{ dia: 6, inicio: 9, fim: 11 }], anp: true }
       )
     },
   ],

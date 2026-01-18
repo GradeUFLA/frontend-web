@@ -22,10 +22,10 @@ const CORES_TURMAS = [
   '#fd79a8', // Pink
 ];
 
-// Gera horários de 7h até 22h
-const gerarHorarios = () => {
+// Gera horários de 6h até 23h
+const gerarHorarios = (start = 6, end = 23) => {
   const horarios = [];
-  for (let h = 7; h <= 22; h++) {
+  for (let h = start; h <= end; h++) {
     horarios.push(`${h.toString().padStart(2, '0')}:00`);
   }
   return horarios;
@@ -51,7 +51,9 @@ const Calendar = forwardRef(({
 
   const calendarTableRef = useRef(null);
 
-  const horarios = gerarHorarios();
+  // generate hours from 06:00 to 23:00
+  const horarios = gerarHorarios(6, 23);
+  const baseHour = 6; // used to compute numeric hour from index
 
   // Obtém matérias disponíveis para o semestre atual
   const getMateriasDisponiveis = () => {
@@ -93,16 +95,18 @@ const Calendar = forwardRef(({
   };
 
   // Verifica se uma célula está ocupada por alguma matéria já adicionada
-  const getMateriaEmCelula = (horarioIdx, diaIdx) => {
-    const hora = 7 + horarioIdx;
+  const getMateriasEmCelula = (horarioIdx, diaIdx) => {
+    const hora = baseHour + horarioIdx;
+    const found = [];
     for (const [codigo, materiaData] of Object.entries(materiasNoCalendario)) {
-      for (const h of materiaData.horarios) {
-        if (h.dia === diaIdx && hora >= h.inicio && hora < h.fim) {
-          return { ...materiaData, codigo };
+      for (const h of (materiaData.horarios || [])) {
+        if (h && h.dia === diaIdx && hora >= h.inicio && hora < h.fim) {
+          found.push({ ...materiaData, codigo });
+          break; // avoid duplicate push for same materia
         }
       }
     }
-    return null;
+    return found; // possibly empty array
   };
 
   // Verifica se os horários de uma turma conflitam com matérias já no calendário
@@ -124,7 +128,7 @@ const Calendar = forwardRef(({
   // Verifica em qual turma a célula pertence (durante o drag)
   const getTurmaIndexParaCelula = (horarioIdx, diaIdx) => {
     if (!draggingMateria) return -1;
-    const hora = 7 + horarioIdx;
+    const hora = baseHour + horarioIdx;
 
     for (let i = 0; i < draggingMateria.turmas.length; i++) {
       const turma = draggingMateria.turmas[i];
@@ -220,20 +224,20 @@ const Calendar = forwardRef(({
   const getCellPreviewInfo = (horarioIdx, diaIdx) => {
     if (!isDragging || !draggingMateria) return null;
 
-    const hora = 7 + horarioIdx;
-    const materiaExistente = getMateriaEmCelula(horarioIdx, diaIdx);
+    const hora = baseHour + horarioIdx;
+    const materiasExistentes = getMateriasEmCelula(horarioIdx, diaIdx);
 
     for (let i = 0; i < draggingMateria.turmas.length; i++) {
       const turma = draggingMateria.turmas[i];
-      for (const h of turma.horarios) {
+      for (const h of (turma.horarios || [])) {
         if (h.dia === diaIdx && hora >= h.inicio && hora < h.fim) {
-          const { temConflito } = verificarConflito(turma.horarios);
+          const { temConflito } = verificarConflito(turma.horarios || []);
           return {
             turmaIndex: i,
             turmaId: turma.id,
             cor: getCorTurma(i),
             isSelected: selectedTurmaIndex === i,
-            hasConflict: temConflito || materiaExistente !== null
+            hasConflict: temConflito || (materiasExistentes.length > 0)
           };
         }
       }
@@ -264,6 +268,11 @@ const Calendar = forwardRef(({
         key={materia.codigo}
         className={cardClasses}
         onMouseDown={(e) => cumprido && handleDragStart(e, materia)}
+        onClick={(e) => {
+          // clicking the card (not the info button) opens the modal; if it's being dragged, ignore click
+          if (isBeingDragged) return;
+          onMateriaClick?.(materia);
+        }}
         style={{
           borderLeftColor: getCorMateria(materia.codigo),
           cursor: cumprido ? 'grab' : 'not-allowed'
@@ -385,8 +394,8 @@ const Calendar = forwardRef(({
               <div className="calendar__turmas-popup">
                 <span className="calendar__turmas-popup-title">Escolha uma turma:</span>
                 <div className="calendar__turmas-popup-items">
-                  {draggingMateria.turmas.map((turma, index) => {
-                    const { temConflito } = verificarConflito(turma.horarios);
+                  {(draggingMateria.turmas || []).map((turma, index) => {
+                    const { temConflito } = verificarConflito(turma.horarios || []);
                     return (
                       <div
                         key={turma.id}
@@ -419,12 +428,12 @@ const Calendar = forwardRef(({
                   <tr key={indexHora}>
                     <td className="calendar__cell-time">{horario}</td>
                     {DIAS_SEMANA.map((_, indexDia) => {
-                      const materiaEmCelula = getMateriaEmCelula(indexHora, indexDia);
+                      const materiasEmCelula = getMateriasEmCelula(indexHora, indexDia);
                       const previewInfo = getCellPreviewInfo(indexHora, indexDia);
 
                       const cellClasses = [
                         'calendar__cell',
-                        materiaEmCelula && 'calendar__cell--has-subject',
+                        materiasEmCelula.length > 0 && 'calendar__cell--has-subject',
                         previewInfo && !previewInfo.hasConflict && 'calendar__cell--preview',
                         previewInfo?.hasConflict && 'calendar__cell--preview-conflito',
                         previewInfo?.isSelected && 'calendar__cell--preview-selected'
@@ -435,8 +444,8 @@ const Calendar = forwardRef(({
                           key={indexDia}
                           className={cellClasses}
                           style={
-                            materiaEmCelula
-                              ? { backgroundColor: getCorMateria(materiaEmCelula.codigo) }
+                            materiasEmCelula.length > 0
+                              ? { backgroundColor: getCorMateria(materiasEmCelula[0].codigo) }
                               : previewInfo
                                 ? {
                                     backgroundColor: previewInfo.hasConflict
@@ -448,24 +457,36 @@ const Calendar = forwardRef(({
                           }
                           onMouseEnter={() => handleCellHover(indexHora, indexDia)}
                         >
-                          {materiaEmCelula && (
-                            <div className="calendar__cell-subject">
-                              <span className="calendar__cell-subject-name">{materiaEmCelula.nome}</span>
-                              <button
-                                className="calendar__cell-remove"
-                                onClick={() => onRemoveMateria(materiaEmCelula.codigo)}
-                                title="Remover matéria"
-                              >
-                                <i className="fi fi-br-cross-small"></i>
-                              </button>
+                          {materiasEmCelula.length > 0 && (
+                            <div className="calendar__cell-subjects">
+                              {materiasEmCelula.map((mec) => (
+                                <div
+                                  key={mec.codigo}
+                                  className="calendar__cell-subject"
+                                  onClick={(e) => {
+                                    // clicking the subject in the calendar opens the modal; stop propagation to avoid other handlers
+                                    e.stopPropagation();
+                                    onMateriaClick?.(mec);
+                                  }}
+                                >
+                                  <span className="calendar__cell-subject-name">{mec.nome}</span>
+                                  <button
+                                    className="calendar__cell-remove"
+                                    onClick={(ev) => { ev.stopPropagation(); onRemoveMateria(mec.codigo); }}
+                                    title="Remover matéria"
+                                  >
+                                    <i className="fi fi-br-cross-small"></i>
+                                  </button>
+                                </div>
+                              ))}
                             </div>
                           )}
-                          {previewInfo && !materiaEmCelula && (
+                          {previewInfo && !(materiasEmCelula && materiasEmCelula.length) && (
                             <div
                               className="calendar__cell-preview-content"
                               style={{ color: previewInfo.cor }}
                             >
-                              T{previewInfo.turmaId}
+                              {/* preview of turma removed per request */}
                             </div>
                           )}
                         </td>
@@ -481,7 +502,7 @@ const Calendar = forwardRef(({
             {Object.entries(materiasNoCalendario).map(([codigo, m]) => (
               <div key={codigo} className="calendar__legend-item">
                 <span className="calendar__legend-color" style={{ backgroundColor: getCorMateria(codigo) }}></span>
-                <span className="calendar__legend-text">{codigo} - {m.nome} (Turma {m.turmaId})</span>
+                <span className="calendar__legend-text">{m.nome}</span>
               </div>
             ))}
           </div>
@@ -508,4 +529,3 @@ const Calendar = forwardRef(({
 Calendar.displayName = 'Calendar';
 
 export default Calendar;
-

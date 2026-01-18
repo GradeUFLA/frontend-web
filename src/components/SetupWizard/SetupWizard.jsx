@@ -1,7 +1,7 @@
 import { forwardRef, useState } from 'react';
 import Stepper, { Step } from '../Stepper';
 import Dropdown from '../Dropdown';
-import { cursos, getCursoById, getMatrizesByCurso } from '../../data/cursos';
+import { getCursos, getCursoInfo, getMatrizesByCurso, getCursosImplementados } from '../../data';
 import './SetupWizard.css';
 
 const SetupWizard = forwardRef(({ onComplete, onVoltar, onShowToast }, ref) => {
@@ -10,11 +10,19 @@ const SetupWizard = forwardRef(({ onComplete, onVoltar, onShowToast }, ref) => {
   const [semestreSelecionado, setSemestreSelecionado] = useState(null);
   const [dropdownError, setDropdownError] = useState(false);
 
-  const cursoInfo = cursoSelecionado ? getCursoById(cursoSelecionado) : null;
-  const matrizes = cursoSelecionado ? getMatrizesByCurso(cursoSelecionado) : [];
+  const cursoInfo = cursoSelecionado ? getCursoInfo(cursoSelecionado) : null;
+  // prefer matrices from the central data getter, but if it returns only a default/one entry
+  // and the cursoInfo (from CSV) contains a `matrizes` array, prefer that list.
+  let matrizes = cursoSelecionado ? getMatrizesByCurso(cursoSelecionado) : [];
+  if (cursoInfo && Array.isArray(cursoInfo.matrizes) && cursoInfo.matrizes.length > 1) {
+    // If central getter returned only a single fallback matrix, prefer the cursoInfo list
+    if (!matrizes || matrizes.length <= 1) {
+      matrizes = cursoInfo.matrizes.map(m => ({ id: m, nome: m }));
+    }
+  }
 
-  // Filtra apenas cursos implementados
-  const cursosImplementados = cursos.filter(c => c.implementado);
+  // Filtra apenas cursos implementados (CSV loader defaults to implemented=true)
+  const cursosImplementados = getCursosImplementados();
 
   const cursosOptions = cursosImplementados.map((curso) => ({
     value: curso.id,
@@ -144,4 +152,3 @@ const SetupWizard = forwardRef(({ onComplete, onVoltar, onShowToast }, ref) => {
 SetupWizard.displayName = 'SetupWizard';
 
 export default SetupWizard;
-

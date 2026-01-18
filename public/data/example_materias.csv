@@ -1,0 +1,7 @@
+curso,matriz,semestre,codigo,nome,creditos,tipo,subgrupo,preRequisitos,turmas
+G014,2023/01,1,GAC124,Introdução aos Algoritmos,6,obrigatoria,,,"[{""id"": "A", ""horarios"": [{""dia"": 2, ""inicio"": 19, ""fim"": 21}, {""dia"": 4, ""inicio"": 19, ""fim"": 21}]}, {""id"": "ANP", ""horarios"": [{""dia"": 6, ""inicio"": 9, ""fim"": 11}], ""anp"": true}]"
+G014,2023/01,1,GMM126,Funções Elementares,4,obrigatoria,,,"[{""id"": "A", ""horarios"": [{""dia"": 2, ""inicio"": 10, ""fim"": 12}, {""dia"": 4, ""inicio"": 10, ""fim"": 12}]}, {""id"": "ANP", ""horarios"": [{""dia"": 6, ""inicio"": 9, ""fim"": 11}], ""anp"": true}]"
+G014,2023/01,2,GAC125,Introdução à Programação Orientada a Objetos,4,obrigatoria,,GAC124,"[{""id"": "A", ""horarios"": [{""dia"": 1, ""inicio"": 8, ""fim"": 10}, {""dia"": 3, ""inicio"": 8, ""fim"": 10}]}]"
+G014,2023/01,5,GCC164,Software Livre e Empreendedorismo,4,eletiva,A,GAC188,"[{""id"": "A", ""horarios"": [{""dia"": 2, ""inicio"": 14, ""fim"": 16}] }]"
+G064,2023/01,1,SCY101,Introdução à Segurança Cibernética,4,obrigatoria,,,"[{""id"": "A", ""horarios"": [{""dia"": 1, ""inicio"": 14, ""fim"": 16}]}]"
+
