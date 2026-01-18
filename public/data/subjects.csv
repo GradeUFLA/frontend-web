@@ -1,205 +1,245 @@
 curso,matriz,semestre,codigo,nome,creditos,tipo,subgrupo,preRequisitos,turmas
-G014,2013/02,1,GAC101,Algoritmos e Estrutura de Dados I,4,obrigatoria,, ,[]
-G014,2013/02,1,GAE103,Teoria Geral da Administração I,4,obrigatoria,, ,[]
-G014,2013/02,1,GCC171,Introdução à Sistemas de Informação,2,obrigatoria,, ,[]
-G014,2013/02,1,GMM103,Introdução à Lógica,4,obrigatoria,, ,[]
+G014,2013/02,1,GAC101,Algoritmos e Estrutura de Dados I,4,obrigatoria,,,[]
+G010,2009/02,1,GCC102,Fundamentos de Ciência da Computação,2,obrigatoria,,,[]
+G014,2023/01,Indefinido,GCH102,Introdução à Filosofia,4,eletiva,,,"[{""id"": ""25A"", ""horarios"": [{""dia"": 4, ""inicio"": 21, ""fim"": 23}, {""dia"": 5, ""inicio"": 21, ""fim"": 23}], ""anp"": false}, {""id"": ""26A"", ""horarios"": [{""dia"": 4, ""inicio"": 21, ""fim"": 23}, {""dia"": 5, ""inicio"": 21, ""fim"": 23}], ""anp"": false}, {""id"": ""27A"", ""horarios"": [{""dia"": 4, ""inicio"": 21, ""fim"": 23}, {""dia"": 5, ""inicio"": 21, ""fim"": 23}], ""anp"": false}]"
+G014,2023/01,Indefinido,GEL178,Habilidades em Língua Inglesa I,2,eletiva,,,"[{""id"": ""25A"", ""horarios"": [{""dia"": 4, ""inicio"": 19, ""fim"": 21}], ""anp"": false}]"
+G010,2023/01,Indefinido,GMM101,Matemática Fundamental,2,eletiva,,,[]
+G014,2023/01,Indefinido,GMM102,Geometria Analítica e Álgebra Linear,4,eletiva,,,"[{""id"": ""49A"", ""horarios"": [{""dia"": 3, ""inicio"": 7, ""fim"": 9}, {""dia"": 6, ""inicio"": 7, ""fim"": 9}], ""anp"": false}, {""id"": ""54A"", ""horarios"": [{""dia"": 3, ""inicio"": 7, ""fim"": 9}, {""dia"": 6, ""inicio"": 7, ""fim"": 9}], ""anp"": false}, {""id"": ""46A"", ""horarios"": [{""dia"": 3, ""inicio"": 7, ""fim"": 9}, {""dia"": 6, ""inicio"": 7, ""fim"": 9}], ""anp"": false}, {""id"": ""61A"", ""horarios"": [{""dia"": 3, ""inicio"": 7, ""fim"": 9}, {""dia"": 6, ""inicio"": 7, ""fim"": 9}], ""anp"": false}, {""id"": ""59A"", ""horarios"": [{""dia"": 3, ""inicio"": 7, ""fim"": 9}, {""dia"": 6, ""inicio"": 7, ""fim"": 9}], ""anp"": false}, {""id"": ""60A"", ""horarios"": [{""dia"": 3, ""inicio"": 7, ""fim"": 9}, {""dia"": 6, ""inicio"": 7, ""fim"": 9}], ""anp"": false}, {""id"": ""11A"", ""horarios"": [{""dia"": 3, ""inicio"": 10, ""fim"": 12}, {""dia"": 5, ""inicio"": 10, ""fim"": 12}], ""anp"": false}, {""id"": ""19A"", ""horarios"": [{""dia"": 3, ""inicio"": 10, ""fim"": 12}, {""dia"": 5, ""inicio"": 10, ""fim"": 12}], ""anp"": false}, {""id"": ""22A"", ""horarios"": [{""dia"": 3, ""inicio"": 10, ""fim"": 12}, {""dia"": 5, ""inicio"": 10, ""fim"": 12}], ""anp"": false}, {""id"": ""10A"", ""horarios"": [{""dia"": 5, ""inicio"": 10, ""fim"": 12}, {""dia"": 6, ""inicio"": 10, ""fim"": 12}], ""anp"": false}, {""id"": ""21A"", ""horarios"": [{""dia"": 5, ""inicio"": 10, ""fim"": 12}, {""dia"": 6, ""inicio"": 10, ""fim"": 12}], ""anp"": false}]"
+G010,2023/01,Indefinido,GMM103,Introdução à Lógica,4,eletiva,,,[]
 G014,2013/02,2,GAC102,Algoritmos e Estrutura de Dados II,4,obrigatoria,,GAC101,[]
-G014,2013/02,2,GCC103,Matemática Discreta,4,obrigatoria,, ,[]
-G014,2023/01,Indefinido,GMM104,Cálculo I,6,eletiva,, ,[]
+G014,2013/02,2,GCC103,Matemática Discreta,4,obrigatoria,,,[]
 G014,2013/02,3,GCC105,Linguagens de Programação I,4,obrigatoria,,GAC101,[]
-G014,2013/02,3,GCC109,Algoritmos e Estrutura de Dados III,4,obrigatoria,,GAC102,[]
-G014,2023/01,2,GES107,Estatística Aplicada,4,obrigatoria,, ,"[{""id"": ""14A"", ""horarios"": [{""dia"": 4, ""inicio"": 21, ""fim"": 23}, {""dia"": 5, ""inicio"": 19, ""fim"": 21}], ""anp"": false}, {""id"": ""26A"", ""horarios"": [{""dia"": 4, ""inicio"": 21, ""fim"": 23}, {""dia"": 5, ""inicio"": 19, ""fim"": 21}], ""anp"": false}]"
-G014,2013/02,2,GGA108,"Organizações, Sistemas e Métodos",2,obrigatoria,, ,[]
+G014,2023/01,Indefinido,GCH104,Sociologia,4,eletiva,,,"[{""id"": ""19A"", ""horarios"": [{""dia"": 2, ""inicio"": 8, ""fim"": 10}, {""dia"": 4, ""inicio"": 8, ""fim"": 10}], ""anp"": false}, {""id"": ""43A"", ""horarios"": [{""dia"": 2, ""inicio"": 8, ""fim"": 10}, {""dia"": 4, ""inicio"": 8, ""fim"": 10}], ""anp"": false}, {""id"": ""11A"", ""horarios"": [{""dia"": 2, ""inicio"": 14, ""fim"": 16}, {""dia"": 4, ""inicio"": 14, ""fim"": 16}], ""anp"": false}, {""id"": ""22A"", ""horarios"": [{""dia"": 2, ""inicio"": 14, ""fim"": 16}, {""dia"": 4, ""inicio"": 14, ""fim"": 16}], ""anp"": false}, {""id"": ""24A"", ""horarios"": [{""dia"": 2, ""inicio"": 19, ""fim"": 21}, {""dia"": 3, ""inicio"": 19, ""fim"": 21}], ""anp"": false}, {""id"": ""25A"", ""horarios"": [{""dia"": 2, ""inicio"": 19, ""fim"": 21}, {""dia"": 3, ""inicio"": 19, ""fim"": 21}], ""anp"": false}, {""id"": ""26A"", ""horarios"": [{""dia"": 2, ""inicio"": 19, ""fim"": 21}, {""dia"": 3, ""inicio"": 19, ""fim"": 21}], ""anp"": false}]"
+G014,2023/01,Indefinido,GEL179,Habilidades em Língua Inglesa II,2,eletiva,,,[]
+G010,2023/01,1,GFI105,Conceitos de Física B,2,obrigatoria,,,[]
+G014,2023/01,Indefinido,GMM104,Cálculo I,6,eletiva,,,"[{""id"": ""61B"", ""horarios"": [{""dia"": 2, ""inicio"": 8, ""fim"": 10}, {""dia"": 4, ""inicio"": 8, ""fim"": 10}, {""dia"": 5, ""inicio"": 8, ""fim"": 10}], ""anp"": false}, {""id"": ""61A"", ""horarios"": [{""dia"": 2, ""inicio"": 8, ""fim"": 10}, {""dia"": 4, ""inicio"": 8, ""fim"": 10}, {""dia"": 5, ""inicio"": 8, ""fim"": 10}], ""anp"": false}, {""id"": ""54B"", ""horarios"": [{""dia"": 2, ""inicio"": 8, ""fim"": 10}, {""dia"": 4, ""inicio"": 8, ""fim"": 10}, {""dia"": 5, ""inicio"": 8, ""fim"": 10}], ""anp"": false}, {""id"": ""49B"", ""horarios"": [{""dia"": 2, ""inicio"": 8, ""fim"": 10}, {""dia"": 4, ""inicio"": 8, ""fim"": 10}, {""dia"": 5, ""inicio"": 8, ""fim"": 10}], ""anp"": false}, {""id"": ""46B"", ""horarios"": [{""dia"": 2, ""inicio"": 8, ""fim"": 10}, {""dia"": 4, ""inicio"": 8, ""fim"": 10}, {""dia"": 5, ""inicio"": 8, ""fim"": 10}], ""anp"": false}, {""id"": ""61C"", ""horarios"": [{""dia"": 2, ""inicio"": 8, ""fim"": 10}, {""dia"": 4, ""inicio"": 8, ""fim"": 10}, {""dia"": 5, ""inicio"": 8, ""fim"": 10}], ""anp"": false}, {""id"": ""54A"", ""horarios"": [{""dia"": 2, ""inicio"": 8, ""fim"": 10}, {""dia"": 4, ""inicio"": 8, ""fim"": 10}, {""dia"": 5, ""inicio"": 8, ""fim"": 10}], ""anp"": false}, {""id"": ""60A"", ""horarios"": [{""dia"": 2, ""inicio"": 8, ""fim"": 10}, {""dia"": 4, ""inicio"": 8, ""fim"": 10}, {""dia"": 5, ""inicio"": 8, ""fim"": 10}], ""anp"": false}, {""id"": ""59A"", ""horarios"": [{""dia"": 2, ""inicio"": 8, ""fim"": 10}, {""dia"": 4, ""inicio"": 8, ""fim"": 10}, {""dia"": 5, ""inicio"": 8, ""fim"": 10}], ""anp"": false}, {""id"": ""54C"", ""horarios"": [{""dia"": 2, ""inicio"": 8, ""fim"": 10}, {""dia"": 4, ""inicio"": 8, ""fim"": 10}, {""dia"": 5, ""inicio"": 8, ""fim"": 10}], ""anp"": false}, {""id"": ""49C"", ""horarios"": [{""dia"": 2, ""inicio"": 8, ""fim"": 10}, {""dia"": 4, ""inicio"": 8, ""fim"": 10}, {""dia"": 5, ""inicio"": 8, ""fim"": 10}], ""anp"": false}, {""id"": ""49A"", ""horarios"": [{""dia"": 2, ""inicio"": 8, ""fim"": 10}, {""dia"": 4, ""inicio"": 8, ""fim"": 10}, {""dia"": 5, ""inicio"": 8, ""fim"": 10}], ""anp"": false}, {""id"": ""46C"", ""horarios"": [{""dia"": 2, ""inicio"": 8, ""fim"": 10}, {""dia"": 4, ""inicio"": 8, ""fim"": 10}, {""dia"": 5, ""inicio"": 8, ""fim"": 10}], ""anp"": false}, {""id"": ""46A"", ""horarios"": [{""dia"": 2, ""inicio"": 8, ""fim"": 10}, {""dia"": 4, ""inicio"": 8, ""fim"": 10}, {""dia"": 5, ""inicio"": 8, ""fim"": 10}], ""anp"": false}]"
 G014,2013/02,4,GAC103,Programação Orientada a Objetos,4,obrigatoria,,"GCC105, GAC102",[]
-G014,2023/01,3,GAE108,Teoria Econômica,4,obrigatoria,, ,[]
-G014,2013/02,3,GCC106,Metodologia Científica,4,obrigatoria,, ,[]
-G014,2013/02,3,GCC114,Banco de Dados I,4,obrigatoria,, ,[]
-G014,2013/02,2,GCC133,Organização de Computadores,4,obrigatoria,, ,[]
+G014,2013/02,3,GCC106,Metodologia Científica,4,obrigatoria,,,[]
+G010,2023/01,Indefinido,GCC107,Circuitos Eletrônicos,6,eletiva,,,[]
+G014,2023/01,Indefinido,GCC108,Teoria da Computação,4,eletiva,,GCC122,"[{""id"": ""10A"", ""horarios"": [{""dia"": 2, ""inicio"": 17, ""fim"": 19}, {""dia"": 4, ""inicio"": 17, ""fim"": 19}], ""anp"": false}]"
+G014,2013/02,3,GCC109,Algoritmos e Estrutura de Dados III,4,obrigatoria,,GAC102,[]
+G010,2023/01,2,GES101,Estatística,4,obrigatoria,,GMM104,[]
+G010,2023/01,2,GMM106,Cálculo II,4,obrigatoria,,"GMM102, GMM104",[]
 G014,2013/02,4,GCC111,Projeto e Análise de Algoritmos,4,obrigatoria,,"GCC103, GCC109",[]
+G014,2013/02,Indefinido,GCC112,Linguagens de Programação II,4,eletiva,,GCC105,[]
+G010,2013/02,3,GCC113,Circuitos Digitais,6,obrigatoria,,GCC107,[]
+G014,2013/02,3,GCC114,Banco de Dados I,4,obrigatoria,,,[]
 G014,2013/02,4,GCC115,Engenharia de Software I,4,obrigatoria,,GCC114,[]
-G014,2023/01,4,GCC116,Sistemas Operacionais,4,obrigatoria,,GCC194,[]
+G010,2013/02,3,GMM108,Cálculo III,4,obrigatoria,,GMM106,[]
+G014,2023/01,4,GCC116,Sistemas Operacionais,4,obrigatoria,,GCC194,"[{""id"": ""10A"", ""horarios"": [{""dia"": 3, ""inicio"": 17, ""fim"": 19}, {""dia"": 5, ""inicio"": 17, ""fim"": 19}], ""anp"": false}, {""id"": ""22A"", ""horarios"": [{""dia"": 3, ""inicio"": 17, ""fim"": 19}, {""dia"": 5, ""inicio"": 17, ""fim"": 19}], ""anp"": false}, {""id"": ""14A"", ""horarios"": [{""dia"": 2, ""inicio"": 21, ""fim"": 23}, {""dia"": 5, ""inicio"": 19, ""fim"": 21}], ""anp"": false}]"
+G010,2023/01,3,GCC117,Arquitetura de Computadores I,4,obrigatoria,,"GCC260, GCC261, GAC124",[]
+G010,2023/01,Indefinido,GCC118,Programação Matemática,4,eletiva,,"GMM102, GMM135",[]
 G014,2013/02,5,GCC119,Banco de Dados II,4,obrigatoria,,GCC114,[]
-G014,2013/02,4,GCC134,Sistemas e Tecnologias de Informação,4,obrigatoria,, ,[]
-G014,2013/02,7,PRG314,Trabalho de Conclusão de Curso I,4,obrigatoria,,GCC106,[]
-G014,2023/01,2,GAE117,Administração Estratégica,4,obrigatoria,, ,[]
+G014,2013/02,Indefinido,GCC120,Engenharia de Software II,4,eletiva,,GCC115,[]
 G014,2013/02,5,GCC121,Interface Homem-máquina,4,obrigatoria,,GCC115,[]
-G014,2023/01,4,GCC125,Redes de Computadores,4,obrigatoria,, ,[]
-G014,2023/01,6,GCC135,Gerência de Projetos de Software,4,obrigatoria,,GCC188,[]
-G014,2013/02,5,GCC136,Governança de Tecnologia da Informação,4,obrigatoria,,GAE103,[]
-G014,2023/01,6,GCC128,Inteligência Artificial,4,obrigatoria,,GAC108,[]
-G014,2023/01,5,GCC129,Sistemas Distribuídos,4,obrigatoria,,GCC116,[]
-G014,2023/01,5,GCC137,Empreendedorismo em Sistemas de Informação,4,obrigatoria,,GCC174,[]
-G014,2013/02,6,GCC138,Gestão da Qualidade de Software,4,obrigatoria,,GCC115,[]
-G014,2013/02,6,GCC139,Segurança e Auditoria de Sistemas de Informação,4,obrigatoria,,GCC134,[]
-G014,2023/01,Indefinido,GCC140,Inteligência de Negócios,4,eletiva,,GCC263,[]
-G014,2013/02,8,PRG414,Trabalho de Conclusão de Curso II,28,obrigatoria,,PRG314,[]
+G010,2023/01,5,GAC104,Computação Gráfica,4,obrigatoria,,,[]
+G014,2023/01,Indefinido,GCC122,Linguagens Formais e Autômatos,4,eletiva,,,"[{""id"": ""10A"", ""horarios"": [{""dia"": 2, ""inicio"": 10, ""fim"": 12}, {""dia"": 3, ""inicio"": 10, ""fim"": 12}], ""anp"": false}]"
+G010,2023/01,4,GCC123,Arquitetura de Computadores II,4,obrigatoria,,,[]
+G014,2023/01,4,GCC125,Redes de Computadores,4,obrigatoria,,,"[{""id"": ""22A"", ""horarios"": [{""dia"": 2, ""inicio"": 15, ""fim"": 17}, {""dia"": 5, ""inicio"": 10, ""fim"": 12}], ""anp"": false}, {""id"": ""22B"", ""horarios"": [{""dia"": 2, ""inicio"": 15, ""fim"": 17}, {""dia"": 5, ""inicio"": 10, ""fim"": 12}], ""anp"": false}, {""id"": ""10A"", ""horarios"": [{""dia"": 4, ""inicio"": 15, ""fim"": 17}, {""dia"": 5, ""inicio"": 15, ""fim"": 17}], ""anp"": false}, {""id"": ""14A"", ""horarios"": [{""dia"": 4, ""inicio"": 19, ""fim"": 21}, {""dia"": 5, ""inicio"": 21, ""fim"": 23}], ""anp"": false}]"
+G010,2013/02,6,GCC126,Programação Paralela e Distribuída,4,obrigatoria,,,[]
+G014,2013/02,8,GCC127,Informática e Sociedade,4,obrigatoria,,GCC171,[]
+G014,2023/01,6,GCC128,Inteligência Artificial,4,obrigatoria,,GAC108,"[{""id"": ""10A"", ""horarios"": [{""dia"": 3, ""inicio"": 13, ""fim"": 15}, {""dia"": 4, ""inicio"": 13, ""fim"": 15}], ""anp"": false}, {""id"": ""14A"", ""horarios"": [{""dia"": 3, ""inicio"": 19, ""fim"": 21}, {""dia"": 4, ""inicio"": 21, ""fim"": 23}], ""anp"": false}]"
+G014,2023/01,5,GCC129,Sistemas Distribuídos,4,obrigatoria,,GCC116,"[{""id"": ""10A"", ""horarios"": [{""dia"": 4, ""inicio"": 15, ""fim"": 17}, {""dia"": 5, ""inicio"": 14, ""fim"": 16}], ""anp"": false}, {""id"": ""14A"", ""horarios"": [{""dia"": 3, ""inicio"": 21, ""fim"": 23}, {""dia"": 5, ""inicio"": 21, ""fim"": 23}], ""anp"": false}]"
+G010,2023/01,5,GCC130,Compiladores,4,obrigatoria,,GCC122,[]
 G014,2013/02,Indefinido,GAC112,Algoritmos e Técnicas em Bioinformática,4,eletiva,,"GAC102, GMM104",[]
-G014,2013/02,Indefinido,GAC113,Introdução ao Processamento de Línguas Naturais,4,eletiva,, ,[]
-G014,2013/02,Indefinido,GAC114,Segurança Computacional,4,eletiva,, ,[]
-G014,2023/01,Indefinido,GAC115,Estudos Avançados em Tecnologias Educacionais,4,eletiva,, ,[]
-G014,2023/01,6,GAC116,Programação WEB,4,obrigatoria,, ,[]
+G014,2013/02,Indefinido,GAC113,Introdução ao Processamento de Línguas Naturais,4,eletiva,,,[]
+G014,2013/02,Indefinido,GAC114,Segurança Computacional,4,eletiva,,,[]
+G014,2023/01,Indefinido,GAC115,Estudos Avançados em Tecnologias Educacionais,4,eletiva,,,[]
+G014,2023/01,6,GAC116,Programação WEB,4,obrigatoria,,,"[{""id"": ""10A"", ""horarios"": [{""dia"": 5, ""inicio"": 14, ""fim"": 16}, {""dia"": 7, ""inicio"": 14, ""fim"": 15}], ""anp"": false}, {""id"": ""14A"", ""horarios"": [{""dia"": 5, ""inicio"": 21, ""fim"": 23}, {""dia"": 7, ""inicio"": 14, ""fim"": 15}], ""anp"": true}, {""id"": ""14B"", ""horarios"": [{""dia"": 5, ""inicio"": 21, ""fim"": 23}, {""dia"": 7, ""inicio"": 14, ""fim"": 15}], ""anp"": true}]"
 G014,2013/02,Indefinido,GAC117,Introdução à Robótica Móvel Autônoma,4,eletiva,,"GCC128, GCC133, GAC103",[]
 G014,2013/02,Indefinido,GAC118,Introdução ao Aprendizado de Máquina,4,eletiva,,"GCC111, GES107",[]
 G014,2013/02,Indefinido,GAC119,Metodologia para Desenvolvimento Seguro de Aplicações,4,eletiva,,GCC109,[]
-G014,2013/02,Indefinido,GAC120,Realidade Virtual e Aumentada,4,eletiva,,GAC102,[]
-G014,2013/02,Indefinido,GAE111,Administração de Recursos Humanos I,3,eletiva,, ,[]
-G014,2013/02,8,GAE114,Métodos Quantitativos,4,obrigatoria,,GES107,[]
-G014,2023/01,Indefinido,GAE115,Gestão de Custos,4,eletiva,, ,[]
-G014,2023/01,Indefinido,GAE120,Marketing,4,eletiva,, ,[]
-G014,2023/01,Indefinido,GAE121,Administração de Recursos Humanos II,3,eletiva,, ,[]
-G014,2023/01,Indefinido,GAE128,Sistemas de Informações Gerenciais,4,eletiva,, ,[]
-G014,2023/01,Indefinido,GAE140,Pesquisa Operacional,4,eletiva,, ,[]
-G014,2023/01,Indefinido,GAE142,Planejamento Empresarial,2,eletiva,, ,[]
-G014,2015/02,Indefinido,GAE144,Constituição de Cooperativas,2,eletiva,, ,[]
-G014,2023/01,Indefinido,GAE155,Consultoria Empresarial,2,eletiva,, ,[]
-G014,2023/01,Indefinido,GAE156,Mudança e Inovação Organizacional,2,eletiva,, ,[]
-G014,2015/02,Indefinido,GAE178,Teoria Organizacional,2,eletiva,, ,[]
-G014,2015/02,Indefinido,GAE179,Administração de Recursos Humanos,4,eletiva,, ,[]
-G014,2015/02,Indefinido,GAE180,Administração da Produção e Serviços,4,eletiva,, ,[]
-G014,2023/01,Indefinido,GAE207,Sistema de Informação para o Setor Público,4,eletiva,, ,[]
-G014,2015/02,Indefinido,GAE220,Estratégias de Negócios Sustentáveis,4,eletiva,, ,[]
-G014,2023/01,Indefinido,GAE237,Estratégias Empresariais na Era Digital,2,eletiva,, ,[]
-G014,2023/01,Indefinido,GAE287,Inovação e Competitividade,2,eletiva,, ,[]
-G014,2023/01,Indefinido,GAP103,Mercado de Capitais,2,eletiva,, ,[]
-G014,2009/02,Indefinido,GAP104,Ética Profissional na Administração Pública,2,eletiva,, ,[]
-G014,2023/01,Indefinido,GAP130,Estratégia no Setor Público,4,eletiva,, ,[]
-G014,2009/02,Indefinido,GAP132,Marketing Público,2,eletiva,, ,[]
-G014,2023/01,Indefinido,GAP133,Sociologia das Organizações do Trabalho,2,eletiva,, ,[]
-G014,2013/02,8,GCC127,Informática e Sociedade,4,obrigatoria,,GCC171,[]
-G014,2023/01,Indefinido,GCC141,Administração de Serviços de Redes de Computadores,4,eletiva,, ,[]
-G014,2023/01,Indefinido,GCC144,Desenvolvimento de Aplicativos para Dispositivos Móveis,4,eletiva,, ,[]
+G010,2023/01,Indefinido,GAC120,Realidade Virtual e Aumentada,4,eletiva,,GAC108,[]
+G010,2023/01,Indefinido,GAE114,Métodos Quantitativos,4,eletiva,,GES101,[]
+G014,2023/01,Indefinido,GAE168,Empreendedorismo,2,eletiva,,,[]
+G010,2023/01,Indefinido,GAT135,Introdução Aos Sistemas Embarcados e Microcontroladores,4,eletiva,,,[]
+G014,2013/02,4,GCC134,Sistemas e Tecnologias de Informação,4,obrigatoria,,,[]
+G014,2023/01,6,GCC135,Gerência de Projetos de Software,4,obrigatoria,,GCC188,"[{""id"": ""10A"", ""horarios"": [{""dia"": 5, ""inicio"": 19, ""fim"": 21}, {""dia"": 7, ""inicio"": 22, ""fim"": 23}], ""anp"": false}, {""id"": ""14A"", ""horarios"": [{""dia"": 5, ""inicio"": 19, ""fim"": 21}, {""dia"": 7, ""inicio"": 22, ""fim"": 23}], ""anp"": false}]"
+G014,2013/02,5,GCC136,Governança de Tecnologia da Informação,4,obrigatoria,,GAE103,[]
+G014,2023/01,5,GCC137,Empreendedorismo em Sistemas de Informação,4,obrigatoria,,GCC174,"[{""id"": ""10A"", ""horarios"": [{""dia"": 2, ""inicio"": 21, ""fim"": 23}, {""dia"": 7, ""inicio"": 19, ""fim"": 20}], ""anp"": true}, {""id"": ""14A"", ""horarios"": [{""dia"": 2, ""inicio"": 21, ""fim"": 23}, {""dia"": 7, ""inicio"": 19, ""fim"": 20}], ""anp"": true}]"
+G014,2013/02,6,GCC138,Gestão da Qualidade de Software,4,obrigatoria,,GCC115,[]
+G014,2013/02,6,GCC139,Segurança e Auditoria de Sistemas de Informação,4,obrigatoria,,GCC134,[]
+G014,2023/01,Indefinido,GCC141,Administração de Serviços de Redes de Computadores,4,eletiva,,,[]
+G014,2023/01,Indefinido,GCC144,Desenvolvimento de Aplicativos para Dispositivos Móveis,4,eletiva,,,[]
 G014,2023/01,Indefinido,GCC147,Estudos Avançados em Engenharia de Software,4,eletiva,,GCC188,[]
-G014,2023/01,Indefinido,GCC148,Gestão do Conhecimento Tecnologia e Inovação,4,eletiva,, ,[]
-G014,2013/02,Indefinido,GCC150,Introdução à Filosofia da Ciência,4,eletiva,,GCC106,[]
+G014,2023/01,Indefinido,GCC148,Gestão do Conhecimento Tecnologia e Inovação,4,eletiva,,,[]
 G014,2013/02,8,GCC153,Mineração de Dados,4,obrigatoria,,"GCC109, GCC114",[]
 G014,2013/02,Indefinido,GCC156,Programação Orientada a Aspectos,4,eletiva,,GCC105,[]
-G014,2013/02,8,GCC157,Proj e Instal de Infra-estrutura de Redes de Computadores,3,obrigatoria,, ,[]
-G014,2023/01,Indefinido,GCC158,Redes de Sensores Sem Fio,4,eletiva,, ,[]
-G014,2013/02,8,GCC159,Redes Neurais Artificiais,4,obrigatoria,,"GAC101, GMM104",[]
-G014,2023/01,Indefinido,GCC164,Software Livre e Empreendedorismo Cooperativo,4,eletiva,, ,[]
+G014,2023/01,Indefinido,GCC158,Redes de Sensores Sem Fio,4,eletiva,,,[]
+G010,2023/01,Indefinido,GCC159,Redes Neurais Artificiais,4,eletiva,,"GAC124, GMM102, GMM104",[]
+G014,2023/01,Indefinido,GCC164,Software Livre e Empreendedorismo Cooperativo,4,eletiva,,,[]
 G014,2013/02,Indefinido,GCC166,Visão Computacional,4,eletiva,,GAC101,[]
-G014,2023/01,Indefinido,GCC180,Computação em Nuvem,4,eletiva,, ,[]
-G014,2023/01,Indefinido,GCC189,Informática na Educação,4,eletiva,, ,[]
-G014,2023/01,Indefinido,GCC190,Projet e Inst de Infra-estruturas de Redes de Computadores,4,eletiva,, ,[]
-G014,2013/02,Indefinido,GCC201,Sistemas Operacionais II,4,eletiva,,GCC116,[]
-G014,2013/02,Indefinido,GCC202,Projeto e Análise de Algoritmos II,4,eletiva,,GCC111,[]
-G014,2013/02,Indefinido,GCC203,Linguagens de Programação III,4,eletiva,,GAC103,[]
-G014,2023/01,Indefinido,GCC204,Recuperação da Informação,4,eletiva,, ,[]
-G014,2013/02,Indefinido,GCC205,Redes de Computadores II,4,eletiva,,GCC125,[]
-G014,2013/02,Indefinido,GCC211,Banco de Dados III,4,eletiva,,GCC119,[]
+G014,2023/01,Indefinido,GCC180,Computação em Nuvem,4,eletiva,,,[]
+G014,2023/01,Indefinido,GCC189,Informática na Educação,4,eletiva,,,[]
+G014,2023/01,Indefinido,GCC190,Projet e Inst de Infra-estruturas de Redes de Computadores,4,eletiva,,,[]
+G010,2023/01,Indefinido,GCC201,Sistemas Operacionais II,4,eletiva,,,[]
+G010,2023/01,Indefinido,GCC203,Linguagens de Programação III,4,eletiva,,GAC107,[]
+G014,2023/01,Indefinido,GCC204,Recuperação da Informação,4,eletiva,,,[]
+G010,2023/01,Indefinido,GCC205,Redes de Computadores II,4,eletiva,,GCC125,[]
+G010,2023/01,Indefinido,GCC207,Matemática Computacional,4,eletiva,,,[]
 G014,2013/02,Indefinido,GCC212,Integração de Dados,4,eletiva,,"GCC109, GCC119",[]
-G014,2023/01,Indefinido,GCC213,Estudos Avançados em Mineração Web e Aplicações,4,eletiva,, ,[]
+G014,2023/01,Indefinido,GCC213,Estudos Avançados em Mineração Web e Aplicações,4,eletiva,,,[]
 G014,2023/01,Indefinido,GCC223,Acessibilidade em Sistemas Computacionais,4,eletiva,,GCC219,[]
-G014,2023/01,Indefinido,GCC225,Gestão do Conhecimento no Setor Público,4,eletiva,, ,[]
-G014,2023/01,Indefinido,GCC226,Inovação Aberta,4,eletiva,, ,[]
 G014,2023/01,Indefinido,GCC227,Manutenção e Evolução de Software,4,eletiva,,GCC188,[]
+G010,2013/02,Indefinido,GCC228,Sistemas Fuzzy,4,eletiva,,"GES101, GAC101, GMM104",[]
 G014,2013/02,Indefinido,GCC229,Computação Evolutiva,2,eletiva,,"GES107, GAC102, GMM104",[]
+G010,2013/02,Indefinido,GCC231,Geração de Malhas Computacionais,4,eletiva,,"GCC103, GCC111, GMM102",[]
+G010,2013/02,Indefinido,GCC232,Introdução a Meta-heurísticas,4,eletiva,,"GCC103, GCC118, GCC111",[]
 G014,2013/02,Indefinido,GCC234,Avaliação de Qualidade de Experiência em Serviços Multimídia,4,eletiva,,"GCC125, GCC133",[]
 G014,2013/02,Indefinido,GCC235,Computação Autonômica,2,eletiva,,GCC128,[]
-G014,2023/01,Indefinido,GCC240,Governo Eletrônico,4,eletiva,,GCC174,[]
-G014,2013/02,Indefinido,GCC247,Gestão de Processos de Negócio,4,eletiva,,GCC115,[]
+G010,2013/02,Indefinido,GCC237,Processamento Computacional de Áudio e Vídeo,4,eletiva,,"GCC113, GES101, GAC102, GMM102, GMM108",[]
+G010,2023/01,Indefinido,GCC247,Gestão de Processos de Negócio,4,eletiva,,,[]
 G014,2013/02,Indefinido,GCC248,Linhas de Produto de Software,4,eletiva,,GCC115,[]
 G014,2013/02,Indefinido,GCC249,Sistemas Hipermídia: Conceitos e Projetos,4,eletiva,,GAC102,[]
 G014,2023/01,Indefinido,GCC252,Arquitetura de Software,4,eletiva,,GCC188,[]
-G014,2023/01,Indefinido,GDE124,Língua Brasileira de Sinais (libras),2,eletiva,, ,[]
-G014,2023/01,Indefinido,GDE165,História e Culturas Afro-Brasileiras e Indígenas,2,eletiva,, ,[]
-G014,2013/02,Indefinido,GDI168,Instituições de Direito Público e Privado,2,eletiva,, ,[]
-G014,2023/01,Indefinido,GEL178,Habilidades em Língua Inglesa I,2,eletiva,, ,[]
-G014,2023/01,Indefinido,GEL179,Habilidades em Língua Inglesa II,2,eletiva,, ,[]
-G014,2023/01,Indefinido,GEL231,Língua Inglesa em Contexto Acadêmico para Proficiência QCE A2,4,eletiva,, ,[]
-G014,2015/02,Indefinido,GGA107,Comportamento Humano nas Organizações,4,eletiva,, ,[]
-G014,2009/02,Indefinido,GMM101,Matemática Fundamental,2,eletiva,, ,[]
-G014,2023/01,Indefinido,GMM102,Geometria Analítica e Álgebra Linear,4,eletiva,, ,[]
-G014,2013/02,Indefinido,GMM106,Cálculo II,4,eletiva,,"GMM102, GMM104",[]
-G014,2013/02,Indefinido,GMM111,Cálculo Numérico,4,eletiva,,GMM106,[]
+G014,2023/01,Indefinido,GDE165,História e Culturas Afro-Brasileiras e Indígenas,2,eletiva,,,"[{""id"": ""20A"", ""horarios"": [{""dia"": 4, ""inicio"": 14, ""fim"": 16}], ""anp"": false}, {""id"": ""13A"", ""horarios"": [{""dia"": 4, ""inicio"": 16, ""fim"": 18}], ""anp"": false}, {""id"": ""36A"", ""horarios"": [{""dia"": 3, ""inicio"": 19, ""fim"": 21}], ""anp"": false}, {""id"": ""15A"", ""horarios"": [{""dia"": 3, ""inicio"": 21, ""fim"": 23}], ""anp"": false}]"
+G010,2023/01,Indefinido,GEF111,Sensoriamento Remoto e Sistemas de Informações Geográficas,4,eletiva,,,[]
+G014,2023/01,Indefinido,GEL231,Língua Inglesa em Contexto Acadêmico para Proficiência QCE A2,4,eletiva,,,[]
+G010,2023/01,Indefinido,GES102,Estatística Experimental,4,eletiva,,GES101,[]
+G010,2023/01,Indefinido,GFI103,Conceitos de Física A,2,eletiva,,,[]
+G010,2023/01,Indefinido,GFI125,Física A,4,eletiva,,,[]
+G010,2013/02,Indefinido,GFI129,Física C,4,eletiva,,,[]
+G010,2013/02,Indefinido,GMM107,Análise Combinatória,2,eletiva,,,[]
+G010,2023/01,Indefinido,GMM110,Laboratório de Matemática,2,eletiva,,,[]
+G010,2023/01,3,GMM111,Cálculo Numérico,4,obrigatoria,,"GAC124, GMM106",[]
+G010,2023/01,Indefinido,GMM113,Álgebra,4,eletiva,,GMM135,[]
+G010,2013/02,Indefinido,GMM150,Probabilidade,4,eletiva,,"GES101, GMM104",[]
+G010,2016/01,Indefinido,GPE106,Língua Brasileira de Sinais (Libras),2,eletiva,,,[]
+G014,2013/02,1,GAE103,Teoria Geral da Administração I,4,obrigatoria,,,[]
+G014,2013/02,1,GCC171,Introdução à Sistemas de Informação,2,obrigatoria,,,[]
+G014,2023/01,2,GES107,Estatística Aplicada,4,obrigatoria,,,"[{""id"": ""14A"", ""horarios"": [{""dia"": 4, ""inicio"": 21, ""fim"": 23}, {""dia"": 5, ""inicio"": 19, ""fim"": 21}], ""anp"": false}, {""id"": ""26A"", ""horarios"": [{""dia"": 4, ""inicio"": 21, ""fim"": 23}, {""dia"": 5, ""inicio"": 19, ""fim"": 21}], ""anp"": false}]"
+G014,2013/02,2,GGA108,"Organizações, Sistemas e Métodos",2,obrigatoria,,,[]
+G014,2023/01,3,GAE108,Teoria Econômica,4,obrigatoria,,,"[{""id"": ""22A"", ""horarios"": [{""dia"": 4, ""inicio"": 14, ""fim"": 16}, {""dia"": 5, ""inicio"": 8, ""fim"": 10}], ""anp"": false}, {""id"": ""14A"", ""horarios"": [{""dia"": 3, ""inicio"": 19, ""fim"": 21}, {""dia"": 5, ""inicio"": 19, ""fim"": 21}], ""anp"": false}]"
+G014,2013/02,2,GCC133,Organização de Computadores,4,obrigatoria,,,[]
+G014,2013/02,7,PRG314,Trabalho de Conclusão de Curso I,4,obrigatoria,,GCC106,[]
+G014,2023/01,2,GAE117,Administração Estratégica,4,obrigatoria,,,"[{""id"": ""14A"", ""horarios"": [{""dia"": 3, ""inicio"": 19, ""fim"": 21}, {""dia"": 6, ""inicio"": 19, ""fim"": 21}], ""anp"": false}, {""id"": ""14B"", ""horarios"": [{""dia"": 3, ""inicio"": 19, ""fim"": 21}, {""dia"": 6, ""inicio"": 19, ""fim"": 21}], ""anp"": false}]"
+G014,2023/01,Indefinido,GCC140,Inteligência de Negócios,4,eletiva,,GCC263,[]
+G014,2013/02,8,PRG414,Trabalho de Conclusão de Curso II,28,obrigatoria,,PRG314,[]
+G014,2013/02,Indefinido,GAE111,Administração de Recursos Humanos I,3,eletiva,,,[]
+G014,2023/01,Indefinido,GAE115,Gestão de Custos,4,eletiva,,,[]
+G014,2023/01,Indefinido,GAE120,Marketing,4,eletiva,,,"[{""id"": ""11A"", ""horarios"": [{""dia"": 3, ""inicio"": 10, ""fim"": 12}, {""dia"": 5, ""inicio"": 8, ""fim"": 10}], ""anp"": false}]"
+G014,2023/01,Indefinido,GAE121,Administração de Recursos Humanos II,3,eletiva,,,[]
+G014,2023/01,Indefinido,GAE128,Sistemas de Informações Gerenciais,4,eletiva,,,[]
+G014,2023/01,Indefinido,GAE140,Pesquisa Operacional,4,eletiva,,,[]
+G014,2023/01,Indefinido,GAE142,Planejamento Empresarial,2,eletiva,,,"[{""id"": ""14A"", ""horarios"": [{""dia"": 4, ""inicio"": 17, ""fim"": 19}], ""anp"": false}]"
+G014,2015/02,Indefinido,GAE144,Constituição de Cooperativas,2,eletiva,,,[]
+G014,2023/01,Indefinido,GAE155,Consultoria Empresarial,2,eletiva,,,"[{""id"": ""14A"", ""horarios"": [{""dia"": 5, ""inicio"": 17, ""fim"": 19}], ""anp"": false}, {""id"": ""19A"", ""horarios"": [{""dia"": 5, ""inicio"": 17, ""fim"": 19}], ""anp"": false}]"
+G014,2023/01,Indefinido,GAE156,Mudança e Inovação Organizacional,2,eletiva,,,[]
+G014,2015/02,Indefinido,GAE178,Teoria Organizacional,2,eletiva,,,[]
+G014,2015/02,Indefinido,GAE179,Administração de Recursos Humanos,4,eletiva,,,[]
+G014,2015/02,Indefinido,GAE180,Administração da Produção e Serviços,4,eletiva,,,[]
+G014,2023/01,Indefinido,GAE207,Sistema de Informação para o Setor Público,4,eletiva,,,"[{""id"": ""14A"", ""horarios"": [{""dia"": 2, ""inicio"": 21, ""fim"": 23}, {""dia"": 4, ""inicio"": 21, ""fim"": 23}], ""anp"": false}, {""id"": ""26A"", ""horarios"": [{""dia"": 2, ""inicio"": 21, ""fim"": 23}, {""dia"": 4, ""inicio"": 21, ""fim"": 23}], ""anp"": false}]"
+G014,2015/02,Indefinido,GAE220,Estratégias de Negócios Sustentáveis,4,eletiva,,,[]
+G014,2023/01,Indefinido,GAE237,Estratégias Empresariais na Era Digital,2,eletiva,,,[]
+G014,2023/01,Indefinido,GAE287,Inovação e Competitividade,2,eletiva,,,"[{""id"": ""14A"", ""horarios"": [{""dia"": 3, ""inicio"": 17, ""fim"": 19}], ""anp"": false}]"
+G014,2023/01,Indefinido,GAP103,Mercado de Capitais,2,eletiva,,,[]
+G014,2009/02,Indefinido,GAP104,Ética Profissional na Administração Pública,2,eletiva,,,[]
+G014,2023/01,Indefinido,GAP130,Estratégia no Setor Público,4,eletiva,,,"[{""id"": ""14A"", ""horarios"": [{""dia"": 2, ""inicio"": 19, ""fim"": 21}, {""dia"": 5, ""inicio"": 21, ""fim"": 23}], ""anp"": false}, {""id"": ""26A"", ""horarios"": [{""dia"": 2, ""inicio"": 19, ""fim"": 21}, {""dia"": 5, ""inicio"": 21, ""fim"": 23}], ""anp"": false}]"
+G014,2009/02,Indefinido,GAP132,Marketing Público,2,eletiva,,,[]
+G014,2023/01,Indefinido,GAP133,Sociologia das Organizações do Trabalho,2,eletiva,,,[]
+G014,2013/02,Indefinido,GCC150,Introdução à Filosofia da Ciência,4,eletiva,,GCC106,[]
+G014,2013/02,8,GCC157,Proj e Instal de Infra-estrutura de Redes de Computadores,3,obrigatoria,,,[]
+G014,2013/02,Indefinido,GCC202,Projeto e Análise de Algoritmos II,4,eletiva,,GCC111,[]
+G014,2013/02,Indefinido,GCC211,Banco de Dados III,4,eletiva,,GCC119,[]
+G014,2023/01,Indefinido,GCC225,Gestão do Conhecimento no Setor Público,4,eletiva,,,[]
+G014,2023/01,Indefinido,GCC226,Inovação Aberta,4,eletiva,,,[]
+G014,2023/01,Indefinido,GCC240,Governo Eletrônico,4,eletiva,,GCC174,[]
+G014,2023/01,Indefinido,GDE124,Língua Brasileira de Sinais (libras),2,eletiva,,,"[{""id"": ""15A"", ""horarios"": [{""dia"": 3, ""inicio"": 19, ""fim"": 21}], ""anp"": false}, {""id"": ""57A"", ""horarios"": [{""dia"": 5, ""inicio"": 19, ""fim"": 21}], ""anp"": false}, {""id"": ""24A"", ""horarios"": [{""dia"": 6, ""inicio"": 19, ""fim"": 21}], ""anp"": false}]"
+G014,2013/02,Indefinido,GDI168,Instituições de Direito Público e Privado,2,eletiva,,,[]
+G014,2015/02,Indefinido,GGA107,Comportamento Humano nas Organizações,4,eletiva,,,[]
 G014,2009/02,Indefinido,GMM116,Fundamentos de Cálculo,4,eletiva,,GMM101,[]
-G014,2023/01,Indefinido,GAE168,Empreendedorismo,2,eletiva,, ,[]
-G014,2015/02,Indefinido,GAE197,Organização Mercado e Empreendedorismo,2,eletiva,, ,[]
-G014,2023/01,Indefinido,GAP105,Redes de Cooperação,2,eletiva,, ,[]
-G014,2023/01,Indefinido,GAP106,Macroeconomia,4,eletiva,, ,[]
-G014,2023/01,Indefinido,GAP108,Teoria das Finanças Públicas,4,eletiva,, ,[]
-G014,2023/01,Indefinido,GAP110,Relações Internacionais,4,eletiva,, ,[]
-G014,2023/01,Indefinido,GAP115,Economia Brasileira Contemporânea,4,eletiva,, ,[]
-G014,2023/01,Indefinido,GAP121,"Licitação, Contrato e Convênios",2,eletiva,, ,[]
-G014,2023/01,Indefinido,GAP122,Governança na Administração Pública,2,eletiva,, ,[]
-G014,2023/01,Indefinido,GAP142,Métodos Quantitativos Aplicados à Gestão Pública,2,eletiva,, ,[]
-G014,2013/02,Indefinido,GAP144,Fundamentos de Administração Pública,4,eletiva,, ,[]
-G014,2023/01,Indefinido,GAP148,Ação Coletiva,4,eletiva,, ,[]
-G014,2023/01,Indefinido,GAP154,Marketing Público,4,eletiva,, ,[]
-G014,2023/01,Indefinido,GCC108,Teoria da Computação,4,eletiva,,GCC122,[]
-G014,2013/02,Indefinido,GCC112,Linguagens de Programação II,4,eletiva,,GCC105,[]
-G014,2013/02,Indefinido,GCC120,Engenharia de Software II,4,eletiva,,GCC115,[]
+G014,2023/01,1,GCC241,Introdução a Computação,2,obrigatoria,,,"[{""id"": ""10A"", ""horarios"": [{""dia"": 5, ""inicio"": 14, ""fim"": 16}], ""anp"": false}, {""id"": ""14A"", ""horarios"": [{""dia"": 4, ""inicio"": 21, ""fim"": 23}], ""anp"": false}]"
+G010,2013/02,8,PRG510,Estágio Supervisionado/TCC,16,obrigatoria,,GCC106,[]
+G014,2023/01,Indefinido,GCC132,Modelagem e Implementação de Software,4,eletiva,,GCC188,[]
 G014,2013/02,Indefinido,GCC162,Simulação,4,eletiva,,"GAC102, GMM104",[]
-G014,2013/02,Indefinido,GCC218,Algoritmos em Grafos,4,eletiva,,GCC109,[]
+G010,2023/01,Indefinido,GDE125,"Ciência, Tecnologia e Sociedade",2,eletiva,,,[]
+G014,2013/02,Indefinido,PRG005,Atividade Acadêmica Internacional,2,eletiva,,,[]
+G010,2013/02,Indefinido,PRG310,Trabalho de Conclusão de Curso I,4,eletiva,,GCC106,[]
+G010,2023/01,Indefinido,GAE197,Organização Mercado e Empreendedorismo,2,eletiva,,,[]
+G014,2023/01,Indefinido,GAP105,Redes de Cooperação,2,eletiva,,,"[{""id"": ""14A"", ""horarios"": [{""dia"": 2, ""inicio"": 21, ""fim"": 23}], ""anp"": false}, {""id"": ""26A"", ""horarios"": [{""dia"": 2, ""inicio"": 21, ""fim"": 23}], ""anp"": false}, {""id"": ""27A"", ""horarios"": [{""dia"": 2, ""inicio"": 21, ""fim"": 23}], ""anp"": false}]"
+G014,2023/01,Indefinido,GAP106,Macroeconomia,4,eletiva,,,"[{""id"": ""14A"", ""horarios"": [{""dia"": 3, ""inicio"": 21, ""fim"": 23}, {""dia"": 5, ""inicio"": 19, ""fim"": 21}], ""anp"": false}, {""id"": ""26A"", ""horarios"": [{""dia"": 3, ""inicio"": 21, ""fim"": 23}, {""dia"": 5, ""inicio"": 19, ""fim"": 21}], ""anp"": false}]"
+G014,2023/01,Indefinido,GAP108,Teoria das Finanças Públicas,4,eletiva,,,"[{""id"": ""14A"", ""horarios"": [{""dia"": 3, ""inicio"": 21, ""fim"": 23}, {""dia"": 5, ""inicio"": 19, ""fim"": 21}], ""anp"": false}, {""id"": ""26A"", ""horarios"": [{""dia"": 3, ""inicio"": 21, ""fim"": 23}, {""dia"": 5, ""inicio"": 19, ""fim"": 21}], ""anp"": false}]"
+G014,2023/01,Indefinido,GAP110,Relações Internacionais,4,eletiva,,,"[{""id"": ""14A"", ""horarios"": [{""dia"": 5, ""inicio"": 19, ""fim"": 21}, {""dia"": 7, ""inicio"": 10, ""fim"": 11}], ""anp"": true}, {""id"": ""26A"", ""horarios"": [{""dia"": 5, ""inicio"": 19, ""fim"": 21}, {""dia"": 7, ""inicio"": 10, ""fim"": 11}], ""anp"": true}, {""id"": ""27A"", ""horarios"": [{""dia"": 5, ""inicio"": 19, ""fim"": 21}, {""dia"": 7, ""inicio"": 10, ""fim"": 11}], ""anp"": true}]"
+G014,2023/01,Indefinido,GAP115,Economia Brasileira Contemporânea,4,eletiva,,,"[{""id"": ""14A"", ""horarios"": [{""dia"": 3, ""inicio"": 19, ""fim"": 21}, {""dia"": 5, ""inicio"": 21, ""fim"": 23}], ""anp"": false}, {""id"": ""26A"", ""horarios"": [{""dia"": 3, ""inicio"": 19, ""fim"": 21}, {""dia"": 5, ""inicio"": 21, ""fim"": 23}], ""anp"": false}, {""id"": ""27A"", ""horarios"": [{""dia"": 3, ""inicio"": 19, ""fim"": 21}, {""dia"": 5, ""inicio"": 21, ""fim"": 23}], ""anp"": false}]"
+G014,2023/01,Indefinido,GAP121,"Licitação, Contrato e Convênios",2,eletiva,,,"[{""id"": ""14A"", ""horarios"": [{""dia"": 6, ""inicio"": 19, ""fim"": 21}], ""anp"": false}, {""id"": ""26A"", ""horarios"": [{""dia"": 6, ""inicio"": 19, ""fim"": 21}], ""anp"": false}, {""id"": ""27A"", ""horarios"": [{""dia"": 6, ""inicio"": 19, ""fim"": 21}], ""anp"": false}]"
+G014,2023/01,Indefinido,GAP122,Governança na Administração Pública,2,eletiva,,,"[{""id"": ""14A"", ""horarios"": [{""dia"": 4, ""inicio"": 21, ""fim"": 23}], ""anp"": false}, {""id"": ""26A"", ""horarios"": [{""dia"": 4, ""inicio"": 21, ""fim"": 23}], ""anp"": false}]"
+G014,2023/01,Indefinido,GAP142,Métodos Quantitativos Aplicados à Gestão Pública,2,eletiva,,,[]
+G014,2013/02,Indefinido,GAP144,Fundamentos de Administração Pública,4,eletiva,,,[]
+G014,2023/01,Indefinido,GAP148,Ação Coletiva,4,eletiva,,,"[{""id"": ""14A"", ""horarios"": [{""dia"": 3, ""inicio"": 21, ""fim"": 23}, {""dia"": 6, ""inicio"": 19, ""fim"": 21}], ""anp"": false}, {""id"": ""26A"", ""horarios"": [{""dia"": 3, ""inicio"": 21, ""fim"": 23}, {""dia"": 6, ""inicio"": 19, ""fim"": 21}], ""anp"": false}]"
+G014,2023/01,Indefinido,GAP154,Marketing Público,4,eletiva,,,"[{""id"": ""14A"", ""horarios"": [{""dia"": 6, ""inicio"": 21, ""fim"": 23}, {""dia"": 7, ""inicio"": 22, ""fim"": 23}], ""anp"": false}, {""id"": ""26A"", ""horarios"": [{""dia"": 6, ""inicio"": 21, ""fim"": 23}, {""dia"": 7, ""inicio"": 22, ""fim"": 23}], ""anp"": false}]"
+G010,2023/01,3,GCC218,Algoritmos em Grafos,4,obrigatoria,,,[]
 G014,2023/01,Indefinido,GCC255,Teste de Software,4,eletiva,,GCC188,[]
 G014,2023/01,Indefinido,GCC259,Desenvolvimento de Software Livre,4,eletiva,,GCC188,[]
-G014,2013/02,Indefinido,GCH232,Sociologia das Organizações e do Trabalho,2,eletiva,, ,[]
-G014,2015/02,Indefinido,GDE125,"Ciência, Tecnologia e Sociedade",2,eletiva,, ,[]
-G014,2013/02,Indefinido,PRG005,Atividade Acadêmica Internacional,2,eletiva,, ,[]
-G014,2023/01,1,GAC124,Introdução aos Algoritmos,6,obrigatoria,, ,"[{""id"": ""10A"", ""horarios"": [{""dia"": 3, ""inicio"": 8, ""fim"": 10}, {""dia"": 5, ""inicio"": 8, ""fim"": 10}, {""dia"": 7, ""inicio"": 14, ""fim"": 15}], ""anp"": false}, {""id"": ""10B"", ""horarios"": [{""dia"": 3, ""inicio"": 8, ""fim"": 10}, {""dia"": 5, ""inicio"": 8, ""fim"": 10}, {""dia"": 7, ""inicio"": 14, ""fim"": 15}], ""anp"": false}, {""id"": ""14A"", ""horarios"": [{""dia"": 3, ""inicio"": 19, ""fim"": 21}, {""dia"": 5, ""inicio"": 19, ""fim"": 21}, {""dia"": 7, ""inicio"": 9, ""fim"": 10}], ""anp"": true}, {""id"": ""14B"", ""horarios"": [{""dia"": 3, ""inicio"": 19, ""fim"": 21}, {""dia"": 5, ""inicio"": 19, ""fim"": 21}, {""dia"": 7, ""inicio"": 9, ""fim"": 10}], ""anp"": true}, {""id"": ""22A"", ""horarios"": [{""dia"": 3, ""inicio"": 10, ""fim"": 12}, {""dia"": 5, ""inicio"": 10, ""fim"": 12}, {""dia"": 7, ""inicio"": 9, ""fim"": 10}], ""anp"": true}]"
-G014,2023/01,1,GAE325,Administração aplicada a Sistemas de Informação,4,obrigatoria,, ,"[{""id"": ""14A"", ""horarios"": [{""dia"": 3, ""inicio"": 21, ""fim"": 23}, {""dia"": 5, ""inicio"": 21, ""fim"": 23}], ""anp"": false}]"
-G014,2023/01,1,GAT136,Introdução aos Sistemas Digitais,4,obrigatoria,, ,"[{""id"": ""14A"", ""horarios"": [{""dia"": 2, ""inicio"": 8, ""fim"": 9}], ""anp"": true}]"
-G014,2023/01,1,GCC241,Introdução a Computação,2,obrigatoria,, ,"[{""id"": ""10A"", ""horarios"": [{""dia"": 5, ""inicio"": 14, ""fim"": 16}], ""anp"": false}, {""id"": ""14A"", ""horarios"": [{""dia"": 4, ""inicio"": 21, ""fim"": 23}], ""anp"": false}]"
-G014,2015/02,2,GAC107,Paradigmas de Linguagens de Programação,4,obrigatoria,, ,[]
-G014,2023/01,3,GAC108,Estruturas de Dados,6,obrigatoria,,GAC125,[]
-G014,2023/01,2,GCC174,Sistemas de Informação,4,obrigatoria,, ,"[{""id"": ""10A"", ""horarios"": [{""dia"": 2, ""inicio"": 21, ""fim"": 23}, {""dia"": 7, ""inicio"": 12, ""fim"": 13}], ""anp"": true}, {""id"": ""14A"", ""horarios"": [{""dia"": 2, ""inicio"": 21, ""fim"": 23}, {""dia"": 7, ""inicio"": 12, ""fim"": 13}], ""anp"": true}]"
-G014,2023/01,3,GGA133,"Organizações, Sistemas e Métodos",2,obrigatoria,, ,[]
-G014,2023/01,2,GMM135,Matemática Discreta,4,obrigatoria,, ,"[{""id"": ""10A"", ""horarios"": [{""dia"": 2, ""inicio"": 14, ""fim"": 16}, {""dia"": 5, ""inicio"": 14, ""fim"": 16}], ""anp"": false}, {""id"": ""14A"", ""horarios"": [{""dia"": 3, ""inicio"": 21, ""fim"": 23}, {""dia"": 5, ""inicio"": 21, ""fim"": 23}], ""anp"": false}]"
-G014,2023/01,Indefinido,GAC106,Práticas de Programação Orientada a Objetos,4,eletiva,,GAC125,[]
-G014,2023/01,Indefinido,GCC122,Linguagens Formais e Autômatos,4,eletiva,, ,[]
-G014,2023/01,3,GCC194,Arquitetura de Computadores,4,obrigatoria,,GAT136,[]
-G014,2023/01,5,GCC262,Grafos e suas Aplicações,4,obrigatoria,,GAC108,[]
-G014,2023/01,4,GCC176,Gestão de Tecnologia da Informação,4,obrigatoria,,"GCC174, GAE117",[]
-G014,2023/01,4,GCC188,Engenharia de Software,4,obrigatoria,, ,[]
-G014,2023/01,4,GCC219,Interação Humano-Computador,4,obrigatoria,, ,[]
-G014,2023/01,3,GCC263,Introdução a Sistemas de Banco de Dados,4,obrigatoria,, ,[]
-G014,2023/01,5,GCC175,Sistemas Gerenciadores de Banco de Dados,4,obrigatoria,,GCC263,[]
-G014,2023/01,5,GCC242,"Segurança, Auditoria e Avaliação de Sistemas de Informação",4,obrigatoria,, ,[]
-G014,2023/01,6,GCC244,Processos de Software,4,obrigatoria,,GCC188,[]
-G014,2023/01,6,GCC253,Complexidade e Projetos de Algoritmos,4,obrigatoria,,"GMM135, GMM126, GCC262",[]
-G014,2023/01,7,GCC220,Metodologia de Pesquisa,4,obrigatoria,, ,[]
-G014,2023/01,8,GCC222,"Ética, Computador e Sociedade",4,obrigatoria,, ,[]
-G014,2023/01,7,GCC243,Qualidade de Software,4,obrigatoria,,GCC188,[]
-G014,2015/02,8,PRG514,Estágio Supervisionado/TCC,30,obrigatoria,, ,[]
-G014,2023/01,Indefinido,GAC105,Programação Paralela e Concorrente,4,eletiva,, ,[]
-G014,2023/01,Indefinido,GAC126,Programação Aplicada com Suporte de IA,4,eletiva,,GAC124,[]
-G014,2023/01,Indefinido,GAC127,Mineração de Dados,4,eletiva,, ,[]
-G014,2015/02,Indefinido,GCC123,Arquitetura de Computadores II,4,eletiva,, ,[]
-G014,2023/01,Indefinido,GCC132,Modelagem e Implementação de Software,4,eletiva,,GCC188,[]
-G014,2015/02,Indefinido,GCC221,Processamento Digital de Imagens,4,eletiva,,GMM104,[]
+G014,2013/02,Indefinido,GCH232,Sociologia das Organizações e do Trabalho,2,eletiva,,,[]
+G014,2023/01,1,GAC124,Introdução aos Algoritmos,6,obrigatoria,,,"[{""id"": ""10A"", ""horarios"": [{""dia"": 3, ""inicio"": 8, ""fim"": 10}, {""dia"": 5, ""inicio"": 8, ""fim"": 10}, {""dia"": 7, ""inicio"": 14, ""fim"": 15}], ""anp"": false}, {""id"": ""10B"", ""horarios"": [{""dia"": 3, ""inicio"": 8, ""fim"": 10}, {""dia"": 5, ""inicio"": 8, ""fim"": 10}, {""dia"": 7, ""inicio"": 14, ""fim"": 15}], ""anp"": false}, {""id"": ""14A"", ""horarios"": [{""dia"": 3, ""inicio"": 19, ""fim"": 21}, {""dia"": 5, ""inicio"": 19, ""fim"": 21}, {""dia"": 7, ""inicio"": 9, ""fim"": 10}], ""anp"": true}, {""id"": ""14B"", ""horarios"": [{""dia"": 3, ""inicio"": 19, ""fim"": 21}, {""dia"": 5, ""inicio"": 19, ""fim"": 21}, {""dia"": 7, ""inicio"": 9, ""fim"": 10}], ""anp"": true}, {""id"": ""22A"", ""horarios"": [{""dia"": 3, ""inicio"": 10, ""fim"": 12}, {""dia"": 5, ""inicio"": 10, ""fim"": 12}, {""dia"": 7, ""inicio"": 9, ""fim"": 10}], ""anp"": true}]"
+G014,2023/01,1,GAE325,Administração aplicada a Sistemas de Informação,4,obrigatoria,,,"[{""id"": ""14A"", ""horarios"": [{""dia"": 3, ""inicio"": 21, ""fim"": 23}, {""dia"": 5, ""inicio"": 21, ""fim"": 23}], ""anp"": false}]"
+G014,2023/01,1,GAT136,Introdução aos Sistemas Digitais,4,obrigatoria,,,"[{""id"": ""14A"", ""horarios"": [{""dia"": 7, ""inicio"": 8, ""fim"": 9}], ""anp"": true}]"
+G010,2023/01,3,GAC107,Paradigmas de Linguagens de Programação,4,obrigatoria,,,[]
+G014,2023/01,3,GAC108,Estruturas de Dados,6,obrigatoria,,GAC125,"[{""id"": ""10A"", ""horarios"": [{""dia"": 4, ""inicio"": 14, ""fim"": 16}, {""dia"": 7, ""inicio"": 13, ""fim"": 14}], ""anp"": true}, {""id"": ""10B"", ""horarios"": [{""dia"": 4, ""inicio"": 16, ""fim"": 18}, {""dia"": 7, ""inicio"": 13, ""fim"": 14}], ""anp"": true}, {""id"": ""14A"", ""horarios"": [{""dia"": 4, ""inicio"": 19, ""fim"": 21}, {""dia"": 7, ""inicio"": 15, ""fim"": 16}], ""anp"": true}, {""id"": ""14B"", ""horarios"": [{""dia"": 3, ""inicio"": 21, ""fim"": 23}, {""dia"": 7, ""inicio"": 15, ""fim"": 16}], ""anp"": true}]"
+G014,2023/01,2,GCC174,Sistemas de Informação,4,obrigatoria,,,"[{""id"": ""10A"", ""horarios"": [{""dia"": 2, ""inicio"": 21, ""fim"": 23}, {""dia"": 7, ""inicio"": 12, ""fim"": 13}], ""anp"": true}, {""id"": ""14A"", ""horarios"": [{""dia"": 2, ""inicio"": 21, ""fim"": 23}, {""dia"": 7, ""inicio"": 12, ""fim"": 13}], ""anp"": true}]"
+G014,2023/01,3,GGA133,"Organizações, Sistemas e Métodos",2,obrigatoria,,,"[{""id"": ""14A"", ""horarios"": [{""dia"": 7, ""inicio"": 14, ""fim"": 15}], ""anp"": true}]"
+G014,2023/01,2,GMM135,Matemática Discreta,4,obrigatoria,,,"[{""id"": ""10A"", ""horarios"": [{""dia"": 2, ""inicio"": 14, ""fim"": 16}, {""dia"": 5, ""inicio"": 14, ""fim"": 16}], ""anp"": false}, {""id"": ""14A"", ""horarios"": [{""dia"": 3, ""inicio"": 21, ""fim"": 23}, {""dia"": 5, ""inicio"": 21, ""fim"": 23}], ""anp"": false}]"
+G014,2023/01,Indefinido,GAC106,Práticas de Programação Orientada a Objetos,4,eletiva,,GAC125,"[{""id"": ""10A"", ""horarios"": [{""dia"": 2, ""inicio"": 10, ""fim"": 12}, {""dia"": 5, ""inicio"": 8, ""fim"": 10}], ""anp"": false}, {""id"": ""10B"", ""horarios"": [{""dia"": 2, ""inicio"": 10, ""fim"": 12}, {""dia"": 5, ""inicio"": 10, ""fim"": 12}], ""anp"": false}, {""id"": ""14A"", ""horarios"": [{""dia"": 3, ""inicio"": 17, ""fim"": 19}, {""dia"": 5, ""inicio"": 17, ""fim"": 19}], ""anp"": false}]"
+G014,2023/01,3,GCC194,Arquitetura de Computadores,4,obrigatoria,,GAT136,"[{""id"": ""14A"", ""horarios"": [{""dia"": 4, ""inicio"": 21, ""fim"": 23}, {""dia"": 5, ""inicio"": 21, ""fim"": 23}], ""anp"": false}]"
+G014,2023/01,5,GCC262,Grafos e suas Aplicações,4,obrigatoria,,GAC108,"[{""id"": ""14A"", ""horarios"": [{""dia"": 4, ""inicio"": 19, ""fim"": 21}, {""dia"": 5, ""inicio"": 19, ""fim"": 21}], ""anp"": false}]"
+G014,2023/01,4,GCC176,Gestão de Tecnologia da Informação,4,obrigatoria,,"GCC174, GAE117","[{""id"": ""10A"", ""horarios"": [{""dia"": 4, ""inicio"": 21, ""fim"": 23}, {""dia"": 7, ""inicio"": 16, ""fim"": 17}], ""anp"": true}, {""id"": ""14A"", ""horarios"": [{""dia"": 4, ""inicio"": 21, ""fim"": 23}, {""dia"": 7, ""inicio"": 16, ""fim"": 17}], ""anp"": true}]"
+G014,2023/01,4,GCC188,Engenharia de Software,4,obrigatoria,,,"[{""id"": ""10A"", ""horarios"": [{""dia"": 3, ""inicio"": 13, ""fim"": 15}, {""dia"": 7, ""inicio"": 17, ""fim"": 18}], ""anp"": false}, {""id"": ""14A"", ""horarios"": [{""dia"": 2, ""inicio"": 19, ""fim"": 21}, {""dia"": 7, ""inicio"": 17, ""fim"": 18}], ""anp"": true}]"
+G014,2023/01,4,GCC219,Interação Humano-Computador,4,obrigatoria,,,"[{""id"": ""10A"", ""horarios"": [{""dia"": 6, ""inicio"": 15, ""fim"": 17}, {""dia"": 7, ""inicio"": 15, ""fim"": 16}], ""anp"": false}, {""id"": ""14A"", ""horarios"": [{""dia"": 3, ""inicio"": 19, ""fim"": 21}, {""dia"": 7, ""inicio"": 18, ""fim"": 19}], ""anp"": true}]"
+G014,2023/01,3,GCC263,Introdução a Sistemas de Banco de Dados,4,obrigatoria,,,"[{""id"": ""10A"", ""horarios"": [{""dia"": 2, ""inicio"": 17, ""fim"": 19}, {""dia"": 7, ""inicio"": 8, ""fim"": 9}], ""anp"": true}, {""id"": ""14A"", ""horarios"": [{""dia"": 2, ""inicio"": 21, ""fim"": 23}, {""dia"": 7, ""inicio"": 13, ""fim"": 14}], ""anp"": true}]"
+G014,2023/01,5,GCC175,Sistemas Gerenciadores de Banco de Dados,4,obrigatoria,,GCC263,"[{""id"": ""10A"", ""horarios"": [{""dia"": 4, ""inicio"": 15, ""fim"": 17}, {""dia"": 7, ""inicio"": 11, ""fim"": 12}], ""anp"": true}, {""id"": ""14A"", ""horarios"": [{""dia"": 4, ""inicio"": 21, ""fim"": 23}, {""dia"": 7, ""inicio"": 21, ""fim"": 22}], ""anp"": false}]"
+G014,2023/01,5,GCC242,"Segurança, Auditoria e Avaliação de Sistemas de Informação",4,obrigatoria,,,"[{""id"": ""10A"", ""horarios"": [{""dia"": 3, ""inicio"": 19, ""fim"": 21}, {""dia"": 7, ""inicio"": 12, ""fim"": 13}], ""anp"": true}, {""id"": ""14A"", ""horarios"": [{""dia"": 3, ""inicio"": 19, ""fim"": 21}, {""dia"": 7, ""inicio"": 12, ""fim"": 13}], ""anp"": true}]"
+G014,2023/01,6,GCC244,Processos de Software,4,obrigatoria,,GCC188,"[{""id"": ""10A"", ""horarios"": [{""dia"": 4, ""inicio"": 19, ""fim"": 21}, {""dia"": 7, ""inicio"": 20, ""fim"": 21}], ""anp"": false}, {""id"": ""14A"", ""horarios"": [{""dia"": 4, ""inicio"": 19, ""fim"": 21}, {""dia"": 7, ""inicio"": 20, ""fim"": 21}], ""anp"": false}]"
+G014,2023/01,6,GCC253,Complexidade e Projetos de Algoritmos,4,obrigatoria,,"GMM135, GMM126, GCC262","[{""id"": ""10A"", ""horarios"": [{""dia"": 2, ""inicio"": 17, ""fim"": 19}, {""dia"": 3, ""inicio"": 13, ""fim"": 15}], ""anp"": false}, {""id"": ""14A"", ""horarios"": [{""dia"": 2, ""inicio"": 19, ""fim"": 21}, {""dia"": 3, ""inicio"": 21, ""fim"": 23}], ""anp"": false}]"
+G014,2023/01,7,GCC220,Metodologia de Pesquisa,4,obrigatoria,,,"[{""id"": ""10A"", ""horarios"": [{""dia"": 2, ""inicio"": 19, ""fim"": 21}, {""dia"": 7, ""inicio"": 9, ""fim"": 10}], ""anp"": true}, {""id"": ""14A"", ""horarios"": [{""dia"": 2, ""inicio"": 19, ""fim"": 21}, {""dia"": 7, ""inicio"": 9, ""fim"": 10}], ""anp"": true}]"
+G014,2023/01,8,GCC222,"Ética, Computador e Sociedade",4,obrigatoria,,,"[{""id"": ""10A"", ""horarios"": [{""dia"": 2, ""inicio"": 19, ""fim"": 21}, {""dia"": 4, ""inicio"": 19, ""fim"": 21}], ""anp"": false}, {""id"": ""14A"", ""horarios"": [{""dia"": 2, ""inicio"": 19, ""fim"": 21}, {""dia"": 4, ""inicio"": 19, ""fim"": 21}], ""anp"": false}]"
+G014,2023/01,7,GCC243,Qualidade de Software,4,obrigatoria,,GCC188,"[{""id"": ""14A"", ""horarios"": [{""dia"": 3, ""inicio"": 19, ""fim"": 21}, {""dia"": 7, ""inicio"": 7, ""fim"": 8}], ""anp"": true}]"
+G014,2015/02,8,PRG514,Estágio Supervisionado/TCC,30,obrigatoria,,,[]
+G014,2023/01,Indefinido,GAC105,Programação Paralela e Concorrente,4,eletiva,,,"[{""id"": ""10A"", ""horarios"": [{""dia"": 2, ""inicio"": 9, ""fim"": 11}, {""dia"": 7, ""inicio"": 21, ""fim"": 22}], ""anp"": false}]"
+G014,2023/01,Indefinido,GAC126,Programação Aplicada com Suporte de IA,4,eletiva,,GAC124,"[{""id"": ""10A"", ""horarios"": [{""dia"": 2, ""inicio"": 17, ""fim"": 19}, {""dia"": 4, ""inicio"": 17, ""fim"": 19}], ""anp"": false}, {""id"": ""14A"", ""horarios"": [{""dia"": 2, ""inicio"": 17, ""fim"": 19}, {""dia"": 4, ""inicio"": 17, ""fim"": 19}], ""anp"": false}]"
+G014,2023/01,Indefinido,GAC127,Mineração de Dados,4,eletiva,,,[]
+G010,2023/01,Indefinido,GCC221,Processamento Digital de Imagens,4,eletiva,,GMM104,[]
 G014,2023/01,Indefinido,GCC268,Introdução a Deep Learning,4,eletiva,,"GES107, GMM135",[]
 G014,2023/01,Indefinido,GCC269,Fundamentos de Sistemas Multimídia,4,eletiva,,GCC125,[]
-G014,2023/01,Indefinido,GCC270,Devops na Prática,4,eletiva,, ,[]
-G014,2023/01,Indefinido,GCC271,Internet das Coisas: Fundamentos e Aplicações,4,eletiva,, ,[]
-G014,2023/01,Indefinido,GCC272,Aplicações de Processamento Digital de Áudio Profissional,4,eletiva,, ,[]
+G014,2023/01,Indefinido,GCC270,Devops na Prática,4,eletiva,,,"[{""id"": ""10A"", ""horarios"": [{""dia"": 2, ""inicio"": 21, ""fim"": 23}, {""dia"": 5, ""inicio"": 19, ""fim"": 21}], ""anp"": false}, {""id"": ""14A"", ""horarios"": [{""dia"": 2, ""inicio"": 21, ""fim"": 23}, {""dia"": 5, ""inicio"": 19, ""fim"": 21}], ""anp"": false}]"
+G014,2023/01,Indefinido,GCC271,Internet das Coisas: Fundamentos e Aplicações,4,eletiva,,,[]
+G014,2023/01,Indefinido,GCC272,Aplicações de Processamento Digital de Áudio Profissional,4,eletiva,,,"[{""id"": ""10A"", ""horarios"": [{""dia"": 3, ""inicio"": 17, ""fim"": 19}, {""dia"": 5, ""inicio"": 17, ""fim"": 19}], ""anp"": false}, {""id"": ""14A"", ""horarios"": [{""dia"": 3, ""inicio"": 17, ""fim"": 19}, {""dia"": 5, ""inicio"": 17, ""fim"": 19}], ""anp"": false}]"
 G014,2023/01,Indefinido,GCC273,Big-data: Processamento de Dados Massivos,4,eletiva,,"GCC175, GCC116",[]
-G014,2023/01,Indefinido,GCC274,Aplicações de Redes Neurais Artificiais,4,eletiva,,"GMM135, GES107, GAC108",[]
-G014,2015/02,Indefinido,GAE212,Planejamento e Programação na Administração Pública,4,eletiva,, ,[]
-G014,2023/01,Indefinido,GAE349,Marketing Digital,4,eletiva,, ,[]
-G014,2023/01,Indefinido,GAP101,Contabilidade Geral,4,eletiva,, ,[]
-G014,2015/02,Indefinido,GAP128,Tópicos em Comportamento Social,4,eletiva,, ,[]
-G014,2023/01,Indefinido,GCH102,Introdução à Filosofia,4,eletiva,, ,[]
-G014,2023/01,Indefinido,GCH104,Sociologia,4,eletiva,, ,[]
-G014,2015/02,Indefinido,GCH113,História da Lógica,4,eletiva,, ,[]
-G014,2015/02,Indefinido,GCH118,Ética I,4,eletiva,, ,[]
-G014,2015/02,Indefinido,GCH122,Ética II,4,eletiva,, ,[]
-G014,2015/02,Indefinido,GCH128,Filosofia da Ciência,4,eletiva,, ,[]
-G014,2015/02,Indefinido,GCH235,Introdução à Filosofia,4,eletiva,, ,[]
-G014,2015/02,Indefinido,GDE123,Educação Trabalho Ciência e Tecnologia,2,eletiva,, ,[]
-G014,2015/02,Indefinido,GDI158,Direito e Cidadania,2,eletiva,, ,[]
-G014,2023/01,Indefinido,GDI169,Direito Administrativo,4,eletiva,, ,[]
-G014,2023/01,Indefinido,GEL102,Leitura e Produção de Textos I,2,eletiva,, ,[]
-G014,2023/01,1,GMM126,Funções Elementares,4,obrigatoria,, ,"[{""id"": ""14A"", ""horarios"": [{""dia"": 2, ""inicio"": 19, ""fim"": 21}, {""dia"": 4, ""inicio"": 19, ""fim"": 21}], ""anp"": false}]"
+G014,2023/01,Indefinido,GCC274,Aplicações de Redes Neurais Artificiais,4,eletiva,,"GMM135, GES107, GAC108","[{""id"": ""10A"", ""horarios"": [{""dia"": 3, ""inicio"": 17, ""fim"": 19}, {""dia"": 7, ""inicio"": 7, ""fim"": 8}], ""anp"": true}, {""id"": ""14A"", ""horarios"": [{""dia"": 3, ""inicio"": 17, ""fim"": 19}, {""dia"": 7, ""inicio"": 7, ""fim"": 8}], ""anp"": true}]"
+G014,2015/02,Indefinido,GAE212,Planejamento e Programação na Administração Pública,4,eletiva,,,[]
+G014,2023/01,Indefinido,GAE349,Marketing Digital,4,eletiva,,,"[{""id"": ""14A"", ""horarios"": [{""dia"": 2, ""inicio"": 17, ""fim"": 19}, {""dia"": 4, ""inicio"": 17, ""fim"": 19}], ""anp"": false}]"
+G014,2023/01,Indefinido,GAP101,Contabilidade Geral,4,eletiva,,,[]
+G014,2015/02,Indefinido,GAP128,Tópicos em Comportamento Social,4,eletiva,,,[]
+G010,2016/01,Indefinido,GCH113,História da Lógica,4,eletiva,,,[]
+G010,2016/01,Indefinido,GCH118,Ética I,4,eletiva,,,[]
+G010,2016/01,Indefinido,GCH122,Ética II,4,eletiva,,GCH118,[]
+G014,2015/02,Indefinido,GCH128,Filosofia da Ciência,4,eletiva,,,[]
+G014,2015/02,Indefinido,GCH235,Introdução à Filosofia,4,eletiva,,,[]
+G010,2023/01,Indefinido,GDE123,Educação Trabalho Ciência e Tecnologia,2,eletiva,,,[]
+G010,2023/01,Indefinido,GDI158,Direito e Cidadania,2,eletiva,,,[]
+G014,2023/01,Indefinido,GDI169,Direito Administrativo,4,eletiva,,,"[{""id"": ""24A"", ""horarios"": [{""dia"": 4, ""inicio"": 19, ""fim"": 21}, {""dia"": 6, ""inicio"": 19, ""fim"": 21}], ""anp"": false}, {""id"": ""26A"", ""horarios"": [{""dia"": 4, ""inicio"": 19, ""fim"": 21}, {""dia"": 6, ""inicio"": 19, ""fim"": 21}], ""anp"": false}]"
+G014,2023/01,Indefinido,GEL102,Leitura e Produção de Textos I,2,eletiva,,,"[{""id"": ""26A"", ""horarios"": [{""dia"": 6, ""inicio"": 19, ""fim"": 21}], ""anp"": false}]"
+G010,2023/01,2,GCC260,Laboratório de Circuitos Digitais,2,obrigatoria,,,[]
+G010,2023/01,2,GCC261,Introdução aos Circuitos Digitais,4,obrigatoria,,,[]
+G010,2016/01,8,PRG610,Estágio Supervisionado/TCC,30,obrigatoria,,,[]
+G010,2023/01,Indefinido,GES103,Geoestatística,4,eletiva,,,[]
+G014,2023/01,1,GMM126,Funções Elementares,4,obrigatoria,,,"[{""id"": ""14A"", ""horarios"": [{""dia"": 2, ""inicio"": 19, ""fim"": 21}, {""dia"": 4, ""inicio"": 19, ""fim"": 21}], ""anp"": false}]"
+G010,2023/01,Indefinido,GMM128,Trigonometria e Números Complexos,2,eletiva,,,[]
+G010,2023/01,Indefinido,GMM133,Análise Combinatória e Probabilidade,4,eletiva,,,[]
+G010,2023/01,Indefinido,GMM134,Introdução à Álgebra Linear,2,eletiva,,,[]
+G014,2023/01,Indefinido,GCH110,Psicologia,2,eletiva,,,"[{""id"": ""23A"", ""horarios"": [{""dia"": 2, ""inicio"": 13, ""fim"": 15}], ""anp"": false}, {""id"": ""24A"", ""horarios"": [{""dia"": 2, ""inicio"": 13, ""fim"": 15}], ""anp"": false}]"
+G010,2023/01,Indefinido,GCH189,Ciências Políticas,4,eletiva,,,[]
+G014,2023/01,Indefinido,GCH268,Ética,5,eletiva,,,"[{""id"": ""24A"", ""horarios"": [{""dia"": 4, ""inicio"": 21, ""fim"": 23}, {""dia"": 5, ""inicio"": 19, ""fim"": 21}, {""dia"": 7, ""inicio"": 15, ""fim"": 16}], ""anp"": true}]"
+G010,2023/01,Indefinido,GCH300,Lógica: História e Fundamentos,5,eletiva,,,[]
+G010,2023/01,Indefinido,GNU191,Saúde e cuidados na primeira infância,2,eletiva,,,[]
+G010,2023/01,Indefinido,GNU192,Saúde e cuidados da mulher no pós parto,2,eletiva,,,[]
 G014,2023/01,2,GAC125,Introdução à Programação Orientada a Objetos,4,obrigatoria,,GAC124,"[{""id"": ""14A"", ""horarios"": [{""dia"": 2, ""inicio"": 19, ""fim"": 21}, {""dia"": 7, ""inicio"": 10, ""fim"": 11}], ""anp"": true}, {""id"": ""14B"", ""horarios"": [{""dia"": 4, ""inicio"": 19, ""fim"": 21}, {""dia"": 7, ""inicio"": 10, ""fim"": 11}], ""anp"": true}]"
-G014,2023/01,3,GCC265,Mentoria Acadêmica I,2,obrigatoria,, ,[]
-G014,2023/01,7,GCC266,Mentoria Acadêmica II,2,obrigatoria,, ,[]
-G014,2023/01,7,GCC267,Projeto Integrador I,4,obrigatoria,, ,[]
-G014,2023/01,Indefinido,GAC111,Técnicas de Programação Aplicada à Engenharia,6,eletiva,,GAC124,[]
-G014,2023/01,Indefinido,GAE225,Gestão e Desenvolvimento de Pessoas no Setor Público,4,eletiva,, ,[]
-G014,2023/01,Indefinido,GAE324,Comportamento Humano nas Organizações,4,eletiva,, ,[]
-G014,2023/01,Indefinido,GCH110,Psicologia,2,eletiva,, ,[]
-G014,2023/01,Indefinido,GCH268,Ética,5,eletiva,, ,[]
-G014,2023/01,Indefinido,GCH272,Lógica: História e Fundamentos,5,eletiva,, ,[]
-G014,2023/01,Indefinido,GDI166,Legislação e Direito Ambiental,4,eletiva,, ,[]
-G014,2023/01,Indefinido,GDI201,Direito Internacional dos Direitos Humanos,2,eletiva,, ,[]
-G014,2023/01,Indefinido,GDI256,Desenvolvimento Sustentável,2,eletiva,, ,[]
+G014,2023/01,3,GCC265,Mentoria Acadêmica I,2,obrigatoria,,,[]
+G014,2023/01,7,GCC266,Mentoria Acadêmica II,2,obrigatoria,,,"[{""id"": ""14A"", ""horarios"": [{""dia"": 3, ""inicio"": 21, ""fim"": 23}], ""anp"": false}]"
+G014,2023/01,7,GCC267,Projeto Integrador I,4,obrigatoria,,,"[{""id"": ""14A"", ""horarios"": [{""dia"": 5, ""inicio"": 21, ""fim"": 23}, {""dia"": 7, ""inicio"": 8, ""fim"": 9}], ""anp"": true}]"
+G014,2023/01,Indefinido,GAC111,Técnicas de Programação Aplicada à Engenharia,6,eletiva,,GAC124,"[{""id"": ""22A"", ""horarios"": [{""dia"": 3, ""inicio"": 8, ""fim"": 10}, {""dia"": 4, ""inicio"": 10, ""fim"": 12}, {""dia"": 5, ""inicio"": 8, ""fim"": 10}], ""anp"": false}, {""id"": ""22B"", ""horarios"": [{""dia"": 3, ""inicio"": 8, ""fim"": 10}, {""dia"": 4, ""inicio"": 10, ""fim"": 12}, {""dia"": 5, ""inicio"": 10, ""fim"": 12}], ""anp"": false}]"
+G014,2023/01,Indefinido,GAE225,Gestão e Desenvolvimento de Pessoas no Setor Público,4,eletiva,,,"[{""id"": ""26A"", ""horarios"": [{""dia"": 2, ""inicio"": 21, ""fim"": 23}, {""dia"": 4, ""inicio"": 21, ""fim"": 23}], ""anp"": false}]"
+G014,2023/01,Indefinido,GAE324,Comportamento Humano nas Organizações,4,eletiva,,,[]
+G014,2023/01,Indefinido,GCH272,Lógica: História e Fundamentos,5,eletiva,,,[]
+G014,2023/01,Indefinido,GDI166,Legislação e Direito Ambiental,4,eletiva,,,"[{""id"": ""12A"", ""horarios"": [{""dia"": 3, ""inicio"": 16, ""fim"": 18}, {""dia"": 5, ""inicio"": 10, ""fim"": 12}], ""anp"": false}, {""id"": ""19A"", ""horarios"": [{""dia"": 3, ""inicio"": 16, ""fim"": 18}, {""dia"": 5, ""inicio"": 10, ""fim"": 12}], ""anp"": false}]"
+G014,2023/01,Indefinido,GDI201,Direito Internacional dos Direitos Humanos,2,eletiva,,,[]
+G014,2023/01,Indefinido,GDI256,Desenvolvimento Sustentável,2,eletiva,,,[]

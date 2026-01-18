@@ -92,6 +92,17 @@
   gap: 10px;
 }
 
+/* Ensure elective groups use the same spacing as the main materias list */
+.calendar__eletiva-group {
+  margin-bottom: 10px; /* slight separation between groups */
+}
+
+.calendar__eletiva-group-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* match .calendar__materias gap */
+}
+
 /* Card de matéria arrastável */
 .materia-card {
   background: var(--color-surface-light);

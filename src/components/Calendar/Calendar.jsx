@@ -55,6 +55,32 @@ const Calendar = forwardRef(({
   const horarios = gerarHorarios(6, 23);
   const baseHour = 6; // used to compute numeric hour from index
 
+  // The CSV uses 1 = Domingo, 2 = Segunda, ..., 7 = Sábado (as in your example).
+  // Map that to 0..6 by shifting -1 (n-1 mod 7). Force mapping 'B' to avoid ambiguous heuristics.
+  const dayMappingMode = 'B';
+
+  // normalize dia numbers coming from CSV / data sources
+  // We accept:
+  // - 0..6 (0=Dom, 6=Sáb) -> keep
+  // - 1..7 with convention 1=Dom ... 7=Sáb -> map to 0..6 via (n-1) mod 7
+  // - strings (e.g., 'Dom','Seg') -> map by matching DIAS_SEMANA
+  const normalizeDia = (d) => {
+    if (d == null) return d;
+    const n = Number(d);
+    if (!Number.isNaN(n)) {
+      if (n >= 0 && n <= 6) return n;
+      if (n >= 1 && n <= 7) {
+        // mapping B: shift by -1 (1->0, 2->1, ..., 7->6)
+        return ((n + 6) % 7 + 7) % 7;
+      }
+      return n;
+    }
+    // try string names (case-insensitive, first 3 letters)
+    const s = String(d).toLowerCase().slice(0,3);
+    const idx = DIAS_SEMANA.findIndex(x => x.toLowerCase().slice(0,3) === s);
+    return idx !== -1 ? idx : d;
+  };
+
   // Obtém matérias disponíveis para o semestre atual
   const getMateriasDisponiveis = () => {
     const materiasDoSemestre = materiasPorSemestre[semestreAtual] || [];
@@ -100,7 +126,9 @@ const Calendar = forwardRef(({
     const found = [];
     for (const [codigo, materiaData] of Object.entries(materiasNoCalendario)) {
       for (const h of (materiaData.horarios || [])) {
-        if (h && h.dia === diaIdx && hora >= h.inicio && hora < h.fim) {
+        if (!h) continue;
+        const hd = normalizeDia(h.dia);
+        if (hd === diaIdx && hora >= h.inicio && hora < h.fim) {
           found.push({ ...materiaData, codigo });
           break; // avoid duplicate push for same materia
         }
@@ -112,10 +140,12 @@ const Calendar = forwardRef(({
   // Verifica se os horários de uma turma conflitam com matérias já no calendário
   const verificarConflito = (horarios) => {
     for (const horario of horarios) {
+      const hdHorario = normalizeDia(horario.dia);
       for (let hora = horario.inicio; hora < horario.fim; hora++) {
         for (const materia of Object.values(materiasNoCalendario)) {
-          for (const h of materia.horarios) {
-            if (h.dia === horario.dia && hora >= h.inicio && hora < h.fim) {
+          for (const h of materia.horarios || []) {
+            const hd = normalizeDia(h.dia);
+            if (hd === hdHorario && hora >= h.inicio && hora < h.fim) {
               return { temConflito: true, materiaConflito: materia.nome };
             }
           }
@@ -132,8 +162,9 @@ const Calendar = forwardRef(({
 
     for (let i = 0; i < draggingMateria.turmas.length; i++) {
       const turma = draggingMateria.turmas[i];
-      for (const h of turma.horarios) {
-        if (h.dia === diaIdx && hora >= h.inicio && hora < h.fim) {
+      for (const h of (turma.horarios || [])) {
+        const hd = normalizeDia(h.dia);
+        if (hd === diaIdx && hora >= h.inicio && hora < h.fim) {
           return i;
         }
       }
@@ -230,7 +261,8 @@ const Calendar = forwardRef(({
     for (let i = 0; i < draggingMateria.turmas.length; i++) {
       const turma = draggingMateria.turmas[i];
       for (const h of (turma.horarios || [])) {
-        if (h.dia === diaIdx && hora >= h.inicio && hora < h.fim) {
+        const hd = normalizeDia(h.dia);
+        if (hd === diaIdx && hora >= h.inicio && hora < h.fim) {
           const { temConflito } = verificarConflito(turma.horarios || []);
           return {
             turmaIndex: i,
@@ -268,7 +300,7 @@ const Calendar = forwardRef(({
         key={materia.codigo}
         className={cardClasses}
         onMouseDown={(e) => cumprido && handleDragStart(e, materia)}
-        onClick={(e) => {
+        onClick={() => {
           // clicking the card (not the info button) opens the modal; if it's being dragged, ignore click
           if (isBeingDragged) return;
           onMateriaClick?.(materia);
@@ -282,8 +314,8 @@ const Calendar = forwardRef(({
           <span className="materia-card__name">{materia.nome}</span>
           <button
             className="materia-card__info-btn"
-            onClick={(e) => {
-              e.stopPropagation();
+            onClick={(ev) => {
+              ev.stopPropagation();
               onMateriaClick?.(materia);
             }}
             title="Ver informações"
@@ -377,10 +409,36 @@ const Calendar = forwardRef(({
                     Nenhuma eletiva disponível com os pré-requisitos cumpridos.
                   </p>
                 ) : (
-                  eletivasDisponiveis.map(materia => renderMateriaCard(materia, 'eletiva'))
-                )}
-              </div>
-            )}
+                  (() => {
+                    // group by subgrupo string coming from CSV (use exact label in CSV)
+                    const groups = eletivasDisponiveis.reduce((acc, m) => {
+                      const raw = (m.subgrupo || 'Outros').toString().trim();
+                      const key = raw || 'Outros';
+                      if (!acc[key]) acc[key] = [];
+                      acc[key].push(m);
+                      return acc;
+                    }, {});
+
+                    // order keys so consistent display (you can customize order later)
+                    const orderedKeys = Object.keys(groups).sort((a,b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+
+                    return orderedKeys.map(key => {
+                      const label = key.toString();
+                      // if CSV already contains 'Subgrupo' prefix, don't duplicate
+                      const title = /subgrupo/i.test(label) ? label : `Subgrupo: ${label}`;
+                      return (
+                        <div key={key} className="calendar__eletiva-group">
+                          <h5 className="calendar__eletiva-group-title">{title}</h5>
+                          <div className="calendar__eletiva-group-list">
+                            {groups[key].map(materia => renderMateriaCard(materia, 'eletiva'))}
+                          </div>
+                        </div>
+                      );
+                    });
+                  })()
+                 )}
+               </div>
+             )}
           </div>
         </div>
 

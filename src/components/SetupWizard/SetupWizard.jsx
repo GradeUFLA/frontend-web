@@ -1,7 +1,7 @@
-import { forwardRef, useState } from 'react';
+import { forwardRef, useState, useEffect } from 'react';
 import Stepper, { Step } from '../Stepper';
 import Dropdown from '../Dropdown';
-import { getCursos, getCursoInfo, getMatrizesByCurso, getCursosImplementados } from '../../data';
+import { getCursoInfo, getMatrizesByCurso, getCursosImplementados, ensureCsvLoaded } from '../../data';
 import './SetupWizard.css';
 
 const SetupWizard = forwardRef(({ onComplete, onVoltar, onShowToast }, ref) => {
@@ -9,17 +9,23 @@ const SetupWizard = forwardRef(({ onComplete, onVoltar, onShowToast }, ref) => {
   const [matrizSelecionada, setMatrizSelecionada] = useState(null);
   const [semestreSelecionado, setSemestreSelecionado] = useState(null);
   const [dropdownError, setDropdownError] = useState(false);
+  const [loadingCsv, setLoadingCsv] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        await ensureCsvLoaded();
+      } catch (e) {
+        // ignore
+      }
+      if (mounted) setLoadingCsv(false);
+    })();
+    return () => { mounted = false; };
+  }, []);
 
   const cursoInfo = cursoSelecionado ? getCursoInfo(cursoSelecionado) : null;
-  // prefer matrices from the central data getter, but if it returns only a default/one entry
-  // and the cursoInfo (from CSV) contains a `matrizes` array, prefer that list.
-  let matrizes = cursoSelecionado ? getMatrizesByCurso(cursoSelecionado) : [];
-  if (cursoInfo && Array.isArray(cursoInfo.matrizes) && cursoInfo.matrizes.length > 1) {
-    // If central getter returned only a single fallback matrix, prefer the cursoInfo list
-    if (!matrizes || matrizes.length <= 1) {
-      matrizes = cursoInfo.matrizes.map(m => ({ id: m, nome: m }));
-    }
-  }
+  const matrizes = cursoSelecionado && !loadingCsv ? getMatrizesByCurso(cursoSelecionado) : [];
 
   // Filtra apenas cursos implementados (CSV loader defaults to implemented=true)
   const cursosImplementados = getCursosImplementados();
@@ -124,13 +130,17 @@ const SetupWizard = forwardRef(({ onComplete, onVoltar, onShowToast }, ref) => {
         <Step>
           <h2>Qual é a sua matriz curricular?</h2>
           <p>Selecione a matriz curricular do curso{cursoInfo ? ` de ${cursoInfo.nome}` : ''}</p>
-          <Dropdown
-            options={matrizesOptions}
-            value={matrizSelecionada}
-            onChange={setMatrizSelecionada}
-            placeholder="Selecione a Matriz"
-            error={dropdownError && !matrizSelecionada}
-          />
+          {loadingCsv ? (
+            <div className="setup-wizard__loading">Carregando matrizes...</div>
+          ) : (
+            <Dropdown
+              options={matrizesOptions}
+              value={matrizSelecionada}
+              onChange={setMatrizSelecionada}
+              placeholder="Selecione a Matriz"
+              error={dropdownError && !matrizSelecionada}
+            />
+          )}
         </Step>
 
         <Step>

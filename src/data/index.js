@@ -158,15 +158,17 @@ export function getCursos() {
 // Expose matrizes and course helpers (CSV-aware)
 export function getMatrizesByCurso(cursoId) {
   // Combine matrices from courses CSV and from subjects grouping (if present)
-  const matrizesSet = new Set();
-
+  // If the courses CSV explicitly lists matrizes for this course, prefer them exactly as provided.
   if (csvCursos && Array.isArray(csvCursos)) {
     const curso = csvCursos.find(c => c.id === cursoId);
-    if (curso && Array.isArray(curso.matrizes)) {
-      curso.matrizes.forEach(m => matrizesSet.add(m));
+    if (curso && Array.isArray(curso.matrizes) && curso.matrizes.length > 0) {
+      const keys = curso.matrizes.slice().sort((a,b) => String(b).localeCompare(String(a)));
+      return keys.map(k => ({ id: k, nome: k }));
     }
   }
 
+  // Otherwise, fall back to matrizes discovered by scanning the subjects CSV (older behavior)
+  const matrizesSet = new Set();
   if (csvDadosPorCurso && csvDadosPorCurso[cursoId]) {
     const matrizesObj = csvDadosPorCurso[cursoId].matrizes || {};
     Object.keys(matrizesObj || {}).forEach(k => matrizesSet.add(k));

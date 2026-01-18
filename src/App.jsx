@@ -122,10 +122,12 @@ function App() {
 
   // Handlers do calendário
   const handleAddMateria = (materia) => {
-    // Detect if incoming materia has any Saturday horario (dia === 6) -> treat as ANP
-    const incomingHasSaturday = (materia.horarios || []).some(h => h && h.dia === 6);
+    // If the selected turma has only saturday horários (ANP-only), auto-place on the next free saturday block.
+    // But if the turma includes weekday horários as well, keep all horários as provided.
+    const horariosArray = materia.horarios || [];
+    const hasAnyWeekday = horariosArray.some(h => h && h.dia !== 6);
 
-    if (incomingHasSaturday) {
+    if (!hasAnyWeekday && horariosArray.length > 0 && horariosArray.some(h => h && h.dia === 6)) {
       // Build set of occupied saturday hours (consider ALL existing materias)
       const occupied = new Set();
       Object.values(materiasNoCalendario).forEach(m => {
@@ -162,7 +164,7 @@ function App() {
       return;
     }
 
-    // normal add (from drag selection)
+    // normal add (from drag selection) - keep all horários (weekday + saturday if present)
     setMateriasNoCalendario(prev => ({
       ...prev,
       [materia.codigo]: materia

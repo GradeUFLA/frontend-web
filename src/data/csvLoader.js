@@ -127,6 +127,27 @@ export async function loadMaterias() {
     if (turmasField) {
       try {
         turmas = JSON.parse(turmasField);
+        // Normalize horario.dia values to 0..6 convention (0=Dom, 6=Sáb)
+        if (Array.isArray(turmas)) {
+          turmas.forEach(t => {
+            if (t && Array.isArray(t.horarios)) {
+              t.horarios.forEach(h => {
+                if (!h || h.dia == null) return;
+                const nd = Number(h.dia);
+                if (!Number.isNaN(nd)) {
+                  // If dia is in 1..7 (as in CSV: 1=Dom .. 7=Sáb), map to 0..6 by shifting -1
+                  if (nd >= 1 && nd <= 7) {
+                    h.dia = ((nd + 6) % 7 + 7) % 7; // 1->0, 2->1, ...,7->6
+                  } else if (nd >= 0 && nd <= 6) {
+                    h.dia = nd; // already normalized
+                  } else {
+                    h.dia = nd;
+                  }
+                }
+              });
+            }
+          });
+        }
       } catch (e) {
         // not JSON, attempt to parse simple ';' separated list like "A:1-3|2-4"
         // but default to empty list
