@@ -3,15 +3,6 @@
  * Matriz Curricular 2023/1
  */
 
-// Helper para criar turma padrão
-const criarTurmaPadrao = (dia1, inicio1, fim1, dia2 = null, inicio2 = null, fim2 = null) => {
-  const horarios = [{ dia: dia1, inicio: inicio1, fim: fim1 }];
-  if (dia2 !== null) {
-    horarios.push({ dia: dia2, inicio: inicio2, fim: fim2 });
-  }
-  return [{ id: "A", horarios }];
-};
-
 // Helper para criar múltiplas turmas
 const criarTurmas = (...turmasConfig) => {
   return turmasConfig.map((config, idx) => {

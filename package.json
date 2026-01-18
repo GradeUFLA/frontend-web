@@ -1,7 +1,8 @@
 {
-  "name": "untitled",
+  "name": "gradeufla",
   "version": "0.1.0",
   "private": true,
+  "description": "GradeUFLA - Montador de grade horária para UFLA",
   "dependencies": {
     "@flaticon/flaticon-uicons": "^3.3.1",
     "@testing-library/dom": "^10.4.1",

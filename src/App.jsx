@@ -13,7 +13,7 @@ import {
 import SetupWizard from './components/SetupWizard';
 
 // Data
-import { getMateriasPorSemestre, getEletivas, ensureCsvLoaded, getCursoInfo } from './data';
+import { getMateriasPorSemestre, getEletivas, ensureCsvLoaded } from './data';
 
 // Styles
 import './styles/global.css';
@@ -42,8 +42,7 @@ function App() {
   // Hook de toast para notificações
   const { toasts, addToast, removeToast } = useToast();
 
-  // Obtém dados do curso selecionado
-  const cursoInfo = cursoSelecionado ? getCursoInfo(cursoSelecionado) : null;
+  // Obtém dados do curso selecionado (consultas a curso são feitas nos componentes que precisarem)
 
   // Usa curso + matriz para obter matérias (por enquanto só curso, depois pode expandir)
   const materiasPorSemestre = cursoSelecionado ? getMateriasPorSemestre(cursoSelecionado, undefined, matrizSelecionada) : {};

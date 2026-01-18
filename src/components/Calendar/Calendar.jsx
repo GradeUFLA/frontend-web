@@ -56,9 +56,7 @@ const Calendar = forwardRef(({
   const baseHour = 6; // used to compute numeric hour from index
 
   // The CSV uses 1 = Domingo, 2 = Segunda, ..., 7 = Sábado (as in your example).
-  // Map that to 0..6 by shifting -1 (n-1 mod 7). Force mapping 'B' to avoid ambiguous heuristics.
-  const dayMappingMode = 'B';
-
+  // Map that to 0..6 by shifting -1 (n-1 mod 7).
   // normalize dia numbers coming from CSV / data sources
   // We accept:
   // - 0..6 (0=Dom, 6=Sáb) -> keep
@@ -277,6 +275,114 @@ const Calendar = forwardRef(({
     return null;
   };
 
+  // ---------- NEW: Export to Google Calendar (.ics) helpers ----------
+  const pad = (n) => String(n).padStart(2, '0');
+
+  const parseHour = (h) => {
+    // support number (8) or string '08:00' or '8:00'
+    if (h == null) return { hour: 0, minute: 0 };
+    if (typeof h === 'number') return { hour: Math.floor(h), minute: Math.round((h - Math.floor(h)) * 60) };
+    if (typeof h === 'string') {
+      const parts = h.split(':');
+      return { hour: Number(parts[0]) || 0, minute: Number(parts[1]) || 0 };
+    }
+    return { hour: 0, minute: 0 };
+  };
+
+  const getNextDateForWeekday = (weekday /*0=Dom..6=Sáb*/, hour = 8, minute = 0) => {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const todayWeekday = today.getDay();
+    let diff = weekday - todayWeekday;
+    if (diff < 0) diff += 7;
+    const result = new Date(today);
+    result.setDate(today.getDate() + diff);
+    result.setHours(hour, minute, 0, 0);
+    return result;
+  };
+
+  const formatDateTimeLocal = (date) => {
+    // Format: YYYYMMDDTHHMMSS
+    return `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}T${pad(date.getHours())}${pad(date.getMinutes())}${pad(date.getSeconds())}`;
+  };
+
+  const buildICS = (entries, weeks = 16) => {
+    // entries: object mapping codigo -> materia data (with horarios array)
+    const lines = [];
+    lines.push('BEGIN:VCALENDAR');
+    lines.push('VERSION:2.0');
+    lines.push('PRODID:-//GradeUFLA//Grade Export//EN');
+    lines.push('CALSCALE:GREGORIAN');
+
+    for (const [codigo, m] of Object.entries(entries)) {
+      const titulo = `${m.nome}`;
+      const descricao = `Código: ${codigo} | Turma: ${m.turmaId || ''} | Créditos: ${m.creditos || ''}`;
+
+      // For each horario of the materia, create an event with weekly recurrence
+      for (const h of (m.horarios || [])) {
+        if (!h) continue;
+        const dia = normalizeDia(h.dia); // 0..6
+        if (typeof dia !== 'number' || dia < 0 || dia > 6) continue;
+
+        const { hour, minute } = parseHour(h.inicio ?? h.start ?? h.hour ?? 0);
+        const { hour: hourEnd, minute: minuteEnd } = parseHour(h.fim ?? h.end ?? (h.inicio ? Number(h.inicio) + 1 : 1));
+
+        const startDate = getNextDateForWeekday(dia, hour, minute);
+        const endDate = new Date(startDate);
+        endDate.setHours(hourEnd, minuteEnd, 0, 0);
+
+        const dtstart = formatDateTimeLocal(startDate);
+        const dtend = formatDateTimeLocal(endDate);
+
+        // Use RRULE weekly for number of occurrences (weeks)
+        lines.push('BEGIN:VEVENT');
+        lines.push(`UID:${codigo}-${m.turmaId || '0'}-${dia}-${hour}-${minute}@gradeufla`);
+        // Use timezone label; Google understands floating times but we'll include TZID as São Paulo
+        lines.push(`DTSTART;TZID=America/Sao_Paulo:${dtstart}`);
+        lines.push(`DTEND;TZID=America/Sao_Paulo:${dtend}`);
+        lines.push(`RRULE:FREQ=WEEKLY;COUNT=${weeks}`);
+        lines.push(`SUMMARY:${escapeICSText(titulo)}`);
+        lines.push(`DESCRIPTION:${escapeICSText(descricao)}`);
+        lines.push('STATUS:CONFIRMED');
+        lines.push('END:VEVENT');
+      }
+    }
+
+    lines.push('END:VCALENDAR');
+    return lines.join('\r\n');
+  };
+
+  function escapeICSText(txt = '') {
+    return String(txt).replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/,/g, '\,');
+  }
+
+  const exportToICS = (weeks = 16) => {
+    if (!materiasNoCalendario || Object.keys(materiasNoCalendario).length === 0) {
+      onShowToast?.('Não há disciplinas no calendário para exportar.', 'info');
+      return;
+    }
+
+    try {
+      const ics = buildICS(materiasNoCalendario, weeks);
+      const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `grade-ufla.ics`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+
+      // Open Google Calendar import page in new tab (user still needs to upload the .ics file)
+      window.open('https://calendar.google.com/calendar/u/0/r/import', '_blank');
+      onShowToast?.('Arquivo .ics gerado. Abra a aba do Google Calendar e importe o arquivo.', 'success');
+    } catch (err) {
+      console.error('Erro ao gerar .ics', err);
+      onShowToast?.('Erro ao gerar arquivo .ics', 'error');
+    }
+  };
+
   const totalCreditos = Object.values(materiasNoCalendario).reduce((acc, m) => acc + m.creditos, 0);
   const { obrigatorias, pendentes, eletivas: eletivasDisponiveis } = getMateriasDisponiveis();
 
@@ -446,6 +552,13 @@ const Calendar = forwardRef(({
         <div className="calendar__wrapper">
           <div className="calendar__title-container">
             <h2 className="calendar__title">Sua Grade - {semestreAtual}º Semestre</h2>
+
+            {/* Export button */}
+            <div className="calendar__export">
+              <button className="btn-export" onClick={() => exportToICS(16)} title="Exportar para Google Calendar">
+                <i className="fi fi-br-calendar"></i> Exportar p/ Google Calendar
+              </button>
+            </div>
 
             {/* Popup flutuante - Legenda das turmas durante o drag */}
             {isDragging && draggingMateria && (
