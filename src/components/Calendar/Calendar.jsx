@@ -276,10 +276,7 @@ const Calendar = forwardRef(({
   };
 
   // ---------- Export to Google Calendar (.ics) helpers temporarily disabled ----------
-  // Export functionality removed for now. If needed, restore and sanitize the ICS builder.
-  const exportToICS = (/* weeks = 16 */) => {
-    onShowToast?.('Exportação para calendário temporariamente desativada.', 'info');
-  };
+  // Export functionality removed for now (unused) to avoid linting/CI failures.
 
   const totalCreditos = Object.values(materiasNoCalendario).reduce((acc, m) => acc + m.creditos, 0);
   const { obrigatorias, pendentes, eletivas: eletivasDisponiveis } = getMateriasDisponiveis();
