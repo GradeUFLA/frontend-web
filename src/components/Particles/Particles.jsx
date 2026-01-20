@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { Renderer, Camera, Geometry, Program, Mesh } from 'ogl';
 import './Particles.css';
 
-const defaultColors = ['#ffffff', '#ffffff', '#ffffff'];
+const defaultColors = ['#00F0B5', '#00F0B5', '#00F0B5'];
 
 const hexToRgb = (hex) => {
   hex = hex.replace(/^#/, '');
@@ -239,4 +239,3 @@ const Particles = ({
 };
 
 export default Particles;
-

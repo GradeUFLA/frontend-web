@@ -17,6 +17,52 @@ export function loadCsv(path) {
     }));
 }
 
+// Try parsing a prereq string like "Forte: A, B; Minimo: C; Co-requisito: D" into structured object
+function parsePreRequisitosString(preField) {
+  const result = { forte: [], minimo: [], coreq: [] };
+  if (!preField) return result;
+  const s = preField.toString().trim();
+  if (!s) return result;
+
+  // split by semicolon or new line to separate labeled groups
+  const parts = s.split(/[;\n]+/).map(p => p.trim()).filter(Boolean);
+  const hasLabel = /\bForte\b|\bMinimo\b|\bCo-?requisito\b/i.test(s);
+
+  if (!hasLabel) {
+    // split by commas or slashes or pipes as fallback (use RegExp constructor to avoid needing to escape '/').
+    /* eslint-disable-next-line no-useless-escape */
+    const items = s.split(new RegExp('[,|/]+')).map(x => x.trim()).filter(Boolean);
+    result.forte = items;
+    return result;
+  }
+
+  parts.forEach(part => {
+    let m;
+    if ((m = part.match(/Forte\s*:\s*(.*)/i))) {
+      const list = m[1].split(/[;,]+/).map(x => x.trim()).filter(Boolean);
+      result.forte.push(...list);
+    } else if ((m = part.match(/Minimo\s*:\s*(.*)/i))) {
+      const list = m[1].split(/[;,]+/).map(x => x.trim()).filter(Boolean);
+      result.minimo.push(...list);
+    } else if ((m = part.match(/Co-?requisito\s*:\s*(.*)/i))) {
+      const list = m[1].split(/[;,]+/).map(x => x.trim()).filter(Boolean);
+      result.coreq.push(...list);
+    } else {
+      // unlabeled fragment -> treat as forte entries
+      const list = part.split(/[;,]+/).map(x => x.trim()).filter(Boolean);
+      result.forte.push(...list);
+    }
+  });
+
+  // normalize codes (trim and remove stray punctuation)
+  /* eslint-disable-next-line no-useless-escape */
+  ['forte', 'minimo', 'coreq'].forEach(k => {
+    result[k] = result[k].map(code => (code || '').toString().replace(/[^A-Za-z0-9_-]/g, '').toUpperCase()).filter(Boolean);
+  });
+
+  return result;
+}
+
 async function tryLoad(paths) {
   for (const p of paths) {
     try {
@@ -113,20 +159,20 @@ export async function loadMaterias() {
     const tipo = (r.tipo || r.type || 'obrigatoria').toString().trim();
     const subgrupo = (r.subgrupo || r.subgroup || '').toString().trim() || undefined;
 
-    // preRequisitos may be a comma-separated string
-    const preField = r.preRequisitos || r.preRequisitos || r.prerequisitos || r.prereqs || r.requisitos || '';
-    const pre = (preField || '')
-      .toString()
-      .split(',')
-      .map(s => s.trim())
-      .filter(Boolean);
+    // preRequisitos may be a labeled string in the CSV; parse into structured object
+    const preField = r.preRequisitos || r.prerequisitos || r.prereqs || r.requisitos || '';
+    const preDetalhado = parsePreRequisitosString(preField);
+    // flat array for backward compatibility
+    const preFlat = [...new Set([...(preDetalhado.forte || []), ...(preDetalhado.minimo || []), ...(preDetalhado.coreq || [])])];
 
     // turmas may be JSON in the CSV cell or a simple notation; try JSON parse, fallback to empty
     let turmas = [];
     const turmasField = r.turmas || r.turmas_json || r.classes || '';
     if (turmasField) {
       try {
-        turmas = JSON.parse(turmasField);
+        // Remove wrapping quotes if present
+        const raw = typeof turmasField === 'string' ? turmasField.trim().replace(/^"|"$/g, '') : turmasField;
+        turmas = JSON.parse(raw);
         // Normalize horario.dia values to 0..6 convention (0=Dom, 6=Sáb)
         if (Array.isArray(turmas)) {
           turmas.forEach(t => {
@@ -135,23 +181,58 @@ export async function loadMaterias() {
                 if (!h || h.dia == null) return;
                 const nd = Number(h.dia);
                 if (!Number.isNaN(nd)) {
-                  // If dia is in 1..7 (as in CSV: 1=Dom .. 7=Sáb), map to 0..6 by shifting -1
                   if (nd >= 1 && nd <= 7) {
-                    h.dia = ((nd + 6) % 7 + 7) % 7; // 1->0, 2->1, ...,7->6
+                    h.dia = ((nd + 6) % 7 + 7) % 7;
                   } else if (nd >= 0 && nd <= 6) {
-                    h.dia = nd; // already normalized
+                    h.dia = nd;
                   } else {
                     h.dia = nd;
                   }
+                }
+                // also normalize times like "08:00" to number hours
+                if (typeof h.inicio === 'string') {
+                  const m = h.inicio.match(/^(\d{1,2})(?::(\d{2}))?/);
+                  if (m) h.inicio = parseInt(m[1], 10);
+                }
+                if (typeof h.fim === 'string') {
+                  const m2 = h.fim.match(/^(\d{1,2})(?::(\d{2}))?/);
+                  if (m2) h.fim = parseInt(m2[1], 10);
                 }
               });
             }
           });
         }
       } catch (e) {
-        // not JSON, attempt to parse simple ';' separated list like "A:1-3|2-4"
-        // but default to empty list
-        turmas = [];
+        // not JSON, attempt simple parsing: format like "id:10A|horarios:3-8,5-8,7-9;anp:false"
+        const raw = (typeof turmasField === 'string' ? turmasField.trim() : '');
+        if (raw) {
+          const items = raw.split(/\s*;\s*/).filter(Boolean);
+          turmas = items.map(it => {
+            const obj = { id: null, horarios: [], anp: false };
+            const parts = it.split(/\s*\|\s*/).filter(Boolean);
+            parts.forEach(p => {
+              const [k, v] = p.split(/\s*:\s*/);
+              if (!k) return;
+              const key = k.toLowerCase().trim();
+              if (key === 'id') obj.id = v;
+              else if (key === 'anp') obj.anp = String(v).toLowerCase() === 'true';
+              else if (key === 'horarios') {
+                const hs = v.split(/\s*,\s*/).filter(Boolean);
+                hs.forEach(hsItem => {
+                  const mm = hsItem.match(/(\d)\s*-\s*(\d+)/);
+                  if (mm) {
+                    const dia = Number(mm[1]);
+                    const inicio = Number(mm[2]);
+                    obj.horarios.push({ dia: dia >=1 && dia <=7 ? ((dia+6)%7) : dia, inicio, fim: inicio+1 });
+                  }
+                });
+              }
+            });
+            return obj;
+          });
+        } else {
+          turmas = [];
+        }
       }
     }
 
@@ -164,7 +245,8 @@ export async function loadMaterias() {
       creditos,
       tipo,
       subgrupo,
-      preRequisitos: pre,
+      preRequisitos: preFlat, // legacy consumers expect array
+      preRequisitosDetalhada: preDetalhado,
       turmas
     };
   });

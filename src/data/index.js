@@ -208,9 +208,7 @@ export function buscarCursos(termo) {
 }
 
 // Re-export small utility wrappers that other modules expect (use CSV data when possible)
-export function verificarPreRequisitos(materia, materiasAprovadas) {
-  return materiasModule.verificarPreRequisitos(materia, materiasAprovadas);
-}
+// (removed old simple re-export to avoid duplicate export; use detailed implementation below)
 
 export function getNomeMateria(codigo) {
   // prefer CSV data
@@ -237,3 +235,43 @@ export function getNomeMateria(codigo) {
 
 // make loader available to app so it can await CSV load
 export { loadDataFromCsv as ensureCsvLoaded };
+
+// Detailed prereq verifier using CSV parsed structure when available
+export function verificarPreRequisitosDetalhada(materia, materiasAprovadas, materiasNoCalendario = {}) {
+  // materia may have preRequisitosDetalhada (from CSV) or simple preRequisitos array
+  const pad = materia?.preRequisitosDetalhada;
+  if (!pad) {
+    // fallback: treat all preRequisitos as 'forte'
+    const faltando = (materia.preRequisitos || []).filter(pr => !materiasAprovadas.includes(pr));
+    return { cumprido: faltando.length === 0, faltandoForte: faltando, faltandoMinimo: [], faltandoCoreq: [] };
+  }
+
+  const faltandoForte = (pad.forte || []).filter(pr => !materiasAprovadas.includes(pr));
+  const faltandoMinimo = (pad.minimo || []).filter(pr => {
+    // minimo: student must have taken previously (may have failed). We'll treat 'aprovadas' as only approved ones.
+    // If not approved, check if they were taken but failed -- we don't have that info, so assume not approved => missing.
+    return !materiasAprovadas.includes(pr);
+  });
+  const faltandoCoreq = (pad.coreq || []).filter(pr => {
+    // coreq: allowed only if co-req already in calendar or approved
+    return !(materiasAprovadas.includes(pr) || Object.keys(materiasNoCalendario || {}).includes(pr));
+  });
+
+  const anyMissing = (faltandoForte.length > 0) || (faltandoMinimo.length > 0) || (faltandoCoreq.length > 0);
+
+  return {
+    cumprido: !anyMissing,
+    faltandoForte,
+    faltandoMinimo,
+    faltandoCoreq
+  };
+}
+
+// Backwards-compatible wrapper
+export function verificarPreRequisitos(materia, materiasAprovadas, materiasNoCalendario = {}) {
+  const det = verificarPreRequisitosDetalhada(materia, materiasAprovadas, materiasNoCalendario);
+  // For legacy callers, return { cumprido, faltando } where faltando is forte + minimo + coreq
+  const faltando = [...(det.faltandoForte || []), ...(det.faltandoMinimo || []), ...(det.faltandoCoreq || [])];
+  return { cumprido: det.cumprido, faltando };
+}
+

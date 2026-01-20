@@ -1,6 +1,6 @@
 import { forwardRef, useState, useRef } from 'react';
 import {
-  verificarPreRequisitos,
+  verificarPreRequisitosDetalhada,
   getNomeMateria
 } from '../../data';
 import './Calendar.css';
@@ -41,7 +41,10 @@ const Calendar = forwardRef(({
   onRemoveMateria,
   onMateriaClick,
   onVoltar,
-  onShowToast
+  onShowToast,
+  onToggleAprovada,
+  materiasMinimoConfirmadas = [],
+  onConfirmMinimo
 }, ref) => {
   const [mostrarEletivas, setMostrarEletivas] = useState(false);
   const [eletivasQuery, setEletivasQuery] = useState('');
@@ -54,6 +57,7 @@ const Calendar = forwardRef(({
   const [dragPosition, setDragPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [selectedTurmaIndex, setSelectedTurmaIndex] = useState(null);
+  const [minimoModal, setMinimoModal] = useState({ open: false, prereq: null, parent: null });
 
   const calendarTableRef = useRef(null);
 
@@ -178,10 +182,30 @@ const Calendar = forwardRef(({
   };
 
   // Inicia o drag
-  const handleDragStart = (e, materia) => {
-    const { cumprido, faltando } = verificarPreRequisitos(materia, materiasAprovadas);
-    if (!cumprido) {
-      onShowToast?.(`Pré-requisitos não cumpridos: ${faltando.map(f => getNomeMateria(f)).join(', ')}`, 'error');
+  const handleDragStart = async (e, materia) => {
+    // Use detailed prereq check
+    const det = verificarPreRequisitosDetalhada(materia, materiasAprovadas, materiasNoCalendario);
+
+    // If missing forte prerequisites -> block
+    if (det.faltandoForte && det.faltandoForte.length > 0) {
+      onShowToast?.(`Pré-requisitos fortes faltando: ${det.faltandoForte.map(f => getNomeMateria(f)).join(', ')}`, 'error');
+      return; // block
+    }
+
+    // If missing coreq -> block and show notification (yellow border)
+    if (det.faltandoCoreq && det.faltandoCoreq.length > 0) {
+      onShowToast?.(`Co-requisito(s) necessários: ${det.faltandoCoreq.map(f => getNomeMateria(f)).join(', ')}`, 'warn');
+      return;
+    }
+
+    // If missing minimo prerequisites -> filter out those already confirmed; if remaining, open the confirm modal
+    const faltandoMinimoRaw = det.faltandoMinimo || [];
+    const faltandoMinimoAtivos = faltandoMinimoRaw.filter(pr => !materiasMinimoConfirmadas.includes(pr));
+    if (faltandoMinimoAtivos.length > 0) {
+      // open modal to confirm the first missing minimo prereq
+      openMinimoConfirm(faltandoMinimoAtivos[0], materia.codigo);
+      // stop drag flow; user must confirm then try again
+      onShowToast?.(`Confirme o pré-requisito mínimo ${getNomeMateria(faltandoMinimoAtivos[0])} para destravar esta matéria.`, 'info');
       return;
     }
 
@@ -316,7 +340,15 @@ const Calendar = forwardRef(({
 
   const renderMateriaCard = (materia, tipo = 'obrigatoria') => {
     const jaNoCalendario = materiasNoCalendario[materia.codigo];
-    const { cumprido, faltando } = verificarPreRequisitos(materia, materiasAprovadas);
+    const det = verificarPreRequisitosDetalhada(materia, materiasAprovadas, materiasNoCalendario);
+    // filter minimo prereqs using confirmed list so confirmed mínimo prereqs are ignored
+    const faltandoForte = det.faltandoForte || [];
+    const faltandoMinimoRaw = det.faltandoMinimo || [];
+    const faltandoMinimo = faltandoMinimoRaw.filter(pr => !materiasMinimoConfirmadas.includes(pr));
+    const faltandoCoreq = det.faltandoCoreq || [];
+    // If only faltandoMinimo remain but they've been confirmed, consider the materia "destravada" (cumpridoAdjusted)
+    const cumpridoAdjusted = (faltandoForte.length === 0) && (faltandoCoreq.length === 0) && (faltandoMinimo.length === 0);
+
     const isBeingDragged = isDragging && draggingMateria?.codigo === materia.codigo;
 
     if (jaNoCalendario) return null;
@@ -325,19 +357,24 @@ const Calendar = forwardRef(({
       'materia-card',
       tipo === 'pendente' && 'materia-card--pending',
       tipo === 'eletiva' && 'materia-card--elective',
-      !cumprido && 'materia-card--blocked',
+      !cumpridoAdjusted && 'materia-card--blocked',
       isBeingDragged && 'materia-card--dragging-origin'
     ].filter(Boolean).join(' ');
+
+    // determine visual indicator color for missing type
+    let missingBadge = null;
+    if (faltandoForte.length > 0) missingBadge = { color: 'red', text: `Falta: ${faltandoForte.map(f => getNomeMateria(f)).join(', ')}` };
+    else if (faltandoMinimo.length > 0) missingBadge = { color: 'orange', text: `Mínimo: ${faltandoMinimo.map(f => getNomeMateria(f)).join(', ')}` };
+    else if (faltandoCoreq.length > 0) missingBadge = { color: '#F9DC5C', text: `Co-req: ${faltandoCoreq.map(f => getNomeMateria(f)).join(', ')}` };
 
     return (
       <div
         key={materia.codigo}
         className={cardClasses}
-        onMouseDown={(e) => cumprido && handleDragStart(e, materia)}
-        // Note: card click no longer opens modal. Modal opens only via the info button (three dots)
+        onMouseDown={(e) => cumpridoAdjusted && handleDragStart(e, materia)}
         style={{
           borderLeftColor: getCorMateria(materia.codigo),
-          cursor: cumprido ? 'grab' : 'not-allowed'
+          cursor: cumpridoAdjusted ? 'grab' : 'not-allowed'
         }}
       >
         <div className="materia-card__header">
@@ -346,7 +383,6 @@ const Calendar = forwardRef(({
             className="materia-card__info-btn"
             onClick={(ev) => {
               ev.stopPropagation();
-              // Sidebar: open modal via info button regardless of calendar state
               onMateriaClick?.(materia);
             }}
             title="Ver informações"
@@ -357,18 +393,63 @@ const Calendar = forwardRef(({
         <div className="materia-card__details">
           <span className="materia-card__code">{materia.codigo}</span>
           <span className="materia-card__credits">{materia.creditos} Créditos</span>
-          <span className="materia-card__turmas-count">{materia.turmas.length} turma{materia.turmas.length > 1 ? 's' : ''}</span>
+          <span className="materia-card__turmas-count">{(materia.turmas||[]).length} turma{(materia.turmas||[]).length > 1 ? 's' : ''}</span>
         </div>
+
         {tipo === 'pendente' && materia.semestreOriginal && (
           <span className="materia-card__semester-badge">{materia.semestreOriginal}º Sem</span>
         )}
-        {!cumprido && (
-          <div className="materia-card__blocked-info">
-            <i className="fi fi-br-lock"></i> Falta: {faltando.map(f => getNomeMateria(f)).join(', ')}
+
+        {/** show blocked info only when not cumpridoAdjusted */}
+        {!cumpridoAdjusted && missingBadge && (
+          <div className="materia-card__blocked-info" style={{ borderColor: missingBadge.color, color: missingBadge.color }}>
+            <i className="fi fi-br-lock"></i>
+            <div>{missingBadge.text}</div>
+            {/* If it's a 'minimo' requirement, show the add button on its own row for spacing */}
+            {faltandoMinimo.length > 0 && faltandoForte.length === 0 && (
+              <div className="materia-card__minimo-actions">
+                <button
+                  className="materia-card__minimo-btn"
+                  onClick={(ev) => { ev.stopPropagation(); openMinimoConfirm(String(faltandoMinimo[0]), materia.codigo); }}
+                  title="Confirmar que cursou e obteve média mínima"
+                >
+                  Adicionar
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
     );
+  };
+
+  const openMinimoConfirm = (prereq, parent) => {
+    // accept prereq as code string or object { codigo }
+    const code = prereq && typeof prereq === 'object' ? (prereq.codigo || prereq.id || '') : String(prereq || '');
+    setMinimoModal({ open: true, prereq: code, parent });
+  };
+  const closeMinimoConfirm = () => setMinimoModal({ open: false, prereq: null, parent: null });
+
+  const confirmMinimo = () => {
+    const prereq = minimoModal.prereq;
+    const codigo = prereq && String(prereq).trim();
+    if (codigo) {
+      // call parent handler to mark this minimo prereq as confirmed (does NOT mark as aprovado)
+      if (typeof onConfirmMinimo === 'function') {
+        onConfirmMinimo(codigo);
+      } else {
+        try {
+          const ev = new CustomEvent('gradeufla-confirm-minimo', { detail: { codigo } });
+          window.dispatchEvent(ev);
+        } catch (e) {}
+      }
+      onShowToast?.(`Pré-requisito ${getNomeMateria(codigo) || codigo} será ignorado como "mínimo" (confirmado).`, 'success');
+      closeMinimoConfirm();
+      return;
+    }
+
+    onShowToast?.('Não foi possível marcar o pré-requisito - tente novamente.', 'error');
+    closeMinimoConfirm();
   };
 
   return (
@@ -704,6 +785,20 @@ const Calendar = forwardRef(({
           }}
         >
           <span>{draggingMateria.nome}</span>
+        </div>
+      )}
+
+      {/* Modal for minimo confirm */}
+      {minimoModal.open && (
+        <div className="minimo-modal-overlay" onClick={closeMinimoConfirm}>
+          <div className="minimo-modal" onClick={(e) => e.stopPropagation()}>
+            <h3>Confirmação - Pré-requisito Mínimo</h3>
+            <p>Você já cursou <strong>{getNomeMateria(minimoModal.prereq)}</strong> sem ter sido reprovado por frequência e obteve média final mínima (≥ 50 pontos)?</p>
+            <div className="minimo-modal-actions">
+              <button className="btn btn-secondary" onClick={closeMinimoConfirm}>Cancelar</button>
+              <button className="btn btn-primary" onClick={confirmMinimo}>Sim, destravar materia</button>
+            </div>
+          </div>
         </div>
       )}
     </section>
