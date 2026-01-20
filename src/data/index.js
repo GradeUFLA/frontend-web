@@ -28,9 +28,7 @@ async function loadDataFromCsv() {
       const cursoKey = m.curso;
       if (!cursoKey) {
         // skip rows without course ID to avoid mixing subjects into the wrong course
-        // Log minimally to aid debugging (won't crash production)
-        // eslint-disable-next-line no-console
-        console.warn('[data] skipping materia with no curso field:', m.codigo || m.nome || m);
+        // previously warned here; removed to avoid console output in production
         return;
       }
 
@@ -62,13 +60,11 @@ async function loadDataFromCsv() {
     } catch (e) {
       // ignore if window is not available
     }
-    console.info('[data] CSV data loaded:', { cursos: cursos.length, cursosKeys: Object.keys(dadosPorCurso).length });
-    // debug: list matrices per course (if available)
-    // eslint-disable-next-line no-console
-    console.debug('[data] matrizes sample:', csvCursos && csvCursos.slice(0,5).map(c => ({ id: c.id, matrizes: c.matrizes })));
+    // CSV data loaded (runtime logging removed)
+    // debug output intentionally removed
     return { cursos, dadosPorCurso };
   } catch (e) {
-    console.warn('[data] CSV load failed, falling back to in-memory data', e);
+    // CSV load failed, falling back to in-memory data (runtime logging removed)
     csvCursos = null;
     csvDadosPorCurso = null;
     return null;
@@ -158,7 +154,7 @@ export function getCursos() {
 // Expose matrizes and course helpers (CSV-aware)
 export function getMatrizesByCurso(cursoId) {
   // Combine matrices from courses CSV and from subjects grouping (if present)
-  // If the courses CSV explicitly lists matrizes for this course, prefer them exactly as provided.
+  // Ifn the courses CSV explicitly lists matrizes for this course, prefer them exactly as provided.
   if (csvCursos && Array.isArray(csvCursos)) {
     const curso = csvCursos.find(c => c.id === cursoId);
     if (curso && Array.isArray(curso.matrizes) && curso.matrizes.length > 0) {
