@@ -45,12 +45,18 @@ const Calendar = forwardRef(({
 }, ref) => {
   const [mostrarEletivas, setMostrarEletivas] = useState(false);
   const [mostrarFuturas, setMostrarFuturas] = useState(false);
+  // Credit limits
+  const CREDIT_WARN = 25;
+  const CREDIT_MAX = 32;
   const [draggingMateria, setDraggingMateria] = useState(null);
   const [dragPosition, setDragPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [selectedTurmaIndex, setSelectedTurmaIndex] = useState(null);
 
   const calendarTableRef = useRef(null);
+
+  // helper: calculate total credits currently in calendar
+  const calcTotalCreditos = () => Object.values(materiasNoCalendario || {}).reduce((acc, m) => acc + (m.creditos || 0), 0);
 
   // generate hours from 06:00 to 23:00
   const horarios = gerarHorarios(6, 23);
@@ -189,6 +195,18 @@ const Calendar = forwardRef(({
     setIsDragging(true);
     setDragPosition({ x: e.clientX, y: e.clientY });
     setSelectedTurmaIndex(null);
+
+    // credit limit checks
+    const currentTotal = calcTotalCreditos();
+    const materiaCred = materia.creditos || 0;
+    if (currentTotal >= CREDIT_MAX) {
+      onShowToast?.(`Limite de créditos atingido (${CREDIT_MAX}). Remova matérias para adicionar mais.`, 'error');
+      return;
+    }
+    if (currentTotal + materiaCred > CREDIT_MAX) {
+      onShowToast?.('Adicionar esta matéria excederia o limite de 32 créditos.', 'error');
+      return;
+    }
   };
 
   // Durante o drag
@@ -231,12 +249,21 @@ const Calendar = forwardRef(({
         if (temConflito) {
           onShowToast?.(`Conflito de horário com ${materiaConflito}!`, 'error');
         } else {
-          // Adiciona a matéria com a turma selecionada
-          onAddMateria({
-            ...draggingMateria,
-            turmaId: turma.id,
-            horarios: turma.horarios
-          });
+          // credit limit check before adding
+          const currentTotal = calcTotalCreditos();
+          const materiaCred = draggingMateria.creditos || 0;
+          if (currentTotal >= CREDIT_MAX) {
+            onShowToast?.(`Limite de créditos atingido (${CREDIT_MAX}). Remova matérias para adicionar mais.`, 'error');
+          } else if (currentTotal + materiaCred > CREDIT_MAX) {
+            onShowToast?.('Adicionar esta matéria excederia o limite de 32 créditos.', 'error');
+          } else {
+            // Adiciona a matéria com a turma selecionada
+            onAddMateria({
+              ...draggingMateria,
+              turmaId: turma.id,
+              horarios: turma.horarios
+            });
+          }
         }
       }
     }
@@ -279,7 +306,10 @@ const Calendar = forwardRef(({
   // ---------- Export to Google Calendar (.ics) helpers temporarily disabled ----------
   // Export functionality removed for now (unused) to avoid linting/CI failures.
 
-  const totalCreditos = Object.values(materiasNoCalendario).reduce((acc, m) => acc + m.creditos, 0);
+  const totalCreditos = calcTotalCreditos();
+  let creditClass = '';
+  if (totalCreditos >= CREDIT_MAX) creditClass = 'calendar__credits--danger';
+  else if (totalCreditos > CREDIT_WARN) creditClass = 'calendar__credits--warn';
   const { obrigatorias, pendentes, eletivas: eletivasDisponiveis } = getMateriasDisponiveis();
 
   const renderMateriaCard = (materia, tipo = 'obrigatoria') => {
@@ -357,7 +387,7 @@ const Calendar = forwardRef(({
         <div className="calendar__sidebar">
           <div className="calendar__sidebar-header">
             <h3><i className="fi fi-br-book-alt"></i> Matérias Disponíveis</h3>
-            <div className="calendar__credits">
+            <div className={`calendar__credits ${creditClass}`}>
               <span>Créditos: <strong>{totalCreditos}</strong></span>
             </div>
           </div>

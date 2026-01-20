@@ -84,6 +84,17 @@
   margin-top: 2px;
 }
 
+/* Credit states */
+.calendar__credits--warn {
+  background: rgba(249, 220, 92, 0.18);
+  color: var(--color-royal-gold);
+}
+
+.calendar__credits--danger {
+  background: rgba(232, 72, 85, 0.18);
+  color: var(--color-watermelon);
+}
+
 /* Categoria de matérias */
 .calendar__category {
   margin-bottom: 20px;
