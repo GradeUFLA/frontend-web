@@ -381,14 +381,18 @@ const Calendar = forwardRef(({
       onMouseLeave={handleMouseUp}
     >
       <button className="btn-voltar btn-voltar--calendar" onClick={onVoltar}>
-        <i className="fi fi-br-arrow-left"></i> Voltar
+        <i className="fi fi-br-arrow-left"></i>
+        <span className="btn-voltar__text">Voltar</span>
       </button>
 
       <div className="calendar__layout">
         {/* Sidebar de matérias */}
         <div className="calendar__sidebar">
           <div className="calendar__sidebar-header">
-            <h3><i className="fi fi-br-book-alt"></i> Matérias Disponíveis</h3>
+            <h3 className="calendar__sidebar-title">
+              <i className="fi fi-br-book-alt"></i>
+              <span className="calendar__sidebar-title-text">Matérias Disponíveis</span>
+            </h3>
             <div className={`calendar__credits ${creditClass}`}>
               <span>Créditos: <strong>{totalCreditos}</strong></span>
             </div>
@@ -398,11 +402,11 @@ const Calendar = forwardRef(({
             Arraste uma matéria e solte no horário desejado
           </p>
 
-          {/* Matérias Obrigatórias do Semestre */}
+          {/* Matérias Obrigatórias */}
           <div className="calendar__category">
             <h4 className="calendar__category-title">
               <i className="fi fi-br-bookmark calendar__category-icon"></i>
-              Obrigatórias ({semestreAtual}º Sem)
+              Obrigatórias
             </h4>
             <div className="calendar__materias">
               {obrigatorias.map(materia => renderMateriaCard(materia, 'obrigatoria'))}

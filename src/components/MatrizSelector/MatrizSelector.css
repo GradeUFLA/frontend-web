@@ -36,3 +36,7 @@
   margin-bottom: 30px;
 }
 
+.matriz-selector .btn-voltar__text {
+  display: inline-block;
+  transform: translateY(0px); /* nudge back button text up 1px inside matriz selector */
+}

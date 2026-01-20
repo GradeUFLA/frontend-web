@@ -113,7 +113,8 @@ const SetupWizard = forwardRef(({
   return (
     <section className="setup-wizard" ref={ref}>
       <button className="btn-voltar" onClick={onVoltar}>
-        <i className="fi fi-br-arrow-left"></i> Voltar
+        <i className="fi fi-br-arrow-left"></i>
+        <span className="btn-voltar__text">Voltar</span>
       </button>
 
       <Stepper

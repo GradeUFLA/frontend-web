@@ -40,21 +40,52 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.calendar__sidebar-header h3 {
+.calendar__sidebar-title {
   color: #fff;
-  font-size: 1rem; /* decreased to give space from credits */
-  display: inline-flex; /* ensure icon and text align vertically */
-  align-items: center;
-  gap: 8px;
-  flex: 1 1 auto; /* allow title to take available space and avoid collision */
-  margin-right: 12px; /* extra breathing room before credits */
+  font-size: 1rem; /* slightly smaller to give space from credits */
+  display: flex;
+  align-items: center; /* vertically center icon and text center line */
+  gap: 10px;
+  flex: 1 1 auto;
+  margin-right: 12px;
 }
 
-.calendar__sidebar-header h3 i {
+.calendar__sidebar-title i {
   font-size: 1.18rem;
   line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Nudge icons slightly to vertically center their visual middle with text middle.
+   Different icon fonts often have metrics that appear off; small translate fixes visual alignment. */
+.calendar__sidebar-title i,
+.calendar__category-icon,
+.calendar__toggle-icon,
+.materia-card__info-btn i,
+.calendar__cell-remove i,
+.calendar__turmas-popup-color,
+.calendar__legend-color,
+.btn-voltar i {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  /* small nudge down to place icon center on the same horizontal midline as text */
+  transform: translateY(1px);
+}
+
+/* For very small icons (toggle chevrons) use a smaller nudge to avoid looking off */
+.calendar__toggle-icon,
+.calendar__turmas-popup-conflito {
+  transform: translateY(1px);
+}
+
+.calendar__sidebar-title-text {
   display: inline-block;
-  transform: translateY(1px); /* small nudge to visually center icon with two-line title */
+  line-height: 1.1; /* ensure vertical center aligns with icon middle */
+  transform: translateY(0.2px); /* micro adjustment to visually center exact midline */
 }
 
 .calendar__credits {
@@ -463,13 +494,15 @@
 
 /* Tabela do calendário */
 .calendar__table {
-  border-collapse: collapse;
+  /* use separate collapse so border-radius on corner cells works correctly */
+  border-collapse: separate;
+  border-spacing: 0;
   background: rgba(56, 58, 66, 0.4);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-radius: 12px;
-  /* allow icons/buttons inside cells to overflow without being cropped by the table element */
-  overflow: visible;
+  /* hide overflow so table border-radius clips the header/footer backgrounds correctly */
+  overflow: hidden;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   font-size: 0.8rem;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -487,6 +520,14 @@
   letter-spacing: 0.5px;
   color: #fff;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Rounded corners for top header cells */
+.calendar__table thead th:first-child {
+  border-top-left-radius: 12px;
+}
+.calendar__table thead th:last-child {
+  border-top-right-radius: 12px;
 }
 
 .calendar__col-time {
@@ -508,6 +549,14 @@
   width: 80px;
   transition: all 0.2s ease;
   background: rgba(255, 255, 255, 0.02);
+}
+
+/* Rounded corners for bottom cells (last row) */
+.calendar__table tbody tr:last-child td:first-child {
+  border-bottom-left-radius: 12px;
+}
+.calendar__table tbody tr:last-child td:last-child {
+  border-bottom-right-radius: 12px;
 }
 
 .calendar__cell-time {
@@ -710,4 +759,14 @@
 
 .calendar__eletiva-group-title {
   margin-top: 8px;
+}
+
+.btn-voltar {
+  position: relative;
+  top: 0; /* lower the button 1px from the previous state so icon/text baseline aligns */
+}
+
+.btn-voltar__text {
+  display: inline-block;
+  transform: translateY(0); /* keep neutral in calendar context */
 }
