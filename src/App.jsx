@@ -26,6 +26,36 @@ const ETAPAS = {
   MONTAGEM: 'montagem'
 };
 
+// helper to normalize day values (0=Dom .. 6=Sab)
+const normalizeDiaValue = (d) => {
+  if (d == null) return null;
+  const n = Number(d);
+  if (!Number.isNaN(n)) {
+    if (n >= 0 && n <= 6) return n;
+    if (n >= 1 && n <= 7) return ((n + 6) % 7 + 7) % 7; // map 1..7 => 0..6
+  }
+  // Normalize strings: lowercase, remove diacritics, take first 3 letters
+  const raw = String(d).toLowerCase();
+  const normalized = raw.normalize ? raw.normalize('NFD').replace(/\p{Diacritic}/gu, '') : raw.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const s = normalized.slice(0,3);
+  const dias = ['dom','seg','ter','qua','qui','sex','sab'];
+  const idx = dias.findIndex(x => x === s);
+  return idx !== -1 ? idx : null;
+};
+
+// parse hour value safely: accepts number or strings like '08:00' or '8'
+const parseHour = (v) => {
+  if (v == null) return null;
+  const n = Number(v);
+  if (!Number.isNaN(n)) return Math.floor(n);
+  const s = String(v).trim();
+  // match HH or HH:MM
+  const m = s.match(/^(\d{1,2})(?::(\d{2}))?$/);
+  if (m) return parseInt(m[1], 10);
+  return null;
+};
+
+
 function App() {
   const calendarioRef = useRef(null);
 
@@ -136,40 +166,45 @@ function App() {
     // If the selected turma has only saturday horários (ANP-only), auto-place on the next free saturday block.
     // But if the turma includes weekday horários as well, keep all horários as provided.
     const horariosArray = materia.horarios || [];
-    const hasAnyWeekday = horariosArray.some(h => h && h.dia !== 6);
+    const hasAnyWeekday = horariosArray.some(h => {
+      const nd = normalizeDiaValue(h?.dia);
+      return nd !== null && nd !== 6;
+    });
 
-    if (!hasAnyWeekday && horariosArray.length > 0 && horariosArray.some(h => h && h.dia === 6)) {
+    const hasSaturday = horariosArray.some(h => normalizeDiaValue(h?.dia) === 6);
+
+    if (!hasAnyWeekday && horariosArray.length > 0 && hasSaturday) {
       // Build set of occupied saturday hours (consider ALL existing materias)
       const occupied = new Set();
       Object.values(materiasNoCalendario).forEach(m => {
         (m.horarios || []).forEach(h => {
-          if (h && h.dia === 6) {
-            for (let hour = h.inicio; hour < h.fim; hour++) occupied.add(hour);
+          if (!h) return;
+          const nd = normalizeDiaValue(h.dia);
+          if (nd === 6) {
+            const inicio = parseHour(h.inicio);
+            const fim = parseHour(h.fim);
+            const startHour = (inicio !== null) ? inicio : 0;
+            const endHour = (fim !== null) ? fim : (startHour + 1);
+            for (let hour = startHour; hour < endHour; hour++) {
+              occupied.add(hour);
+            }
           }
         });
       });
 
-      // ANP defaults
-      const defaultStart = 9;
-      const duration = 2;
-      let start = defaultStart;
-      const maxStart = 22 - duration + 1;
+      // ANP scheduling: allocate 1-hour slots starting at 8:00, using next free hour
+      const defaultStart = 8;
+      const maxHour = 22; // last start hour allowed
       let chosenStart = null;
-
-      while (start <= maxStart) {
-        let conflict = false;
-        for (let hh = start; hh < start + duration; hh++) {
-          if (occupied.has(hh)) { conflict = true; break; }
-        }
-        if (!conflict) { chosenStart = start; break; }
-        start += duration; // move to next block
+      let start = defaultStart;
+      while (start <= maxHour) {
+        if (!occupied.has(start)) { chosenStart = start; break; }
+        start += 1; // next hour
       }
 
-      if (chosenStart === null) {
-        chosenStart = defaultStart; // fallback
-      }
+      if (chosenStart === null) chosenStart = defaultStart;
 
-      const horarios = [{ dia: 6, inicio: chosenStart, fim: chosenStart + duration }];
+      const horarios = [{ dia: 6, inicio: chosenStart, fim: chosenStart + 1 }];
       const toAdd = { ...materia, turmaId: materia.turmaId || 'ANP', horarios };
       setMateriasNoCalendario(prev => ({ ...prev, [materia.codigo]: toAdd }));
       return;
