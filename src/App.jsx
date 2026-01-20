@@ -81,17 +81,23 @@ function App() {
   };
 
   const handleVoltarParaInicio = () => {
+    // clear calendar when leaving montagem/setup flow
+    setMateriasNoCalendario({});
     setEtapa(ETAPAS.INICIO);
   };
 
   const handleVoltarParaSetup = () => {
     // when requesting to go back to the setup, respect setupInitialStep (already set when navigating from calendar)
+    // clear calendar when leaving montagem
+    setMateriasNoCalendario({});
     setEtapa(ETAPAS.SETUP);
   };
 
   const handleVoltarParaHistorico = () => {
     // when going back from calendar to historico, we want the eventual return to SetupWizard to start at the last step
     setSetupInitialStep(3);
+    // clear calendar when leaving montagem
+    setMateriasNoCalendario({});
     setEtapa(ETAPAS.HISTORICO);
   };
 
