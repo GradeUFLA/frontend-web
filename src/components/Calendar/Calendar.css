@@ -500,7 +500,7 @@
   font-weight: 600;
   font-size: 0.55rem;
   position: relative;
-  padding: 2px;
+  padding: 2px; /* reverted: center text as before; icon may overlay on hover */
   line-height: 1.1;
   overflow: visible; /* allow remove button to be fully visible when cell is small */
 }
@@ -517,22 +517,38 @@
 
 .calendar__cell-remove {
   position: absolute;
-  top: 4px; /* nudge inwards a bit to avoid being half outside small cells */
-  right: 4px;
-  background: rgba(0, 0, 0, 0.3);
+  /* vertically center the icon and place it at the right edge */
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+  background: transparent; /* remove circle */
   border: none;
-  color: #fff;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
+  color: var(--color-watermelon); /* use palette red */
+  padding: 0; /* no extra padding, only the icon */
+  width: auto;
+  height: auto;
+  border-radius: 0;
   cursor: pointer;
-  font-size: 0.5rem;
-  display: flex;
+  font-size: 1rem; /* slightly larger X for visibility */
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   opacity: 0;
-  transition: all 0.2s;
+  transition: color 0.15s, opacity 0.15s, transform 0.15s;
   z-index: 30; /* ensure it's above other elements */
+}
+
+/* Icon styling: white with black contour using multiple text-shadow offsets */
+.calendar__cell-remove i {
+  color: #fff; /* white X */
+  font-size: 1.05rem;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  text-shadow:
+    -1px -1px 0 #000,
+     1px -1px 0 #000,
+    -1px  1px 0 #000,
+     1px  1px 0 #000;
 }
 
 .calendar__cell:hover .calendar__cell-remove {
@@ -540,13 +556,8 @@
 }
 
 .calendar__cell-remove:hover {
-  background: var(--color-watermelon);
-}
-
-.calendar__cell-preview-content {
-  font-size: 0.6rem;
-  color: var(--color-tropical-mint);
-  font-weight: 600;
+  /* keep hover subtle: slightly scale the icon */
+  transform: translateY(-50%) scale(1.05);
 }
 
 /* Drag Ghost - elemento que segue o mouse */
