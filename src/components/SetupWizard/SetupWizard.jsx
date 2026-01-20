@@ -41,7 +41,7 @@ const SetupWizard = forwardRef(({
 
   const cursosOptions = cursosImplementados.map((curso) => ({
     value: curso.id,
-    label: `${curso.id} - ${curso.nome} (${curso.tipo})`
+    label: `${curso.id} - ${curso.nome}`
   }));
 
   const matrizesOptions = matrizes.map((matriz) => ({
@@ -134,6 +134,7 @@ const SetupWizard = forwardRef(({
             onChange={setCursoSelecionado}
             placeholder="Selecione o Curso"
             error={dropdownError && !cursoSelecionado}
+            searchable={true}
           />
         </Step>
 
