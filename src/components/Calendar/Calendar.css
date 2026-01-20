@@ -305,6 +305,40 @@
   font-style: italic;
 }
 
+/* Futuras toggle reuses electives style */
+.calendar__futuras-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  background: rgba(56, 58, 66, 0.4);
+  border: 1px solid rgba(56, 58, 66, 0.6);
+  border-radius: 10px;
+  color: var(--color-tropical-mint);
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.calendar__futuras-toggle:hover {
+  background: rgba(56, 58, 66, 0.6);
+}
+
+.calendar__eletiva-group-title {
+  color: var(--color-text);
+  font-size: 0.95rem;
+  margin: 8px 0;
+  font-weight: 700;
+}
+
+.calendar__eletiva-group-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 /* Wrapper do calendário */
 .calendar__wrapper {
   flex: 1;

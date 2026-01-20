@@ -44,6 +44,7 @@ const Calendar = forwardRef(({
   onShowToast
 }, ref) => {
   const [mostrarEletivas, setMostrarEletivas] = useState(false);
+  const [mostrarFuturas, setMostrarFuturas] = useState(false);
   const [draggingMateria, setDraggingMateria] = useState(null);
   const [dragPosition, setDragPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -393,7 +394,7 @@ const Calendar = forwardRef(({
           <div className="calendar__category">
             <button
               className="calendar__electives-toggle"
-              onClick={() => setMostrarEletivas(!mostrarEletivas)}
+              onClick={() => { setMostrarEletivas(!mostrarEletivas); setMostrarFuturas(false); }}
             >
               <i className="fi fi-br-bullseye-pointer calendar__category-icon"></i>
               <span>Eletivas</span>
@@ -437,7 +438,53 @@ const Calendar = forwardRef(({
                  )}
                </div>
              )}
-          </div>
+
+             {/* Toggle Matérias Futuras */}
+             <button
+               className="calendar__futuras-toggle"
+               onClick={() => { setMostrarFuturas(!mostrarFuturas); setMostrarEletivas(false); }}
+               style={{ marginTop: '12px' }}
+             >
+               <i className="fi fi-br-rocket calendar__category-icon"></i>
+               <span>Matérias Futuras</span>
+               <i className={`fi fi-br-angle-${mostrarFuturas ? 'down' : 'right'} calendar__toggle-icon`}></i>
+             </button>
+
+             {mostrarFuturas && (
+               <div className="calendar__materias" style={{ marginTop: '10px' }}>
+                 {(() => {
+                   const startSem = Number(semestreAtual) || 1;
+                   // collect materias only from semesters strictly greater than current
+                   const grupos = {};
+                   Object.keys(materiasPorSemestre)
+                     .map(k => Number(k))
+                     .filter(kNum => !Number.isNaN(kNum) && kNum > startSem)
+                     .sort((a, b) => a - b)
+                     .forEach(kNum => {
+                       const list = materiasPorSemestre[kNum] || [];
+                       const filtered = list.filter(m => !materiasAprovadas.includes(m.codigo) && !materiasNoCalendario[m.codigo]);
+                       if (filtered.length > 0) grupos[kNum] = filtered;
+                     });
+
+                   if (Object.keys(grupos).length === 0) {
+                     return <p className="calendar__no-electives">Nenhuma matéria futura disponível.</p>;
+                   }
+
+                   return Object.keys(grupos).sort((a,b)=>Number(a)-Number(b)).map(key => {
+                     const sem = Number(key);
+                     return (
+                       <div key={key} className="calendar__eletiva-group">
+                         <h5 className="calendar__eletiva-group-title">{sem}º Semestre</h5>
+                         <div className="calendar__eletiva-group-list">
+                           {grupos[key].map(materia => renderMateriaCard(materia, 'futura'))}
+                         </div>
+                       </div>
+                     );
+                   });
+                 })()}
+               </div>
+             )}
+           </div>
         </div>
 
         {/* Calendário */}
