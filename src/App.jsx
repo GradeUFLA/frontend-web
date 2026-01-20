@@ -38,6 +38,7 @@ function App() {
   const [materiasNoCalendario, setMateriasNoCalendario] = useState({});
   const [modalMateria, setModalMateria] = useState(null);
   const [csvLoaded, setCsvLoaded] = useState(false);
+  const [setupInitialStep, setSetupInitialStep] = useState(1);
 
   // Hook de toast para notificações
   const { toasts, addToast, removeToast } = useToast();
@@ -54,6 +55,8 @@ function App() {
       await ensureCsvLoaded();
       setCsvLoaded(true);
     }
+    // default to first step when starting flow
+    setSetupInitialStep(1);
     setEtapa(ETAPAS.SETUP);
     setTimeout(() => {
       calendarioRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -82,10 +85,13 @@ function App() {
   };
 
   const handleVoltarParaSetup = () => {
+    // when requesting to go back to the setup, respect setupInitialStep (already set when navigating from calendar)
     setEtapa(ETAPAS.SETUP);
   };
 
   const handleVoltarParaHistorico = () => {
+    // when going back from calendar to historico, we want the eventual return to SetupWizard to start at the last step
+    setSetupInitialStep(3);
     setEtapa(ETAPAS.HISTORICO);
   };
 
@@ -216,7 +222,14 @@ function App() {
           ref={calendarioRef}
           onComplete={handleSetupComplete}
           onVoltar={handleVoltarParaInicio}
+          initialStep={setupInitialStep}
           onShowToast={addToast}
+          cursoSelecionado={cursoSelecionado}
+          setCursoSelecionado={setCursoSelecionado}
+          matrizSelecionada={matrizSelecionada}
+          setMatrizSelecionada={setMatrizSelecionada}
+          semestreSelecionado={semestreAtual}
+          setSemestreSelecionado={setSemestreAtual}
         />
       )}
 

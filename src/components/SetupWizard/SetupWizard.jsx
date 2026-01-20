@@ -4,10 +4,19 @@ import Dropdown from '../Dropdown';
 import { getCursoInfo, getMatrizesByCurso, getCursosImplementados, ensureCsvLoaded } from '../../data';
 import './SetupWizard.css';
 
-const SetupWizard = forwardRef(({ onComplete, onVoltar, onShowToast }, ref) => {
-  const [cursoSelecionado, setCursoSelecionado] = useState(null);
-  const [matrizSelecionada, setMatrizSelecionada] = useState(null);
-  const [semestreSelecionado, setSemestreSelecionado] = useState(null);
+const SetupWizard = forwardRef(({
+  onComplete,
+  onVoltar,
+  onShowToast,
+  initialStep = 1,
+  // controlled values from App so they persist between mounts
+  cursoSelecionado,
+  setCursoSelecionado,
+  matrizSelecionada,
+  setMatrizSelecionada,
+  semestreSelecionado,
+  setSemestreSelecionado
+}, ref) => {
   const [dropdownError, setDropdownError] = useState(false);
   const [loadingCsv, setLoadingCsv] = useState(true);
 
@@ -91,6 +100,7 @@ const SetupWizard = forwardRef(({ onComplete, onVoltar, onShowToast }, ref) => {
   };
 
   const handleFinalStepCompleted = () => {
+    // Use the values controlled by the parent (App)
     if (cursoSelecionado && matrizSelecionada && semestreSelecionado) {
       onComplete({
         curso: cursoSelecionado,
@@ -107,7 +117,7 @@ const SetupWizard = forwardRef(({ onComplete, onVoltar, onShowToast }, ref) => {
       </button>
 
       <Stepper
-        initialStep={1}
+        initialStep={initialStep}
         onStepChange={handleStepChange}
         onFinalStepCompleted={handleFinalStepCompleted}
         backButtonText="Voltar"
