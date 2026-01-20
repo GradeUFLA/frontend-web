@@ -301,11 +301,7 @@ const Calendar = forwardRef(({
         key={materia.codigo}
         className={cardClasses}
         onMouseDown={(e) => cumprido && handleDragStart(e, materia)}
-        onClick={() => {
-          // clicking the card (not the info button) opens the modal; if it's being dragged, ignore click
-          if (isBeingDragged) return;
-          onMateriaClick?.(materia);
-        }}
+        // Note: card click no longer opens modal. Modal opens only via the info button (three dots)
         style={{
           borderLeftColor: getCorMateria(materia.codigo),
           cursor: cumprido ? 'grab' : 'not-allowed'
@@ -317,6 +313,7 @@ const Calendar = forwardRef(({
             className="materia-card__info-btn"
             onClick={(ev) => {
               ev.stopPropagation();
+              // Sidebar: open modal via info button regardless of calendar state
               onMateriaClick?.(materia);
             }}
             title="Ver informações"
@@ -516,6 +513,14 @@ const Calendar = forwardRef(({
                                   }
                                 : {}
                           }
+                          onClick={(e) => {
+                            // If there is at least one subject in this cell, clicking the cell opens the modal for that subject.
+                            if (materiasEmCelula && materiasEmCelula.length > 0) {
+                              e.stopPropagation();
+                              onMateriaClick?.(materiasEmCelula[0]);
+                            }
+                          }
+                          }
                           onMouseEnter={() => handleCellHover(indexHora, indexDia)}
                         >
                           {materiasEmCelula.length > 0 && (
@@ -524,11 +529,8 @@ const Calendar = forwardRef(({
                                 <div
                                   key={mec.codigo}
                                   className="calendar__cell-subject"
-                                  onClick={(e) => {
-                                    // clicking the subject in the calendar opens the modal; stop propagation to avoid other handlers
-                                    e.stopPropagation();
-                                    onMateriaClick?.(mec);
-                                  }}
+                                  // Keep the subject block clickable as well; remove button stops propagation
+                                  onClick={(e) => { e.stopPropagation(); onMateriaClick?.(mec); }}
                                 >
                                   <span className="calendar__cell-subject-name">{mec.nome}</span>
                                   <button
