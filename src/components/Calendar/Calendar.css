@@ -693,3 +693,21 @@
     max-height: none;
   }
 }
+
+.calendar__eletivas-search {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.06);
+  color: var(--color-text);
+  font-size: 0.9rem;
+}
+
+.calendar__eletivas-search::placeholder {
+  color: rgba(255,255,255,0.4);
+}
+
+.calendar__eletiva-group-title {
+  margin-top: 8px;
+}

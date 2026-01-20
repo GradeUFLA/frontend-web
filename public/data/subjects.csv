@@ -220,7 +220,7 @@ G014,2023/01,Indefinido,GDI169,Direito Administrativo,4,eletiva,,,"[{""id"": ""2
 G014,2023/01,Indefinido,GEL102,Leitura e Produção de Textos I,2,eletiva,,,"[{""id"": ""26A"", ""horarios"": [{""dia"": 6, ""inicio"": 19, ""fim"": 21}], ""anp"": false}]"
 G010,2023/01,2,GCC260,Laboratório de Circuitos Digitais,2,obrigatoria,,,[]
 G010,2023/01,2,GCC261,Introdução aos Circuitos Digitais,4,obrigatoria,,,[]
-G010,2016/01,8,PRG610,Estágio Supervisionado/TCC,30,obrigatoria,,,[]
+G010,2016/01,8,PRG610,Estágio Supervisionado/TCC,0,obrigatoria,,,[]
 G010,2023/01,Indefinido,GES103,Geoestatística,4,eletiva,,,[]
 G014,2023/01,1,GMM126,Funções Elementares,4,obrigatoria,,,"[{""id"": ""14A"", ""horarios"": [{""dia"": 2, ""inicio"": 19, ""fim"": 21}, {""dia"": 4, ""inicio"": 19, ""fim"": 21}], ""anp"": false}]"
 G010,2023/01,Indefinido,GMM128,Trigonometria e Números Complexos,2,eletiva,,,[]

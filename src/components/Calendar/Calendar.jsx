@@ -44,6 +44,8 @@ const Calendar = forwardRef(({
   onShowToast
 }, ref) => {
   const [mostrarEletivas, setMostrarEletivas] = useState(false);
+  const [eletivasQuery, setEletivasQuery] = useState('');
+  const [futurasQuery, setFuturasQuery] = useState('');
   const [mostrarFuturas, setMostrarFuturas] = useState(false);
   // Credit limits
   const CREDIT_WARN = 25;
@@ -100,10 +102,8 @@ const Calendar = forwardRef(({
       });
     }
 
-    const eletivasDisponiveis = mostrarEletivas ? eletivas.filter(e => {
-      const { cumprido } = verificarPreRequisitos(e, materiasAprovadas);
-      return cumprido;
-    }) : [];
+    // Show all eletivas (even if prerequisites are not met). The card will display 'Falta: ...'
+    const eletivasDisponiveis = mostrarEletivas ? (Array.isArray(eletivas) ? eletivas.filter(e => !materiasAprovadas.includes(e.codigo)) : []) : [];
 
     return {
       obrigatorias: materiasDoSemestre.filter(m => !materiasAprovadas.includes(m.codigo)),
@@ -189,14 +189,10 @@ const Calendar = forwardRef(({
       return;
     }
 
+    // Prevent default mouse behavior early
     e.preventDefault();
 
-    setDraggingMateria(materia);
-    setIsDragging(true);
-    setDragPosition({ x: e.clientX, y: e.clientY });
-    setSelectedTurmaIndex(null);
-
-    // credit limit checks
+    // credit limit checks (before enabling drag state)
     const currentTotal = calcTotalCreditos();
     const materiaCred = materia.creditos || 0;
     if (currentTotal >= CREDIT_MAX) {
@@ -207,6 +203,12 @@ const Calendar = forwardRef(({
       onShowToast?.('Adicionar esta matéria excederia o limite de 32 créditos.', 'error');
       return;
     }
+
+    // Now enable dragging state
+    setDraggingMateria(materia);
+    setIsDragging(true);
+    setDragPosition({ x: e.clientX, y: e.clientY });
+    setSelectedTurmaIndex(null);
   };
 
   // Durante o drag
@@ -424,7 +426,12 @@ const Calendar = forwardRef(({
           <div className="calendar__category">
             <button
               className="calendar__electives-toggle"
-              onClick={() => { setMostrarEletivas(!mostrarEletivas); setMostrarFuturas(false); }}
+              onClick={() => {
+                const next = !mostrarEletivas;
+                setMostrarEletivas(next);
+                setMostrarFuturas(false);
+                if (!next) setEletivasQuery(''); // clear search when closing
+              }}
             >
               <i className="fi fi-br-bullseye-pointer calendar__category-icon"></i>
               <span>Eletivas</span>
@@ -433,9 +440,17 @@ const Calendar = forwardRef(({
 
             {mostrarEletivas && (
               <div className="calendar__materias" style={{ marginTop: '10px' }}>
+                <input
+                  type="text"
+                  className="calendar__eletivas-search"
+                  placeholder="Pesquisar eletivas..."
+                  value={eletivasQuery}
+                  onChange={(e) => setEletivasQuery(e.target.value)}
+                  style={{ marginBottom: '10px' }}
+                />
                 {eletivasDisponiveis.length === 0 ? (
                   <p className="calendar__no-electives">
-                    Nenhuma eletiva disponível com os pré-requisitos cumpridos.
+                    Nenhuma eletiva disponível.
                   </p>
                 ) : (
                   (() => {
@@ -453,13 +468,18 @@ const Calendar = forwardRef(({
 
                     return orderedKeys.map(key => {
                       const label = key.toString();
-                      // if CSV already contains 'Subgrupo' prefix, don't duplicate
-                      const title = /subgrupo/i.test(label) ? label : `Subgrupo: ${label}`;
+                      // show the raw label; hide the title if it's just 'Outros'
+                      const title = label;
+                      const filteredMaterias = groups[key].filter(materia => materia.nome.toLowerCase().includes(eletivasQuery.toLowerCase()));
+                      if (filteredMaterias.length === 0) return null; // skip empty groups
+
                       return (
                         <div key={key} className="calendar__eletiva-group">
-                          <h5 className="calendar__eletiva-group-title">{title}</h5>
+                          {label.toLowerCase() !== 'outros' && (
+                            <h5 className="calendar__eletiva-group-title">{title}</h5>
+                          )}
                           <div className="calendar__eletiva-group-list">
-                            {groups[key].map(materia => renderMateriaCard(materia, 'eletiva'))}
+                            {filteredMaterias.map(materia => renderMateriaCard(materia, 'eletiva'))}
                           </div>
                         </div>
                       );
@@ -472,7 +492,12 @@ const Calendar = forwardRef(({
              {/* Toggle Matérias Futuras */}
              <button
                className="calendar__futuras-toggle"
-               onClick={() => { setMostrarFuturas(!mostrarFuturas); setMostrarEletivas(false); }}
+               onClick={() => {
+                 const next = !mostrarFuturas;
+                 setMostrarFuturas(next);
+                 setMostrarEletivas(false);
+                 if (!next) setFuturasQuery(''); // clear search when closing
+               }}
                style={{ marginTop: '12px' }}
              >
                <i className="fi fi-br-rocket calendar__category-icon"></i>
@@ -482,6 +507,14 @@ const Calendar = forwardRef(({
 
              {mostrarFuturas && (
                <div className="calendar__materias" style={{ marginTop: '10px' }}>
+                 <input
+                   type="text"
+                   className="calendar__eletivas-search"
+                   placeholder="Pesquisar matérias futuras..."
+                   value={futurasQuery}
+                   onChange={(e) => setFuturasQuery(e.target.value)}
+                   style={{ marginBottom: '10px' }}
+                 />
                  {(() => {
                    const startSem = Number(semestreAtual) || 1;
                    // collect materias only from semesters strictly greater than current
@@ -500,13 +533,20 @@ const Calendar = forwardRef(({
                      return <p className="calendar__no-electives">Nenhuma matéria futura disponível.</p>;
                    }
 
+                   // filter each group's materias by futurasQuery (search by name or code)
                    return Object.keys(grupos).sort((a,b)=>Number(a)-Number(b)).map(key => {
                      const sem = Number(key);
+                     const lista = grupos[key];
+                     const query = (futurasQuery || '').toLowerCase().trim();
+                     const filteredLista = query
+                       ? lista.filter(m => (m.nome || '').toLowerCase().includes(query) || (m.codigo || '').toLowerCase().includes(query))
+                       : lista;
+                     if (filteredLista.length === 0) return null;
                      return (
                        <div key={key} className="calendar__eletiva-group">
                          <h5 className="calendar__eletiva-group-title">{sem}º Semestre</h5>
                          <div className="calendar__eletiva-group-list">
-                           {grupos[key].map(materia => renderMateriaCard(materia, 'futura'))}
+                           {filteredLista.map(materia => renderMateriaCard(materia, 'futura'))}
                          </div>
                        </div>
                      );
