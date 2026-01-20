@@ -65,6 +65,7 @@ function App() {
   const [matrizSelecionada, setMatrizSelecionada] = useState(null);
   const [semestreAtual, setSemestreAtual] = useState(null);
   const [materiasAprovadas, setMateriasAprovadas] = useState([]);
+  const [minimoConfirmados, setMinimoConfirmados] = useState([]); // lista de prereqs 'mínimo' que o usuário confirmou
   const [materiasNoCalendario, setMateriasNoCalendario] = useState({});
   const [modalMateria, setModalMateria] = useState(null);
   const [csvLoaded, setCsvLoaded] = useState(false);
@@ -161,6 +162,11 @@ function App() {
     }
   };
 
+  // Marca um pré-requisito 'mínimo' como confirmado (não é aprovado, apenas ignorado para checagens mínimas)
+  const handleConfirmMinimo = (codigo) => {
+    setMinimoConfirmados(prev => (prev.includes(codigo) ? prev : [...prev, codigo]));
+  };
+
   // Handlers do calendário
   const handleAddMateria = (materia) => {
     // If the selected turma has only saturday horários (ANP-only), auto-place on the next free saturday block.
@@ -218,105 +224,123 @@ function App() {
   };
 
   const handleRemoveMateria = (codigo) => {
-    const novasMaterias = { ...materiasNoCalendario };
-    delete novasMaterias[codigo];
-    setMateriasNoCalendario(novasMaterias);
+    // Recursively remove dependents that have the removed subject as a co-requirement
+    const toRemove = new Set([codigo]);
+    let changed = true;
+
+    while (changed) {
+      changed = false;
+      for (const [c, m] of Object.entries(materiasNoCalendario)) {
+        if (toRemove.has(c)) continue;
+        const coreqList = (m.preRequisitosDetalhada && m.preRequisitosDetalhada.coreq) || [];
+        // Check if any coreq is in toRemove
+        let dependsOn = false;
+        for (const pr of coreqList) {
+          if (toRemove.has(pr)) { dependsOn = true; break; }
+        }
+        if (dependsOn) {
+          toRemove.add(c);
+          changed = true;
+        }
+      }
+    }
+
+    // Build new calendar state without the removed subjects
+    const novas = { ...materiasNoCalendario };
+    const removedDependents = [];
+    toRemove.forEach(code => {
+      if (novas[code]) {
+        if (code !== codigo) removedDependents.push(novas[code].nome || code);
+        delete novas[code];
+      }
+    });
+
+    setMateriasNoCalendario(novas);
+
+    // Notify user about dependents removed (if any)
+    if (removedDependents.length > 0) {
+      removedDependents.forEach(nome => addToast(`A matéria "${nome}" foi removida porque dependia do co-requisito removido.`, 'error'));
+    }
   };
 
-  // Aguarda o carregamento do CSV antes de renderizar o aplicativo
+  // Effect para rolar para o calendário quando muda para a etapa de montagem
   useEffect(() => {
-    const loadData = async () => {
-      await ensureCsvLoaded();
-      setCsvLoaded(true);
-    };
-
-    loadData();
-  }, []);
+    if (etapa === ETAPAS.MONTAGEM) {
+      setTimeout(() => {
+        calendarioRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    }
+  }, [etapa]);
 
   return (
-    <div className="App">
-      {/* Background de partículas */}
-      <div className="particles-background">
-        <Particles
-          particleColors={['#00F0B5', '#00d9a4']}
-          particleCount={200}
-          particleSpread={10}
-          speed={0.1}
-          particleBaseSize={100}
-          moveParticlesOnHover={true}
-          particleHoverFactor={2}
-          alphaParticles={false}
-          disableRotation={false}
-        />
+    <>
+      <Particles />
+      <div className="app-container">
+        <ToastContainer toasts={toasts} onRemove={removeToast} />
+        <div className="calendario-container" ref={calendarioRef}>
+          {etapa === ETAPAS.INICIO && (
+            <Hero onGetStartedClick={handleGetStartedClick} />
+          )}
+          {etapa === ETAPAS.SETUP && (
+            <SetupWizard
+              cursoSelecionado={cursoSelecionado}
+              setCursoSelecionado={setCursoSelecionado}
+              matrizSelecionada={matrizSelecionada}
+              setMatrizSelecionada={setMatrizSelecionada}
+              semestreSelecionado={semestreAtual}
+              setSemestreSelecionado={setSemestreAtual}
+              onComplete={handleSetupComplete}
+              initialStep={setupInitialStep}
+              onVoltar={handleVoltarParaInicio}
+            />
+          )}
+          {etapa === ETAPAS.HISTORICO && (
+            <Historico
+              materiasAprovadas={materiasAprovadas}
+              materiasPorSemestre={materiasPorSemestre}
+              eletivas={eletivas}
+              onToggleAprovada={handleToggleMateriaAprovada}
+              onConfirmMinimo={handleConfirmMinimo}
+              onVoltar={handleVoltarParaSetup}
+              onContinuar={handleContinuar}
+              cursoSelecionado={cursoSelecionado}
+              matrizSelecionada={matrizSelecionada}
+              semestreAtual={semestreAtual}
+            />
+          )}
+          {etapa === ETAPAS.MONTAGEM && (
+            <Calendar
+              materiasPorSemestre={materiasPorSemestre}
+              eletivas={eletivas}
+              materiasAprovadas={materiasAprovadas}
+              materiasNoCalendario={materiasNoCalendario}
+              onAddMateria={handleAddMateria}
+              onRemoveMateria={handleRemoveMateria}
+              onVoltar={handleVoltarParaHistorico}
+              onContinuar={handleContinuar}
+              cursoSelecionado={cursoSelecionado}
+              matrizSelecionada={matrizSelecionada}
+              semestreAtual={semestreAtual}
+             materiasMinimoConfirmadas={minimoConfirmados}
+             onConfirmMinimo={handleConfirmMinimo}
+            />
+          )}
+        </div>
+        {modalMateria && (
+          <MateriaModal
+            materia={modalMateria}
+            onClose={() => setModalMateria(null)}
+            onSave={(novaMateria) => {
+              setMateriasNoCalendario(prev => ({
+                ...prev,
+                [novaMateria.codigo]: novaMateria
+              }));
+              setModalMateria(null);
+            }}
+          />
+        )}
       </div>
-
-      {/* Hero Section - sempre visível quando na etapa inicial */}
-      {etapa === ETAPAS.INICIO && (
-        <Hero
-          onGetStartedClick={handleGetStartedClick}
-        />
-      )}
-
-      {/* Setup Wizard (Curso, Matriz, Semestre) */}
-      {etapa === ETAPAS.SETUP && (
-        <SetupWizard
-          ref={calendarioRef}
-          onComplete={handleSetupComplete}
-          onVoltar={handleVoltarParaInicio}
-          initialStep={setupInitialStep}
-          onShowToast={addToast}
-          cursoSelecionado={cursoSelecionado}
-          setCursoSelecionado={setCursoSelecionado}
-          matrizSelecionada={matrizSelecionada}
-          setMatrizSelecionada={setMatrizSelecionada}
-          semestreSelecionado={semestreAtual}
-          setSemestreSelecionado={setSemestreAtual}
-        />
-      )}
-
-      {/* Histórico de Matérias Aprovadas */}
-      {etapa === ETAPAS.HISTORICO && (
-        <Historico
-          ref={calendarioRef}
-          semestreAtual={semestreAtual}
-          materiasAprovadas={materiasAprovadas}
-          materiasPorSemestre={materiasPorSemestre}
-          onToggleMateria={handleToggleMateriaAprovada}
-          onVoltar={handleVoltarParaSetup}
-          onContinuar={handleContinuar}
-          onShowToast={addToast}
-        />
-      )}
-
-      {/* Montagem do Calendário */}
-      {etapa === ETAPAS.MONTAGEM && (
-        <Calendar
-          ref={calendarioRef}
-          semestreAtual={semestreAtual}
-          materiasAprovadas={materiasAprovadas}
-          materiasPorSemestre={materiasPorSemestre}
-          eletivas={eletivas}
-          materiasNoCalendario={materiasNoCalendario}
-          onAddMateria={handleAddMateria}
-          onRemoveMateria={handleRemoveMateria}
-          onMateriaClick={setModalMateria}
-          onVoltar={handleVoltarParaHistorico}
-          onShowToast={addToast}
-        />
-      )}
-
-      {/* Modal de detalhes da matéria */}
-      {modalMateria && (
-        <MateriaModal
-          materia={modalMateria}
-          materiasAprovadas={materiasAprovadas}
-          onClose={() => setModalMateria(null)}
-        />
-      )}
-
-      {/* Toast de notificações */}
-      <ToastContainer toasts={toasts} removeToast={removeToast} />
-    </div>
+    </>
   );
 }
 

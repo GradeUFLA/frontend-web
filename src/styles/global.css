@@ -37,9 +37,18 @@ html {
 }
 
 body {
-  background-color: var(--color-onyx);
+  /* Slightly lighter onyx with a soft glass gradient */
+  background: linear-gradient(180deg, rgba(18,18,22,0.98) 0%, rgba(28,28,32,0.98) 100%);
   color: var(--color-text);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Ensure the app content renders above the particles canvas */
+.app-container {
+  position: relative;
+  z-index: 2;
 }
 
 /* ========== BUTTONS ========== */
@@ -163,4 +172,3 @@ body {
     transform: translateY(0);
   }
 }
-

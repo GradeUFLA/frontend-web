@@ -306,9 +306,42 @@
 .materia-card__blocked-info {
   margin-top: 8px;
   padding-top: 8px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
   color: var(--color-watermelon);
-  font-size: 0.7rem;
+  font-size: 0.75rem;
+  /* layout: icon + text + optional action button; allow wrapping on narrow cards */
+  display: flex;
+  align-items: center;
+  gap: 6px; /* tightened further so text is closer to icon */
+  flex-wrap: wrap;
+}
+
+.materia-card__blocked-info > i {
+  /* slightly larger lock icon and keep color from parent; nudge down 1px for alignment */
+  font-size: 1.05rem;
+  line-height: 1;
+  flex: 0 0 auto;
+  margin-right: 0; /* remove extra horizontal gap between icon and text */
+  transform: translateY(2px); /* nudge icon 1px further down for better visual alignment */
+}
+
+.materia-card__blocked-info > div {
+  /* the main text should be allowed to wrap and shrink */
+  flex: 1 1 auto;
+  min-width: 0; /* allow ellipsis/wrapping inside flex */
+}
+
+.materia-card__minimo-actions {
+  margin-top: 0; /* already spaced above, keep consistent */
+  display: flex;
+  justify-content: flex-end;
+  flex: 0 0 auto;
+}
+
+.materia-card__minimo-actions .materia-card__minimo-btn {
+  /* ensure the button is visible and not cramped */
+  min-width: 88px;
+  padding: 6px 12px;
 }
 
 /* Legenda das turmas durante o drag */
@@ -769,4 +802,100 @@
 .btn-voltar__text {
   display: inline-block;
   transform: translateY(0); /* keep neutral in calendar context */
+}
+
+.materia-card__minimo-btn {
+  margin-left: 10px;
+  background: rgba(249, 220, 92, 0.12);
+  color: var(--color-royal-gold);
+  border: 1px solid rgba(249, 220, 92, 0.2);
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+
+.materia-card__minimo-btn:hover {
+  background: rgba(249, 220, 92, 0.2);
+}
+
+.materia-card__minimo-actions {
+  margin-top: 0; /* already spaced above, keep consistent */
+  display: flex;
+  justify-content: flex-end;
+  flex: 0 0 auto;
+}
+
+.materia-card__minimo-actions .materia-card__minimo-btn {
+  /* ensure the button is visible and not cramped */
+  min-width: 88px;
+  padding: 6px 12px;
+}
+
+.materia-card__blocked-info > i {
+  /* ensure lock icon color follows text */
+  color: inherit;
+}
+
+/* Modal overlay for confirming minimo */
+.minimo-modal-overlay {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.minimo-modal {
+  width: 420px;
+  max-width: calc(100% - 40px);
+  background: linear-gradient(180deg, rgba(56,58,66,0.85), rgba(40,40,44,0.85));
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.minimo-modal h3 {
+  margin: 0 0 8px 0;
+  font-size: 1.05rem;
+}
+
+.minimo-modal p {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.minimo-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.btn {
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+}
+
+.btn-secondary {
+  background: rgba(255,255,255,0.03);
+  color: var(--color-text-muted);
+}
+
+.btn-primary {
+  background: var(--color-tropical-mint);
+  color: #0b0b0b;
 }

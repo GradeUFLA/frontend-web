@@ -1,5 +1,5 @@
 import { forwardRef, useState } from 'react';
-import { verificarPreRequisitos, getNomeMateria } from '../../data';
+import { verificarPreRequisitosDetalhada, getNomeMateria } from '../../data';
 import './Historico.css';
 
 const Historico = forwardRef(({
@@ -18,22 +18,33 @@ const Historico = forwardRef(({
 
     // Se está tentando marcar (não está marcada ainda)
     if (!isChecked) {
-      // Verifica se tem pré-requisitos não cumpridos
-      const { cumprido, faltando } = verificarPreRequisitos(materia, materiasAprovadas);
+      // Verifica se tem pré-requisitos não cumpridos (detalhado)
+      const det = verificarPreRequisitosDetalhada(materia, materiasAprovadas, {});
 
-      if (!cumprido) {
+      if (det.faltandoForte && det.faltandoForte.length > 0) {
         // Dispara animação de shake
         setShakingMateria(materia.codigo);
         setTimeout(() => setShakingMateria(null), 500);
 
-        // Vibração do dispositivo (se suportado)
-        if (navigator.vibrate) {
-          navigator.vibrate([100, 50, 100]);
-        }
+        if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
 
-        // Mostra toast de erro
-        const nomesFaltando = faltando.map(f => getNomeMateria(f)).join(', ');
-        onShowToast?.(`É necessário fazer ${nomesFaltando} antes`, 'error');
+        const nomes = det.faltandoForte.map(f => getNomeMateria(f)).join(', ');
+        onShowToast?.(`É necessário fazer ${nomes} antes (pré-requisito forte)`, 'error');
+        return;
+      }
+
+      if (det.faltandoMinimo && det.faltandoMinimo.length > 0) {
+        const nomes = det.faltandoMinimo.map(f => getNomeMateria(f)).join(', ');
+        const confirmed = window.confirm(`Você já cursou ${nomes} e obteve média mínima? Se sim, confirme para marcar como feita.`);
+        if (!confirmed) {
+          onShowToast?.(`Necessário ter cursado: ${nomes} (mínimo).`, 'warn');
+          return;
+        }
+      }
+
+      if (det.faltandoCoreq && det.faltandoCoreq.length > 0) {
+        const nomes = det.faltandoCoreq.map(f => getNomeMateria(f)).join(', ');
+        onShowToast?.(`Co-requisito(s) necessários: ${nomes}. Marque a co-requisito no calendário primeiro.`, 'warn');
         return;
       }
     }
