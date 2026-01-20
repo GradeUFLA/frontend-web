@@ -25,8 +25,7 @@ const Hero = ({ onGetStartedClick }) => {
         </h2>
 
         <p className="hero-subtitle">
-          Selecione seu semestre, informe suas matérias aprovadas e monte
-          sua grade respeitando pré-requisitos automaticamente.
+          Tenha uma visão clara do seu semestre, organizando suas disciplinas de forma simples, eficiente e sem complicações.
         </p>
 
         <div className="hero-buttons">
