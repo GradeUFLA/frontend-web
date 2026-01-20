@@ -323,7 +323,7 @@ const Calendar = forwardRef(({
         </div>
         <div className="materia-card__details">
           <span className="materia-card__code">{materia.codigo}</span>
-          <span className="materia-card__credits">{materia.creditos} créd</span>
+          <span className="materia-card__credits">{materia.creditos} Créditos</span>
           <span className="materia-card__turmas-count">{materia.turmas.length} turma{materia.turmas.length > 1 ? 's' : ''}</span>
         </div>
         {tipo === 'pendente' && materia.semestreOriginal && (

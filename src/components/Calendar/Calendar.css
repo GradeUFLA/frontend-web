@@ -42,7 +42,19 @@
 
 .calendar__sidebar-header h3 {
   color: #fff;
-  font-size: 1.1rem;
+  font-size: 1rem; /* decreased to give space from credits */
+  display: inline-flex; /* ensure icon and text align vertically */
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 auto; /* allow title to take available space and avoid collision */
+  margin-right: 12px; /* extra breathing room before credits */
+}
+
+.calendar__sidebar-header h3 i {
+  font-size: 1.18rem;
+  line-height: 1;
+  display: inline-block;
+  transform: translateY(1px); /* small nudge to visually center icon with two-line title */
 }
 
 .calendar__credits {
@@ -51,6 +63,25 @@
   border-radius: 20px;
   font-size: 0.85rem;
   color: var(--color-tropical-mint);
+  display: inline-flex;
+  flex-direction: column; /* stack label and number */
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-width: 56px;
+  margin-left: 6px; /* extra gap from title */
+}
+
+.calendar__credits span {
+  display: block;
+  line-height: 1;
+}
+
+.calendar__credits strong {
+  display: block;
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-top: 2px;
 }
 
 /* Categoria de matérias */
