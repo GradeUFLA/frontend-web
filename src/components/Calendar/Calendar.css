@@ -40,9 +40,52 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.calendar__sidebar-header h3 {
+.calendar__sidebar-title {
   color: #fff;
-  font-size: 1.1rem;
+  font-size: 1rem; /* slightly smaller to give space from credits */
+  display: flex;
+  align-items: center; /* vertically center icon and text center line */
+  gap: 10px;
+  flex: 1 1 auto;
+  margin-right: 12px;
+}
+
+.calendar__sidebar-title i {
+  font-size: 1.18rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Nudge icons slightly to vertically center their visual middle with text middle.
+   Different icon fonts often have metrics that appear off; small translate fixes visual alignment. */
+.calendar__sidebar-title i,
+.calendar__category-icon,
+.calendar__toggle-icon,
+.materia-card__info-btn i,
+.calendar__cell-remove i,
+.calendar__turmas-popup-color,
+.calendar__legend-color,
+.btn-voltar i {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  /* small nudge down to place icon center on the same horizontal midline as text */
+  transform: translateY(1px);
+}
+
+/* For very small icons (toggle chevrons) use a smaller nudge to avoid looking off */
+.calendar__toggle-icon,
+.calendar__turmas-popup-conflito {
+  transform: translateY(1px);
+}
+
+.calendar__sidebar-title-text {
+  display: inline-block;
+  line-height: 1.1; /* ensure vertical center aligns with icon middle */
+  transform: translateY(0.2px); /* micro adjustment to visually center exact midline */
 }
 
 .calendar__credits {
@@ -51,6 +94,36 @@
   border-radius: 20px;
   font-size: 0.85rem;
   color: var(--color-tropical-mint);
+  display: inline-flex;
+  flex-direction: column; /* stack label and number */
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-width: 56px;
+  margin-left: 6px; /* extra gap from title */
+}
+
+.calendar__credits span {
+  display: block;
+  line-height: 1;
+}
+
+.calendar__credits strong {
+  display: block;
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+/* Credit states */
+.calendar__credits--warn {
+  background: rgba(249, 220, 92, 0.18);
+  color: var(--color-royal-gold);
+}
+
+.calendar__credits--danger {
+  background: rgba(232, 72, 85, 0.18);
+  color: var(--color-watermelon);
 }
 
 /* Categoria de matérias */
@@ -92,6 +165,17 @@
   gap: 10px;
 }
 
+/* Ensure elective groups use the same spacing as the main materias list */
+.calendar__eletiva-group {
+  margin-bottom: 10px; /* slight separation between groups */
+}
+
+.calendar__eletiva-group-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* match .calendar__materias gap */
+}
+
 /* Card de matéria arrastável */
 .materia-card {
   background: var(--color-surface-light);
@@ -102,6 +186,7 @@
   border-left: 4px solid var(--color-tropical-mint);
   user-select: none;
   position: relative;
+  overflow: visible; /* allow child icons/buttons to render outside without being cropped */
 }
 
 .materia-card:hover {
@@ -139,7 +224,7 @@
 .materia-card__header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center; /* center vertically so small cards don't clip the icon */
   margin-bottom: 6px;
 }
 
@@ -152,22 +237,31 @@
 }
 
 .materia-card__info-btn {
-  background: rgba(255, 255, 255, 0.1);
+  background: transparent; /* make background subtle so icon color is visible */
   border: none;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
   cursor: pointer;
-  font-size: 0.7rem;
-  display: flex;
+  font-size: 0.9rem;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s;
+  transition: all 0.15s;
   flex-shrink: 0;
+  overflow: visible; /* ensure icon isn't clipped on small parents */
+  color: #fff; /* match materia text color */
+  z-index: 20; /* ensure visible above siblings */
 }
 
 .materia-card__info-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.materia-card__info-btn i {
+  color: inherit;
+  font-size: 1.05rem;
+  line-height: 1;
 }
 
 .materia-card__details {
@@ -212,9 +306,42 @@
 .materia-card__blocked-info {
   margin-top: 8px;
   padding-top: 8px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
   color: var(--color-watermelon);
-  font-size: 0.7rem;
+  font-size: 0.75rem;
+  /* layout: icon + text + optional action button; allow wrapping on narrow cards */
+  display: flex;
+  align-items: center;
+  gap: 6px; /* tightened further so text is closer to icon */
+  flex-wrap: wrap;
+}
+
+.materia-card__blocked-info > i {
+  /* slightly larger lock icon and keep color from parent; nudge down 1px for alignment */
+  font-size: 1.05rem;
+  line-height: 1;
+  flex: 0 0 auto;
+  margin-right: 0; /* remove extra horizontal gap between icon and text */
+  transform: translateY(2px); /* nudge icon 1px further down for better visual alignment */
+}
+
+.materia-card__blocked-info > div {
+  /* the main text should be allowed to wrap and shrink */
+  flex: 1 1 auto;
+  min-width: 0; /* allow ellipsis/wrapping inside flex */
+}
+
+.materia-card__minimo-actions {
+  margin-top: 0; /* already spaced above, keep consistent */
+  display: flex;
+  justify-content: flex-end;
+  flex: 0 0 auto;
+}
+
+.materia-card__minimo-actions .materia-card__minimo-btn {
+  /* ensure the button is visible and not cramped */
+  min-width: 88px;
+  padding: 6px 12px;
 }
 
 /* Legenda das turmas durante o drag */
@@ -251,6 +378,40 @@
   text-align: center;
   padding: 15px;
   font-style: italic;
+}
+
+/* Futuras toggle reuses electives style */
+.calendar__futuras-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  background: rgba(56, 58, 66, 0.4);
+  border: 1px solid rgba(56, 58, 66, 0.6);
+  border-radius: 10px;
+  color: var(--color-tropical-mint);
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.calendar__futuras-toggle:hover {
+  background: rgba(56, 58, 66, 0.6);
+}
+
+.calendar__eletiva-group-title {
+  color: var(--color-text);
+  font-size: 0.95rem;
+  margin: 8px 0;
+  font-weight: 700;
+}
+
+.calendar__eletiva-group-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 /* Wrapper do calendário */
@@ -366,11 +527,14 @@
 
 /* Tabela do calendário */
 .calendar__table {
-  border-collapse: collapse;
+  /* use separate collapse so border-radius on corner cells works correctly */
+  border-collapse: separate;
+  border-spacing: 0;
   background: rgba(56, 58, 66, 0.4);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-radius: 12px;
+  /* hide overflow so table border-radius clips the header/footer backgrounds correctly */
   overflow: hidden;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   font-size: 0.8rem;
@@ -389,6 +553,14 @@
   letter-spacing: 0.5px;
   color: #fff;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Rounded corners for top header cells */
+.calendar__table thead th:first-child {
+  border-top-left-radius: 12px;
+}
+.calendar__table thead th:last-child {
+  border-top-right-radius: 12px;
 }
 
 .calendar__col-time {
@@ -410,6 +582,14 @@
   width: 80px;
   transition: all 0.2s ease;
   background: rgba(255, 255, 255, 0.02);
+}
+
+/* Rounded corners for bottom cells (last row) */
+.calendar__table tbody tr:last-child td:first-child {
+  border-bottom-left-radius: 12px;
+}
+.calendar__table tbody tr:last-child td:last-child {
+  border-bottom-right-radius: 12px;
 }
 
 .calendar__cell-time {
@@ -478,9 +658,9 @@
   font-weight: 600;
   font-size: 0.55rem;
   position: relative;
-  padding: 2px;
+  padding: 2px; /* reverted: center text as before; icon may overlay on hover */
   line-height: 1.1;
-  overflow: hidden;
+  overflow: visible; /* allow remove button to be fully visible when cell is small */
 }
 
 .calendar__cell-subject-name {
@@ -495,21 +675,38 @@
 
 .calendar__cell-remove {
   position: absolute;
-  top: 2px;
-  right: 2px;
-  background: rgba(0, 0, 0, 0.3);
+  /* vertically center the icon and place it at the right edge */
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+  background: transparent; /* remove circle */
   border: none;
-  color: #fff;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
+  color: var(--color-watermelon); /* use palette red */
+  padding: 0; /* no extra padding, only the icon */
+  width: auto;
+  height: auto;
+  border-radius: 0;
   cursor: pointer;
-  font-size: 0.5rem;
-  display: flex;
+  font-size: 1rem; /* slightly larger X for visibility */
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   opacity: 0;
-  transition: all 0.2s;
+  transition: color 0.15s, opacity 0.15s, transform 0.15s;
+  z-index: 30; /* ensure it's above other elements */
+}
+
+/* Icon styling: white with black contour using multiple text-shadow offsets */
+.calendar__cell-remove i {
+  color: #fff; /* white X */
+  font-size: 1.05rem;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  text-shadow:
+    -1px -1px 0 #000,
+     1px -1px 0 #000,
+    -1px  1px 0 #000,
+     1px  1px 0 #000;
 }
 
 .calendar__cell:hover .calendar__cell-remove {
@@ -517,13 +714,8 @@
 }
 
 .calendar__cell-remove:hover {
-  background: var(--color-watermelon);
-}
-
-.calendar__cell-preview-content {
-  font-size: 0.6rem;
-  color: var(--color-tropical-mint);
-  font-weight: 600;
+  /* keep hover subtle: slightly scale the icon */
+  transform: translateY(-50%) scale(1.05);
 }
 
 /* Drag Ghost - elemento que segue o mouse */
@@ -584,3 +776,126 @@
   }
 }
 
+.calendar__eletivas-search {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.06);
+  color: var(--color-text);
+  font-size: 0.9rem;
+}
+
+.calendar__eletivas-search::placeholder {
+  color: rgba(255,255,255,0.4);
+}
+
+.calendar__eletiva-group-title {
+  margin-top: 8px;
+}
+
+.btn-voltar {
+  position: relative;
+  top: 0; /* lower the button 1px from the previous state so icon/text baseline aligns */
+}
+
+.btn-voltar__text {
+  display: inline-block;
+  transform: translateY(0); /* keep neutral in calendar context */
+}
+
+.materia-card__minimo-btn {
+  margin-left: 10px;
+  background: rgba(249, 220, 92, 0.12);
+  color: var(--color-royal-gold);
+  border: 1px solid rgba(249, 220, 92, 0.2);
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+
+.materia-card__minimo-btn:hover {
+  background: rgba(249, 220, 92, 0.2);
+}
+
+.materia-card__minimo-actions {
+  margin-top: 0; /* already spaced above, keep consistent */
+  display: flex;
+  justify-content: flex-end;
+  flex: 0 0 auto;
+}
+
+.materia-card__minimo-actions .materia-card__minimo-btn {
+  /* ensure the button is visible and not cramped */
+  min-width: 88px;
+  padding: 6px 12px;
+}
+
+.materia-card__blocked-info > i {
+  /* ensure lock icon color follows text */
+  color: inherit;
+}
+
+/* Modal overlay for confirming minimo */
+.minimo-modal-overlay {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.minimo-modal {
+  width: 420px;
+  max-width: calc(100% - 40px);
+  background: linear-gradient(180deg, rgba(56,58,66,0.85), rgba(40,40,44,0.85));
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.minimo-modal h3 {
+  margin: 0 0 8px 0;
+  font-size: 1.05rem;
+}
+
+.minimo-modal p {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.minimo-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.btn {
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+}
+
+.btn-secondary {
+  background: rgba(255,255,255,0.03);
+  color: var(--color-text-muted);
+}
+
+.btn-primary {
+  background: var(--color-tropical-mint);
+  color: #0b0b0b;
+}

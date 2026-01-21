@@ -1,10 +1,10 @@
 import { forwardRef } from 'react';
 import Dropdown from '../Dropdown';
-import { cursos } from '../../data/cursos';
+import { getCursos } from '../../data';
 import './CursoSelector.css';
 
 const CursoSelector = forwardRef(({ onCursoSelect, onVoltar }, ref) => {
-  const cursosOptions = cursos.map((curso) => ({
+  const cursosOptions = getCursos().map((curso) => ({
     value: curso.id,
     label: `${curso.nome} (${curso.totalSemestres} semestres)`
   }));
@@ -33,4 +33,3 @@ const CursoSelector = forwardRef(({ onCursoSelect, onVoltar }, ref) => {
 CursoSelector.displayName = 'CursoSelector';
 
 export default CursoSelector;
-

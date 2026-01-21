@@ -19,8 +19,12 @@
   left: 40px;
 }
 
+.setup-wizard .btn-voltar__text {
+  display: inline-block;
+  transform: translateY(-1px); /* nudge stepper back button text up 1px */
+}
+
 .setup-wizard .stepper-outer-container {
   width: 100%;
   max-width: 600px;
 }
-

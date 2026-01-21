@@ -12,13 +12,15 @@ function cn(...classes) {
 const RotatingText = forwardRef((props, ref) => {
   const {
     texts,
-    transition = { type: 'spring', damping: 25, stiffness: 300 },
+    // slightly snappier spring for a more fluid feel
+    transition = { type: 'spring', damping: 30, stiffness: 400 },
     initial = { y: '100%', opacity: 0 },
     animate = { y: 0, opacity: 1 },
     exit = { y: '-120%', opacity: 0 },
     animatePresenceMode = 'wait',
     animatePresenceInitial = false,
-    rotationInterval = 2000,
+    // faster rotation interval (ms) - swap more quickly between words
+    rotationInterval = 1400,
     staggerDuration = 0,
     staggerFrom = 'first',
     loop = true,
@@ -185,4 +187,3 @@ const RotatingText = forwardRef((props, ref) => {
 
 RotatingText.displayName = 'RotatingText';
 export default RotatingText;
-
