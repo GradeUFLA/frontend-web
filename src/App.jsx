@@ -299,8 +299,9 @@ function App() {
               materiasAprovadas={materiasAprovadas}
               materiasPorSemestre={materiasPorSemestre}
               eletivas={eletivas}
-              onToggleAprovada={handleToggleMateriaAprovada}
+              onToggleMateria={handleToggleMateriaAprovada}
               onConfirmMinimo={handleConfirmMinimo}
+              onShowToast={(msg, kind) => addToast(msg, kind)}
               onVoltar={handleVoltarParaSetup}
               onContinuar={handleContinuar}
               cursoSelecionado={cursoSelecionado}
