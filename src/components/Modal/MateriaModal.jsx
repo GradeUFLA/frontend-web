@@ -3,8 +3,31 @@ import './Modal.css';
 
 const DIAS_SEMANA = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
-const MateriaModal = ({ materia, materiasAprovadas, onClose }) => {
+const MateriaModal = ({ materia, materiasAprovadas, onClose, onSave }) => {
   if (!materia) return null;
+
+  const normalizeDiaForLabel = (d) => {
+    const n = Number(d);
+    if (!Number.isNaN(n)) {
+      if (n >= 0 && n <= 6) return n;
+      if (n >= 1 && n <= 7) return ((n + 6) % 7 + 7) % 7; // 1->0 .. 7->6
+    }
+    // fallback: try parse first 3 letters
+    const s = String(d).toLowerCase().slice(0,3);
+    const idx = DIAS_SEMANA.findIndex(x => x.toLowerCase().slice(0,3) === s);
+    return idx !== -1 ? idx : 0;
+  };
+
+  const handleAddTurmaClick = (turma) => {
+    if (!turma) return;
+    const nova = {
+      ...materia,
+      turmaId: turma.id,
+      horarios: turma.horarios || []
+    };
+    if (typeof onSave === 'function') onSave(nova);
+    if (typeof onClose === 'function') onClose();
+  };
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -34,12 +57,12 @@ const MateriaModal = ({ materia, materiasAprovadas, onClose }) => {
           <span className="modal-label">Turmas disponíveis:</span>
           <div className="turmas-lista">
             {materia.turmas?.map((turma) => (
-              <div key={turma.id} className="turma-item">
+              <div key={turma.id} className="turma-item" onClick={() => handleAddTurmaClick(turma)} role="button" tabIndex={0}>
                 <span className="turma-id">Turma {turma.id}</span>
                 <div className="turma-horarios">
                   {turma.horarios.map((h, i) => (
                     <span key={i} className="horario-badge">
-                      {DIAS_SEMANA[h.dia]} {h.inicio}h-{h.fim}h
+                      {DIAS_SEMANA[normalizeDiaForLabel(h.dia)]} {h.inicio}{typeof h.inicio === 'number' ? 'h' : ''}-{h.fim}{typeof h.fim === 'number' ? 'h' : ''}
                     </span>
                   ))}
                 </div>

@@ -338,6 +338,7 @@ function App() {
               }));
               setModalMateria(null);
             }}
+           materiasAprovadas={materiasAprovadas}
           />
         )}
       </div>

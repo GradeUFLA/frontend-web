@@ -22,8 +22,8 @@ const CORES_TURMAS = [
   '#fd79a8', // Pink
 ];
 
-// Gera horários de 8h até 23h
-const gerarHorarios = (start = 8, end = 23) => {
+// Gera horários de 7h até 23h
+const gerarHorarios = (start = 7, end = 23) => {
   const horarios = [];
   for (let h = start; h <= end; h++) {
     horarios.push(`${h.toString().padStart(2, '0')}:00`);
@@ -74,7 +74,7 @@ const isAnpTurma = (turma) => {
   return hasSat && !hasWeekday;
 };
 
-const mapAnpSlotToHorarioIdx = (slot, baseHour = 8) => {
+const mapAnpSlotToHorarioIdx = (slot, baseHour = 7) => {
   // slot 1 => row for ANP_BASE_HOUR, so index = ANP_BASE_HOUR - baseHour + (slot-1)
   return (ANP_BASE_HOUR - baseHour) + (Number(slot) - 1);
 };
@@ -123,9 +123,9 @@ const Calendar = forwardRef(({
   // helper: calculate total credits currently in calendar
   const calcTotalCreditos = () => Object.values(materiasNoCalendario || {}).reduce((acc, m) => acc + (m.creditos || 0), 0);
 
-  // generate hours from 08:00 to 23:00
-  const horarios = gerarHorarios(8, 23);
-  const baseHour = 8; // used to compute numeric hour from index
+  // generate hours from 07:00 to 23:00
+  const horarios = gerarHorarios(7, 23);
+  const baseHour = 7; // used to compute numeric hour from index
 
   // The CSV uses 1 = Domingo, 2 = Segunda, ..., 7 = Sábado (as in your example).
   // Map that to 0..6 by shifting -1 (n-1 mod 7).
