@@ -323,6 +323,7 @@ function App() {
               semestreAtual={semestreAtual}
              materiasMinimoConfirmadas={minimoConfirmados}
              onConfirmMinimo={handleConfirmMinimo}
+             onMateriaClick={(m) => setModalMateria(m)}
             />
           )}
         </div>

@@ -22,13 +22,72 @@ const CORES_TURMAS = [
   '#fd79a8', // Pink
 ];
 
-// Gera horários de 6h até 23h
-const gerarHorarios = (start = 6, end = 23) => {
+// Gera horários de 8h até 23h
+const gerarHorarios = (start = 8, end = 23) => {
   const horarios = [];
   for (let h = start; h <= end; h++) {
     horarios.push(`${h.toString().padStart(2, '0')}:00`);
   }
   return horarios;
+};
+
+// ANP / Saturday stacking helpers
+const SATURDAY_INDEX = 6; // normalized day 6 = Sábado
+const ANP_BASE_HOUR = 9; // first ANP visual row starts at 09:00
+const ANP_MAX_SLOTS = 14; // slots 1..14
+
+// lightweight static normalizer used only by top-level helpers (does not rely on component internals)
+const normalizeDiaStatic = (d) => {
+  if (d == null) return d;
+  const n = Number(d);
+  if (!Number.isNaN(n)) {
+    if (n >= 0 && n <= 6) return n;
+    if (n >= 1 && n <= 7) return ((n + 6) % 7 + 7) % 7; // 1->0 .. 7->6
+    return n;
+  }
+  const s = String(d).toLowerCase().slice(0,3);
+  const idx = DIAS_SEMANA.findIndex(x => x.toLowerCase().slice(0,3) === s);
+  return idx !== -1 ? idx : d;
+};
+
+// parse hour values which may come as numbers or strings like "08:00"
+const parseHour = (val) => {
+  if (val == null) return NaN;
+  if (typeof val === 'number') return val;
+  if (typeof val === 'string') {
+    const match = val.match(/^(\d{1,2})[:.]?(\d{0,2})/);
+    if (match) return Number(match[1]);
+    const n = Number(val);
+    return Number.isNaN(n) ? NaN : n;
+  }
+  return NaN;
+};
+
+const isAnpTurma = (turma) => {
+  if (!turma) return false;
+  if (turma.anp) return true;
+  const horarios = turma.horarios || [];
+  if (horarios.length === 0) return false;
+  if (horarios.some(h => h && h.anp === true)) return true;
+  const hasSat = horarios.some(h => normalizeDiaStatic(h.dia) === SATURDAY_INDEX);
+  const hasWeekday = horarios.some(h => normalizeDiaStatic(h.dia) !== SATURDAY_INDEX);
+  return hasSat && !hasWeekday;
+};
+
+const mapAnpSlotToHorarioIdx = (slot, baseHour = 8) => {
+  // slot 1 => row for ANP_BASE_HOUR, so index = ANP_BASE_HOUR - baseHour + (slot-1)
+  return (ANP_BASE_HOUR - baseHour) + (Number(slot) - 1);
+};
+
+const findFirstAvailableAnpSlot = (materiasNoCalendario) => {
+  const used = new Set();
+  for (const m of Object.values(materiasNoCalendario || {})) {
+    if (m.anpSlot) used.add(Number(m.anpSlot));
+  }
+  for (let s = 1; s <= ANP_MAX_SLOTS; s++) {
+    if (!used.has(s)) return s;
+  }
+  return null; // none available
 };
 
 const Calendar = forwardRef(({
@@ -64,9 +123,9 @@ const Calendar = forwardRef(({
   // helper: calculate total credits currently in calendar
   const calcTotalCreditos = () => Object.values(materiasNoCalendario || {}).reduce((acc, m) => acc + (m.creditos || 0), 0);
 
-  // generate hours from 06:00 to 23:00
-  const horarios = gerarHorarios(6, 23);
-  const baseHour = 6; // used to compute numeric hour from index
+  // generate hours from 08:00 to 23:00
+  const horarios = gerarHorarios(8, 23);
+  const baseHour = 8; // used to compute numeric hour from index
 
   // The CSV uses 1 = Domingo, 2 = Segunda, ..., 7 = Sábado (as in your example).
   // Map that to 0..6 by shifting -1 (n-1 mod 7).
@@ -134,27 +193,66 @@ const Calendar = forwardRef(({
     const hora = baseHour + horarioIdx;
     const found = [];
     for (const [codigo, materiaData] of Object.entries(materiasNoCalendario)) {
+      // If materia has an assigned ANP slot, map it to the corresponding saturday row
+      if (materiaData.anpSlot && diaIdx === SATURDAY_INDEX) {
+        const slotIdx = mapAnpSlotToHorarioIdx(materiaData.anpSlot, baseHour);
+        if (slotIdx === horarioIdx) {
+          found.push({ ...materiaData, codigo });
+        }
+        continue; // ignore declared saturday horarios for ANP -- they're shown using slot
+      }
+
       for (const h of (materiaData.horarios || [])) {
         if (!h) continue;
         const hd = normalizeDia(h.dia);
-        if (hd === diaIdx && hora >= h.inicio && hora < h.fim) {
+        const hStart = parseHour(h.inicio);
+        const hEnd = parseHour(h.fim);
+        if (hd === diaIdx && !Number.isNaN(hStart) && !Number.isNaN(hEnd) && hora >= hStart && hora < hEnd) {
           found.push({ ...materiaData, codigo });
           break; // avoid duplicate push for same materia
         }
       }
     }
-    return found; // possibly empty array
+    return found; // possivelmente array vazia
   };
 
   // Verifica se os horários de uma turma conflitam com matérias já no calendário
-  const verificarConflito = (horarios) => {
-    for (const horario of horarios) {
+  // verificarConflito now accepts a 'turma' object so we can detect ANP-style turmas
+  const verificarConflito = (turma) => {
+    // If turma is ANP (has anp flag or only saturday horários) => treat specially
+    const isAnp = isAnpTurma(turma);
+    if (isAnp) {
+      // find first available ANP slot
+      const slot = findFirstAvailableAnpSlot(materiasNoCalendario);
+      if (slot === null) return { temConflito: true, mensagem: 'Sem slots ANP disponíveis' };
+      return { temConflito: false, suggestedAnpSlot: slot };
+    }
+
+    // non-ANP: normal conflict detection across all existing materias
+    for (const horario of turma.horarios || []) {
       const hdHorario = normalizeDia(horario.dia);
-      for (let hora = horario.inicio; hora < horario.fim; hora++) {
+      const inicioHorario = parseHour(horario.inicio);
+      const fimHorario = parseHour(horario.fim);
+      if (Number.isNaN(inicioHorario) || Number.isNaN(fimHorario)) continue;
+      for (let hora = inicioHorario; hora < fimHorario; hora++) {
         for (const materia of Object.values(materiasNoCalendario)) {
-          for (const h of materia.horarios || []) {
+          // existing materia may have anpSlot -- treat it as occupying a specific saturday row
+          for (const h of (materia.horarios || [])) {
             const hd = normalizeDia(h.dia);
-            if (hd === hdHorario && hora >= h.inicio && hora < h.fim) {
+            // if existing materia has anpSlot and checking saturday, map to pseudo-hour range
+            if (hd === SATURDAY_INDEX && materia.anpSlot) {
+              const slotIdx = mapAnpSlotToHorarioIdx(materia.anpSlot, baseHour);
+              const slotStart = baseHour + slotIdx;
+              const slotEnd = slotStart + 1;
+              if (hdHorario === SATURDAY_INDEX && hora >= slotStart && hora < slotEnd) {
+                return { temConflito: true, materiaConflito: materia.nome };
+              }
+              continue; // skip normal saturday horario comparison for this existing materia
+            }
+
+            const hStart = parseHour(h.inicio);
+            const hEnd = parseHour(h.fim);
+            if (hd === hdHorario && !Number.isNaN(hStart) && !Number.isNaN(hEnd) && hora >= hStart && hora < hEnd) {
               return { temConflito: true, materiaConflito: materia.nome };
             }
           }
@@ -171,9 +269,21 @@ const Calendar = forwardRef(({
 
     for (let i = 0; i < draggingMateria.turmas.length; i++) {
       const turma = draggingMateria.turmas[i];
+      // If turma is ANP and we're hovering a saturday cell, accept: we'll map to ANP slot row
+      const turmaIsAnp = isAnpTurma(turma);
+      if (turmaIsAnp && diaIdx === SATURDAY_INDEX) {
+        // highlight only the row that corresponds to the first available slot
+        const slot = findFirstAvailableAnpSlot(materiasNoCalendario);
+        const slotRow = slot ? mapAnpSlotToHorarioIdx(slot, baseHour) : null;
+        if (slotRow === horarioIdx) return i;
+        continue;
+      }
+
       for (const h of (turma.horarios || [])) {
         const hd = normalizeDia(h.dia);
-        if (hd === diaIdx && hora >= h.inicio && hora < h.fim) {
+        const hStart = parseHour(h.inicio);
+        const hEnd = parseHour(h.fim);
+        if (hd === diaIdx && !Number.isNaN(hStart) && !Number.isNaN(hEnd) && hora >= hStart && hora < hEnd) {
           return i;
         }
       }
@@ -258,9 +368,9 @@ const Calendar = forwardRef(({
       return;
     }
 
-    // Verifica se soltou dentro do calendário e tem uma turma selecionada
+    // Verifica se soltou dentro do calendário
     const calendarTable = calendarTableRef.current;
-    if (calendarTable && selectedTurmaIndex !== null) {
+    if (calendarTable) {
       const rect = calendarTable.getBoundingClientRect();
       const isInsideCalendar =
         e.clientX >= rect.left &&
@@ -269,26 +379,108 @@ const Calendar = forwardRef(({
         e.clientY <= rect.bottom;
 
       if (isInsideCalendar) {
-        const turma = draggingMateria.turmas[selectedTurmaIndex];
-        const { temConflito, materiaConflito } = verificarConflito(turma.horarios);
+        // If user hasn't hovered/select a turma, compute target cell from mouse coords
+        let turmaIdxToUse = selectedTurmaIndex;
+        let targetHorarioIdx = null;
+        let targetDiaIdx = null;
 
-        if (temConflito) {
-          onShowToast?.(`Conflito de horário com ${materiaConflito}!`, 'error');
-        } else {
-          // credit limit check before adding
-          const currentTotal = calcTotalCreditos();
-          const materiaCred = draggingMateria.creditos || 0;
-          if (currentTotal >= CREDIT_MAX) {
-            onShowToast?.(`Limite de créditos atingido (${CREDIT_MAX}). Remova matérias para adicionar mais.`, 'error');
-          } else if (currentTotal + materiaCred > CREDIT_MAX) {
-            onShowToast?.('Adicionar esta matéria excederia o limite de 32 créditos.', 'error');
-          } else {
-            // Adiciona a matéria com a turma selecionada
-            onAddMateria({
-              ...draggingMateria,
-              turmaId: turma.id,
-              horarios: turma.horarios
+        if (turmaIdxToUse === null) {
+          try {
+            const thead = calendarTable.querySelector('thead');
+            const tbody = calendarTable.querySelector('tbody');
+            const headerCells = Array.from(thead.querySelectorAll('th'));
+
+            // find which header cell contains the x
+            let foundHeaderIndex = headerCells.findIndex(h => {
+              const hr = h.getBoundingClientRect();
+              return e.clientX >= hr.left && e.clientX <= hr.right;
             });
+
+            if (foundHeaderIndex === -1) {
+              // fallback: compute approximate column by proportion
+              const timeCol = headerCells[0];
+              const timeW = timeCol ? timeCol.getBoundingClientRect().width : rect.width * 0.12;
+              const relativeX = e.clientX - rect.left - timeW;
+              const contentW = rect.width - timeW;
+              const approxCol = Math.floor((relativeX / contentW) * DIAS_SEMANA.length);
+              foundHeaderIndex = approxCol + 1; // +1 because headerCells includes time column
+            }
+
+            // map header index to day index (header 0 = time column)
+            const dayIndex = Math.max(0, foundHeaderIndex - 1);
+
+            // compute row index inside tbody
+            const tbodyRect = tbody.getBoundingClientRect();
+            const rowHeight = tbodyRect.height / Math.max(1, horarios.length);
+            const yInBody = e.clientY - tbodyRect.top;
+            targetHorarioIdx = Math.min(horarios.length - 1, Math.max(0, Math.floor(yInBody / rowHeight)));
+            targetDiaIdx = dayIndex;
+
+            // attempt to find turma index for that cell
+            const computedTurmaIndex = getTurmaIndexParaCelula(targetHorarioIdx, targetDiaIdx);
+            if (computedTurmaIndex !== -1) {
+              turmaIdxToUse = computedTurmaIndex;
+            } else if (targetDiaIdx === SATURDAY_INDEX) {
+              // saturday fallback: pick first ANP turma if any
+              const anpIdx = (draggingMateria.turmas || []).findIndex(t => isAnpTurma(t));
+              if (anpIdx !== -1) turmaIdxToUse = anpIdx;
+            }
+          } catch (err) {
+            // parsing failed; leave turmaIdxToUse as null
+            // console.warn('could not compute cell from mouse coords', err);
+          }
+        }
+
+        // If we have a resolved turma index, proceed like before
+        if (turmaIdxToUse !== null && turmaIdxToUse !== -1) {
+          const turma = draggingMateria.turmas[turmaIdxToUse];
+
+          // If we computed a concrete target cell, ensure it's empty (no overlapping cell item)
+          if (typeof targetHorarioIdx === 'number' && typeof targetDiaIdx === 'number') {
+            const ocupadas = getMateriasEmCelula(targetHorarioIdx, targetDiaIdx);
+            if (ocupadas && ocupadas.length > 0) {
+              onShowToast?.('Horário já ocupado por outra matéria.', 'error');
+              resetDrag();
+              return;
+            }
+          }
+
+          const conflitResult = verificarConflito(turma);
+          const temConflito = conflitResult.temConflito;
+          const materiaConflito = conflitResult.materiaConflito || conflitResult.mensagem;
+
+          if (temConflito) {
+            onShowToast?.(`Conflito de horário com ${materiaConflito}!`, 'error');
+          } else {
+            // credit limit check before adding
+            const currentTotal = calcTotalCreditos();
+            const materiaCred = draggingMateria.creditos || 0;
+            if (currentTotal >= CREDIT_MAX) {
+              onShowToast?.(`Limite de créditos atingido (${CREDIT_MAX}). Remova matérias para adicionar mais.`, 'error');
+            } else if (currentTotal + materiaCred > CREDIT_MAX) {
+              onShowToast?.('Adicionar esta matéria excederia o limite de 32 créditos.', 'error');
+            } else {
+              const isTurmaAnp = isAnpTurma(turma);
+              if (isTurmaAnp) {
+                const slot = conflitResult.suggestedAnpSlot || findFirstAvailableAnpSlot(materiasNoCalendario);
+                if (!slot) {
+                  onShowToast?.('Sem vagas ANP disponíveis no sábado.', 'error');
+                } else {
+                  onAddMateria({
+                    ...draggingMateria,
+                    turmaId: turma.id,
+                    horarios: turma.horarios,
+                    anpSlot: slot
+                  });
+                }
+              } else {
+                onAddMateria({
+                  ...draggingMateria,
+                  turmaId: turma.id,
+                  horarios: turma.horarios
+                });
+              }
+            }
           }
         }
       }
@@ -312,10 +504,28 @@ const Calendar = forwardRef(({
 
     for (let i = 0; i < draggingMateria.turmas.length; i++) {
       const turma = draggingMateria.turmas[i];
+      // ANP handling: if turma is ANP and we're on saturday column, preview only on the first available ANP slot row
+      const turmaIsAnp = isAnpTurma(turma);
+      if (turmaIsAnp && diaIdx === SATURDAY_INDEX) {
+        const slot = findFirstAvailableAnpSlot(materiasNoCalendario);
+        if (!slot) return { turmaIndex: i, turmaId: turma.id, cor: getCorTurma(i), isSelected: false, hasConflict: true };
+        const slotRow = mapAnpSlotToHorarioIdx(slot, baseHour);
+        const { temConflito } = verificarConflito(turma);
+        return {
+          turmaIndex: i,
+          turmaId: turma.id,
+          cor: getCorTurma(i),
+          isSelected: selectedTurmaIndex === i && slotRow === horarioIdx,
+          hasConflict: temConflito || (materiasExistentes.length > 0)
+        };
+      }
+
       for (const h of (turma.horarios || [])) {
         const hd = normalizeDia(h.dia);
-        if (hd === diaIdx && hora >= h.inicio && hora < h.fim) {
-          const { temConflito } = verificarConflito(turma.horarios || []);
+        const hStart = parseHour(h.inicio);
+        const hEnd = parseHour(h.fim);
+        if (hd === diaIdx && !Number.isNaN(hStart) && !Number.isNaN(hEnd) && hora >= hStart && hora < hEnd) {
+          const { temConflito } = verificarConflito(turma);
           return {
             turmaIndex: i,
             turmaId: turma.id,
@@ -655,7 +865,7 @@ const Calendar = forwardRef(({
                 <span className="calendar__turmas-popup-title">Escolha uma turma:</span>
                 <div className="calendar__turmas-popup-items">
                   {(draggingMateria.turmas || []).map((turma, index) => {
-                    const { temConflito } = verificarConflito(turma.horarios || []);
+                    const { temConflito } = verificarConflito(turma);
                     return (
                       <div
                         key={turma.id}
