@@ -1,41 +1,164 @@
 curso_id,nome,matriz
-G014,Sistemas de Informação,2023/01
-G015,Engenharia de Software,2023/01
+G070,Sistemas para Internet,2026/02
+G023,Nutrição,2018/01
+G023,Nutrição,2013/02
+G068,Ciências Sociais,2026/02
+G024,Filosofia,2018/02
+G007,Medicina Veterinária,2009/02
+G019,Engenharia Ambiental e Sanitária,2019/02
+G064,Segurança Cibernética,2026/02
+G005,Engenharia Florestal,2012/01
+G034,Engenharia de Materiais,2017/01
+G027,Direito,2014/02
+GD004,Letras/Português,2023/01
+G048,Engenharia Física,2023/01
+G005,Engenharia Florestal,2009/02
+G022,Engenharia de Controle e Automação,2023/01
+G018,Física,2024/01
+G066,Comunicação Integrada e Mídias Digitais,2026/01
+G074,Terapia Ocupacional,2026/02
+G036,Pedagogia,2023/01
+G013,Química,2024/01
+G015,Matemática,2014/01
+G013,Química,2013/02
+G025,Letras,2010/02
+G011,Engenharia de Alimentos,2020/01
+GD006,Pedagogia,2023/01
+G019,Engenharia Ambiental e Sanitária,2009/02
+G002,Zootecnia,2018/01
+G012,Ciências Biológicas,2020/01
+G009,Administração,2009/02
+G038,Curso Componentes de Temas Transversais,2019/02
+G029,Educação Física,2012/01
+G005,Engenharia Florestal,2023/01
+G015,Matemática,2018/02
+G060,Engenharia Mecânica,2025/01
+G010,Ciência da Computação,2016/01
+GCT042,Engenharia Elétrica,2025/01
+G026,Administração Pública,2016/02
+G021,Química,2013/02
+G046,"Bacharelado Interdisciplinar em Inovação, Ciência e Tecnologia",2025/01
+G010,Ciência da Computação,2013/02
+G021,Química,2018/02
+G033,Engenharia Química,2014/02
+GD006,Pedagogia,2017/01
+G020,Ciências Biológicas,2020/02
+G001,Agronomia,2005/02
+G062,Gestão do Agronegócio,2026/01
+G024,Filosofia,2012/01
+G012,Ciências Biológicas,2009/02
+G009,Administração,2023/01
+G014,Sistemas de Informação,2013/02
+GD004,Letras/Português,2011/01
+G028,Educação Física,2013/02
+G022,Engenharia de Controle e Automação,2020/02
+G069,Automação Industrial,2026/02
+G033,Engenharia Química,2017/01
+G005,Engenharia Florestal,2009/03
+G018,Física,2014/01
+G020,Ciências Biológicas,2024/01
+GCT041,Engenharia de Software,2025/01
+GCT039,"Bacharelado Interdisciplinar em Inovação, Ciência e Tecnologia",2022/01
+G071,Viticultura e Enologia,2026/02
+G049,Engenharia Física,2023/01
+G012,Ciências Biológicas,2023/01
+G054,Engenharia de Materiais,2023/01
+G035,Medicina,2018/02
+G026,Administração Pública,2023/01
+G036,Pedagogia,2015/01
+G067,Enfermagem,2026/02
+G026,Administração Pública,2010/02
+G003,Engenharia Agrícola,2013/02
+G061,Engenharia Química,2025/01
+G018,Física,2018/02
+G007,Medicina Veterinária,2022/02
+G001,Agronomia,2013/02
+G029,Educação Física,2026/01
+GD002,Administração Pública,2011/01
+GD004,Letras/Português,2017/01
+G013,Química,2018/02
+G002,Zootecnia,2013/02
+G036,Pedagogia,2024/01
+GCT040,Engenharia de Produção,2025/01
+G015,Matemática,2009/02
+G007,Medicina Veterinária,2016/01
+G072,Fonoaudiologia,2026/02
+G025,Letras,2013/02
+G025,Letras,2018/02
+G057,"Letras Português, Inglês e suas Literaturas",2023/01
+G022,Engenharia de Controle e Automação,2009/02
+GD002,Administração Pública,2025/01
+G065,Engenharia Financeira e Inovação Digital,2026/02
+G015,Matemática,2023/01
+G001,Agronomia,2008/07
+G028,Educação Física,2012/01
+G011,Engenharia de Alimentos,2011/02
+G053,Engenharia de Materiais,2023/01
+G059,Engenharia Civil,2025/01
+G027,Direito,2012/02
+G026,Administração Pública,2020/02
+G021,Química,2023/01
+G011,Engenharia de Alimentos,2023/01
+G019,Engenharia Ambiental e Sanitária,2013/02
+G020,Ciências Biológicas,2012/01
+G009,Administração,2013/02
+G031,Engenharia Civil,2014/02
+G020,Ciências Biológicas,2013/02
+G073,Inteligência Artificial,2026/01
+G051,Engenharia Mecânica,2023/01
+G020,Ciências Biológicas,2018/02
+G063,Jogos Digitais,2026/02
+G024,Filosofia,2023/01
+G056,Letras Português e suas Literaturas,2023/01
+G023,Nutrição,2023/01
+G018,Física,2009/02
+G003,Engenharia Agrícola,2009/02
+G011,Engenharia de Alimentos,2017/01
+G013,Química,2009/02
+G027,Direito,2013/02
+G022,Engenharia de Controle e Automação,2013/02
+G002,Zootecnia,2009/02
+G001,Agronomia,2008/04
+G034,Engenharia de Materiais,2014/02
+G035,Medicina,2023/01
+G002,Zootecnia,2008/04
+G007,Medicina Veterinária,2013/02
+GD006,Pedagogia,2012/01
+G027,Direito,2022/01
+G045,Educação Física,2021/02
+G010,Ciência da Computação,2009/02
+G018,Física,2023/01
+GCT039,"Bacharelado Interdisciplinar em Inovação, Ciência e Tecnologia",2023/02
+G003,Engenharia Agrícola,2023/01
+G013,Química,2023/01
+G032,Engenharia Mecânica,2014/02
+G005,Engenharia Florestal,2013/02
+G052,Engenharia Química,2023/01
+G028,Educação Física,2026/01
+G011,Engenharia de Alimentos,2011/01
+G009,Administração,2014/01
+G058,Estatística,2024/01
+G014,Sistemas de Informação,2009/02
 G010,Ciência da Computação,2023/01
-G017,Redes de Computadores,2023/01
-G018,Segurança da Informação,2023/01
-G019,Inteligência Artificial,2023/01
-G020,Engenharia de Dados,2023/01
-G021,Desenvolvimento Web,2023/01
-G022,Desenvolvimento Mobile,2023/01
-G023,Computação em Nuvem,2023/01
-G024,Big Data,2023/01
-G025,Internet das Coisas,2023/01
-G026,Computação Gráfica,2023/01
-G027,Engenharia de Software Avançada,2023/01
-G028,Segurança Cibernética,2023/01
-G029,Machine Learning,2023/01
-G030,Processamento de Imagens,2023/01
-G031,Redes Avançadas,2023/01
-G032,Sistemas Distribuídos,2023/01
-G033,Computação Quântica,2023/01
-G034,Robótica,2023/01
-G035,Realidade Virtual e Aumentada,2023/01
-G036,Desenvolvimento de Jogos,2023/01
-G037,Engenharia de Software para Dispositivos Móveis,2023/01
-G038,Análise de Dados,2023/01
-G039,Computação Forense,2023/01
-G040,Desenvolvimento de Aplicações Empresariais,2023/01
-G041,Engenharia de Software Orientada a Serviços,2023/01
-G042,Computação de Alto Desempenho,2023/01
-G043,Engenharia de Software para Sistemas Embarcados,2023/01
-G044,Computação Ubíqua,2023/01
-G045,Engenharia de Software para Sistemas Críticos,2023/01
-G046,Computação Social,2023/01
-G047,Engenharia de Software para Sistemas de Tempo Real,2023/01
-G048,Computação Verde,2023/01
-G049,Engenharia de Software para Sistemas de Informação Geográfica,2023/01
-G050,Computação Acessível,2023/01
-G051,Engenharia de Software para Sistemas de Saúde,2023/01
-G052,Computação Móvel,2023/01
-
+G044,Educação Física,2021/02
+G032,Engenharia Mecânica,2017/01
+G015,Matemática,2024/01
+G015,Matemática,2016/01
+G014,Sistemas de Informação,2015/02
+G046,"Bacharelado Interdisciplinar em Inovação, Ciência e Tecnologia",2023/01
+G014,Sistemas de Informação,2023/01
+G029,Educação Física,2013/02
+G001,Agronomia,2019/01
+G047,Engenharia Agrícola,2023/01
+G024,Filosofia,2014/01
+G011,Engenharia de Alimentos,2013/02
+G035,Medicina,2015/02
+G012,Ciências Biológicas,2013/02
+G037,Engenharia Física,2018/02
+G050,Engenharia Civil,2023/01
+G001,Agronomia,2009/02
+G031,Engenharia Civil,2017/01
+G026,Administração Pública,2013/02
+G036,Pedagogia,2017/02
+G027,Direito,2013/01
+G035,Medicina,2015/01

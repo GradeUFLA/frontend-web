@@ -10,6 +10,7 @@ import {
   ToastContainer,
   useToast
 } from './components';
+import { AboutMe } from './components';
 import SetupWizard from './components/SetupWizard';
 
 // Data
@@ -277,6 +278,7 @@ function App() {
       <Particles />
       <div className="app-container">
         <ToastContainer toasts={toasts} onRemove={removeToast} />
+        <AboutMe />
         <div className="calendario-container" ref={calendarioRef}>
           {etapa === ETAPAS.INICIO && (
             <Hero onGetStartedClick={handleGetStartedClick} />
