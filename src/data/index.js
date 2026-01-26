@@ -1,8 +1,7 @@
-// Central data loader: prefer CSVs from /public/data when available, otherwise fallback to in-memory modules
+/* eslint-disable */
+// Central data loader: prefer CSVs from /public/data when available; do NOT fall back to in-memory mock modules
 
 import { loadCursos, loadMaterias } from './csvLoader';
-import * as materiasModule from './materias';
-import * as cursosModule from './cursos';
 
 let csvCursos = null;
 let csvDadosPorCurso = null;
@@ -14,7 +13,6 @@ async function loadDataFromCsv() {
     const materiasRows = await loadMaterias();
 
     // build materias grouped by course -> matrix -> semestre
-    // initialize entries for all courses found in courses.csv to avoid falling back to in-memory data
     const dadosPorCurso = {};
     if (Array.isArray(cursos)) {
       cursos.forEach(c => {
@@ -23,23 +21,17 @@ async function loadDataFromCsv() {
         }
       });
     }
+
     materiasRows.forEach(m => {
-      // Ensure subject row has an explicit curso ID; if missing, skip and log (avoid accidental defaulting)
       const cursoKey = m.curso;
-      if (!cursoKey) {
-        // skip rows without course ID to avoid mixing subjects into the wrong course
-        // previously warned here; removed to avoid console output in production
-        return;
-      }
+      if (!cursoKey) return; // skip rows without course ID
 
       const matrizKey = m.matriz || 'default';
       dadosPorCurso[cursoKey] = dadosPorCurso[cursoKey] || { matrizes: {}, eletivas: [] };
       dadosPorCurso[cursoKey].matrizes[matrizKey] = dadosPorCurso[cursoKey].matrizes[matrizKey] || { materiasPorSemestre: {}, eletivas: [] };
 
       if (m.tipo === 'eletiva') {
-        // put eletivas under the specific matrix
         dadosPorCurso[cursoKey].matrizes[matrizKey].eletivas.push(m);
-        // also keep a top-level eletivas list (for backward compat)
         dadosPorCurso[cursoKey].eletivas.push(m);
       } else {
         const sem = String(m.semestre || '0');
@@ -51,20 +43,20 @@ async function loadDataFromCsv() {
 
     csvCursos = cursos;
     csvDadosPorCurso = dadosPorCurso;
-    // expose for debugging during development
+
     try {
+      // expose for debugging during development
       // eslint-disable-next-line no-undef
       window.__csvCursos = csvCursos;
       // eslint-disable-next-line no-undef
       window.__csvDadosPorCurso = csvDadosPorCurso;
     } catch (e) {
-      // ignore if window is not available
+      // ignore if window not available
     }
-    // CSV data loaded (runtime logging removed)
-    // debug output intentionally removed
+
     return { cursos, dadosPorCurso };
   } catch (e) {
-    // CSV load failed, falling back to in-memory data (runtime logging removed)
+    // CSV load failed: keep csvCursos null so callers receive safe empty fallbacks
     csvCursos = null;
     csvDadosPorCurso = null;
     return null;
@@ -74,58 +66,46 @@ async function loadDataFromCsv() {
 // start loading but do not block module import
 loadDataFromCsv();
 
-// EXPORTS (CSV-aware wrappers)
+// EXPORTS (CSV-first wrappers)
 
 // Get course info (prefers CSV)
 export const getCursoInfo = (cursoId) => {
-  const list = csvCursos || cursosModule.cursos;
-  return list.find(c => c.id === cursoId) || list[0];
+  if (!csvCursos) return null;
+  return (csvCursos || []).find(c => c.id === cursoId) || null;
 };
 
-// Get materias por semestre (CSV-aware)
+// Get materias por semestre (CSV-aware) - returns [] when not available
 export function getMateriasPorSemestre(cursoId, semestre, matrizId) {
-  const dados = csvDadosPorCurso || materiasModule.dadosPorCurso;
-  const localGet = materiasModule.getMateriasPorSemestre;
+  if (!csvDadosPorCurso) return [];
+  const dados = csvDadosPorCurso;
   const cursoKey = cursoId || Object.keys(dados)[0];
+  if (!cursoKey || !dados[cursoKey]) return [];
 
-  // prefer CSV grouped by matrix when available
-  if (csvDadosPorCurso && csvDadosPorCurso[cursoKey]) {
-    const matrizes = csvDadosPorCurso[cursoKey].matrizes || {};
-    const matrizKey = matrizId || Object.keys(matrizes)[0] || 'default';
-    const materiasPorSemestre = (matrizes[matrizKey] && matrizes[matrizKey].materiasPorSemestre) || {};
+  const matrizes = dados[cursoKey].matrizes || {};
+  const matrizKey = matrizId || Object.keys(matrizes)[0] || 'default';
+  const materiasPorSemestre = (matrizes[matrizKey] && matrizes[matrizKey].materiasPorSemestre) || {};
 
-    if (typeof semestre !== 'undefined' && semestre !== null) {
-      return materiasPorSemestre[String(semestre)] || [];
-    }
-    return materiasPorSemestre;
-  }
-
-  // fallback to original module behavior
   if (typeof semestre !== 'undefined' && semestre !== null) {
-    return localGet(cursoId, semestre);
+    return materiasPorSemestre[String(semestre)] || [];
   }
-  return localGet(cursoId);
+  return materiasPorSemestre;
 }
 
 export function getEletivas(cursoId, matrizId) {
-  const dados = csvDadosPorCurso || materiasModule.dadosPorCurso;
-  const localGet = materiasModule.getEletivas;
+  if (!csvDadosPorCurso) return [];
+  const dados = csvDadosPorCurso;
   const cursoKey = cursoId || Object.keys(dados)[0];
-
-  if (csvDadosPorCurso && csvDadosPorCurso[cursoKey]) {
-    const matrizes = csvDadosPorCurso[cursoKey].matrizes || {};
-    const matrizKey = matrizId || Object.keys(matrizes)[0] || 'default';
-    return (matrizes[matrizKey] && matrizes[matrizKey].eletivas) || [];
-  }
-
-  return localGet(cursoId);
+  if (!cursoKey || !dados[cursoKey]) return [];
+  const matrizes = dados[cursoKey].matrizes || {};
+  const matrizKey = matrizId || Object.keys(matrizes)[0] || 'default';
+  return (matrizes[matrizKey] && matrizes[matrizKey].eletivas) || [];
 }
 
 export function getHorariosPorDisciplina(disciplinaCodigo) {
-  const dados = csvDadosPorCurso || materiasModule.dadosPorCurso;
+  if (!csvDadosPorCurso) return [];
+  const dados = csvDadosPorCurso;
   for (const cursoKey of Object.keys(dados)) {
     const cursoObj = dados[cursoKey];
-    // search inside all matrices
     const matrizes = cursoObj.matrizes || {};
     for (const matrizKey of Object.keys(matrizes)) {
       const materiasMap = matrizes[matrizKey].materiasPorSemestre || {};
@@ -148,89 +128,91 @@ export function getHorariosPorDisciplina(disciplinaCodigo) {
 }
 
 export function getCursos() {
-  return csvCursos || cursosModule.cursos;
+  if (!csvCursos) return [];
+  const list = csvCursos;
+  if (!Array.isArray(list)) return [];
+  return list.slice().sort((a, b) => {
+    const extract = s => {
+      if (!s || !s.id) return Number.POSITIVE_INFINITY;
+      const m = String(s.id).match(/\d+/);
+      return m ? Number(m[0]) : Number.POSITIVE_INFINITY;
+    };
+    const na = extract(a);
+    const nb = extract(b);
+    if (na !== nb) return na - nb;
+    return String(a.id || '').localeCompare(String(b.id || ''));
+  });
 }
 
-// Expose matrizes and course helpers (CSV-aware)
 export function getMatrizesByCurso(cursoId) {
-  // Combine matrices from courses CSV and from subjects grouping (if present)
-  // Ifn the courses CSV explicitly lists matrizes for this course, prefer them exactly as provided.
   if (csvCursos && Array.isArray(csvCursos)) {
     const curso = csvCursos.find(c => c.id === cursoId);
     if (curso && Array.isArray(curso.matrizes) && curso.matrizes.length > 0) {
-      const keys = curso.matrizes.slice().sort((a,b) => String(b).localeCompare(String(a)));
+      const keys = curso.matrizes.slice().sort((a, b) => String(b).localeCompare(String(a)));
       return keys.map(k => ({ id: k, nome: k }));
     }
   }
 
-  // Otherwise, fall back to matrizes discovered by scanning the subjects CSV (older behavior)
-  const matrizesSet = new Set();
   if (csvDadosPorCurso && csvDadosPorCurso[cursoId]) {
     const matrizesObj = csvDadosPorCurso[cursoId].matrizes || {};
-    Object.keys(matrizesObj || {}).forEach(k => matrizesSet.add(k));
+    const keys = Object.keys(matrizesObj);
+    if (keys.length > 0) {
+      // parse keys that look like year/period or yearperiod into numeric score
+      const parseKey = (k) => {
+        if (!k) return null;
+        const m = String(k).match(/(\d{4})\D*(\d{1,2})/);
+        if (m) return Number(m[1]) * 100 + Number(m[2]);
+        const num = Number(String(k).replace(/\D/g, ''));
+        return isNaN(num) ? null : num;
+      };
+
+      keys.sort((a, b) => {
+        const pa = parseKey(a);
+        const pb = parseKey(b);
+        if (pa != null && pb != null) return pb - pa;
+        if (pa != null) return -1;
+        if (pb != null) return 1;
+        return String(b).localeCompare(String(a));
+      });
+
+      return keys.map(k => ({ id: k, nome: k }));
+    }
   }
 
-  const keys = Array.from(matrizesSet);
-  if (keys.length > 0) {
-    // parse keys that look like year/period or yearperiod into numeric score
-    const parseKey = (k) => {
-      if (!k) return null;
-      const m = String(k).match(/(\d{4})\D*(\d{1,2})/);
-      if (m) return Number(m[1]) * 100 + Number(m[2]);
-      const num = Number(String(k).replace(/\D/g, ''));
-      return isNaN(num) ? null : num;
-    };
-
-    keys.sort((a, b) => {
-      const pa = parseKey(a);
-      const pb = parseKey(b);
-      if (pa != null && pb != null) return pb - pa;
-      if (pa != null) return -1;
-      if (pb != null) return 1;
-      return String(b).localeCompare(String(a));
-    });
-
-    return keys.map(k => ({ id: k, nome: k }));
-  }
-  // fallback to cursos module
-  return cursosModule.getMatrizesByCurso ? cursosModule.getMatrizesByCurso(cursoId) : [{ id: '202301', nome: '2023/1', ano: 2023 }];
+  return [];
 }
 
 export function getCursosImplementados() {
-  const list = csvCursos || cursosModule.cursos;
+  if (!csvCursos) return [];
+  const list = csvCursos;
   return list.filter(c => c.implementado !== false);
 }
 
 export function buscarCursos(termo) {
-  const list = csvCursos || cursosModule.cursos;
+  if (!csvCursos) return [];
+  const list = csvCursos;
   const t = termo.toString().toLowerCase();
   return list.filter(c => (c.nome || '').toString().toLowerCase().includes(t) || (c.id || '').toString().toLowerCase().includes(t));
 }
 
-// Re-export small utility wrappers that other modules expect (use CSV data when possible)
-// (removed old simple re-export to avoid duplicate export; use detailed implementation below)
-
 export function getNomeMateria(codigo) {
-  // prefer CSV data
-  if (csvDadosPorCurso) {
-    for (const cursoKey of Object.keys(csvDadosPorCurso)) {
-      const cursoObj = csvDadosPorCurso[cursoKey];
-      const matrizes = cursoObj.matrizes || {};
-      for (const matrizKey of Object.keys(matrizes)) {
-        const materiasMap = matrizes[matrizKey].materiasPorSemestre || {};
-        for (const sem of Object.keys(materiasMap)) {
-          const found = (materiasMap[sem] || []).find(m => m.codigo === codigo || String(m.id) === String(codigo));
-          if (found) return found.nome;
-        }
-        const elet = (matrizes[matrizKey].eletivas || []).find(e => e.codigo === codigo || String(e.id) === String(codigo));
-        if (elet) return elet.nome;
+  if (!csvDadosPorCurso) return null;
+  for (const cursoKey of Object.keys(csvDadosPorCurso)) {
+    const cursoObj = csvDadosPorCurso[cursoKey];
+    const matrizes = cursoObj.matrizes || {};
+    for (const matrizKey of Object.keys(matrizes)) {
+      const materiasMap = matrizes[matrizKey].materiasPorSemestre || {};
+      for (const sem of Object.keys(materiasMap)) {
+        const found = (materiasMap[sem] || []).find(m => m.codigo === codigo || String(m.id) === String(codigo));
+        if (found) return found.nome;
       }
-      // top-level eletivas fallback
-      const eletTop = (cursoObj.eletivas || []).find(e => e.codigo === codigo || String(e.id) === String(codigo));
-      if (eletTop) return eletTop.nome;
+      const elet = (matrizes[matrizKey].eletivas || []).find(e => e.codigo === codigo || String(e.id) === String(codigo));
+      if (elet) return elet.nome;
     }
+    const eletTop = (cursoObj.eletivas || []).find(e => e.codigo === codigo || String(e.id) === String(codigo));
+    if (eletTop) return eletTop.nome;
   }
-  return materiasModule.getNomeMateria(codigo);
+  return null;
 }
 
 // make loader available to app so it can await CSV load
@@ -238,24 +220,15 @@ export { loadDataFromCsv as ensureCsvLoaded };
 
 // Detailed prereq verifier using CSV parsed structure when available
 export function verificarPreRequisitosDetalhada(materia, materiasAprovadas, materiasNoCalendario = {}) {
-  // materia may have preRequisitosDetalhada (from CSV) or simple preRequisitos array
   const pad = materia?.preRequisitosDetalhada;
   if (!pad) {
-    // fallback: treat all preRequisitos as 'forte'
     const faltando = (materia.preRequisitos || []).filter(pr => !materiasAprovadas.includes(pr));
     return { cumprido: faltando.length === 0, faltandoForte: faltando, faltandoMinimo: [], faltandoCoreq: [] };
   }
 
   const faltandoForte = (pad.forte || []).filter(pr => !materiasAprovadas.includes(pr));
-  const faltandoMinimo = (pad.minimo || []).filter(pr => {
-    // minimo: student must have taken previously (may have failed). We'll treat 'aprovadas' as only approved ones.
-    // If not approved, check if they were taken but failed -- we don't have that info, so assume not approved => missing.
-    return !materiasAprovadas.includes(pr);
-  });
-  const faltandoCoreq = (pad.coreq || []).filter(pr => {
-    // coreq: allowed only if co-req already in calendar or approved
-    return !(materiasAprovadas.includes(pr) || Object.keys(materiasNoCalendario || {}).includes(pr));
-  });
+  const faltandoMinimo = (pad.minimo || []).filter(pr => !materiasAprovadas.includes(pr));
+  const faltandoCoreq = (pad.coreq || []).filter(pr => !(materiasAprovadas.includes(pr) || Object.keys(materiasNoCalendario || {}).includes(pr)));
 
   const anyMissing = (faltandoForte.length > 0) || (faltandoMinimo.length > 0) || (faltandoCoreq.length > 0);
 
@@ -270,8 +243,6 @@ export function verificarPreRequisitosDetalhada(materia, materiasAprovadas, mate
 // Backwards-compatible wrapper
 export function verificarPreRequisitos(materia, materiasAprovadas, materiasNoCalendario = {}) {
   const det = verificarPreRequisitosDetalhada(materia, materiasAprovadas, materiasNoCalendario);
-  // For legacy callers, return { cumprido, faltando } where faltando is forte + minimo + coreq
   const faltando = [...(det.faltandoForte || []), ...(det.faltandoMinimo || []), ...(det.faltandoCoreq || [])];
   return { cumprido: det.cumprido, faltando };
 }
-
