@@ -36,7 +36,10 @@ const MateriaModal = ({ materia, materiasAprovadas, onClose, onSave, checkConfli
         return;
       }
     }
-    if (typeof onSave === 'function') onSave(nova);
+    if (typeof onSave === 'function') {
+      // call onSave but do NOT close the modal here; parent controls closing
+      onSave(nova);
+    }
   };
 
   return (

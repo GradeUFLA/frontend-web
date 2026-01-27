@@ -50,6 +50,47 @@
   flex: 1;
 }
 
+/* Close button styled to match site: small circular, subtle border, theme-aware */
+.toast__close {
+  background: rgba(255, 255, 255, 0.03);
+  color: currentColor;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  line-height: 1;
+  cursor: pointer;
+  margin-left: 8px;
+  transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease;
+}
+
+.toast__close:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.5), 0 0 0 6px rgba(6, 214, 160, 0.06);
+  background: rgba(6, 214, 160, 0.06);
+}
+
+/* Make close color adapt to toast type */
+.toast--error .toast__close {
+  border-color: rgba(232, 72, 85, 0.2);
+  color: var(--color-watermelon);
+}
+
+.toast--success .toast__close {
+  border-color: rgba(6, 214, 160, 0.12);
+  color: var(--color-tropical-mint);
+}
+
+.toast--warning .toast__close {
+  border-color: rgba(231, 181, 72, 0.12);
+  color: var(--color-royal-gold);
+}
+
 @keyframes toastSlideIn {
   from {
     transform: translateX(100%);
@@ -69,4 +110,3 @@
     opacity: 0;
   }
 }
-

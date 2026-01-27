@@ -428,10 +428,10 @@ function App() {
             materia={modalMateria}
             onClose={() => setModalMateria(null)}
             onSave={(novaMateria) => {
-              const ok = handleAddMateria(novaMateria);
-              if (ok) setModalMateria(null);
-            }}
-           materiasAprovadas={materiasAprovadas}
+              // Add the turma to calendar but do NOT show toast here (modal actions are silent)
+              handleAddMateria(novaMateria);
+             }}
+            materiasAprovadas={materiasAprovadas}
           checkConflito={(m) => checkConflitoParaMateria(m, materiasNoCalendario)}
           onShowToast={(msg, type) => addToast(msg, type)}
           />
