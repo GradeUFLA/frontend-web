@@ -143,6 +143,24 @@ function App() {
   // Hook de toast para notificações
   const { toasts, addToast, removeToast } = useToast();
 
+  // Listen for fallback toast events dispatched by components that can't call addToast directly
+  useEffect(() => {
+    const handler = (e) => {
+      try {
+        const detail = e && e.detail ? e.detail : {};
+        const message = detail.message || detail.msg || 'Notification';
+        const level = detail.level || detail.type || 'info';
+        addToast(message, level);
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.warn('gradeufla-toast handler error', err);
+      }
+    };
+
+    window.addEventListener('gradeufla-toast', handler);
+    return () => window.removeEventListener('gradeufla-toast', handler);
+  }, [addToast]);
+
   // Obtém dados do curso selecionado (consultas a curso são feitas nos componentes que precisarem)
 
   // Usa curso + matriz para obter matérias (por enquanto só curso, depois pode expandir)

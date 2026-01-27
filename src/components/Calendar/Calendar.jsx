@@ -121,6 +121,29 @@ const Calendar = forwardRef(({
   const calendarTableRef = useRef(null);
   const wrapperRef = useRef(null);
 
+  // Robust toast trigger: use parent's onShowToast if provided, otherwise dispatch an event
+  const triggerToast = (message, level = 'info') => {
+    if (typeof onShowToast === 'function') {
+      try {
+        onShowToast(message, level);
+        return;
+      } catch (e) {
+        // fall through to fallback
+        // eslint-disable-next-line no-console
+        console.warn('onShowToast handler threw an error, using fallback:', e);
+      }
+    }
+
+    try {
+      const ev = new CustomEvent('gradeufla-toast', { detail: { message, level } });
+      window.dispatchEvent(ev);
+    } catch (e) {
+      // last resort: console
+      // eslint-disable-next-line no-console
+      console.log(`[toast:${level}]`, message);
+    }
+  };
+
   // helper: calculate total credits currently in calendar
   const calcTotalCreditos = () => Object.values(materiasNoCalendario || {}).reduce((acc, m) => acc + (m.creditos || 0), 0);
 
@@ -132,7 +155,7 @@ const Calendar = forwardRef(({
   const handleDownloadPNG = async () => {
     const node = wrapperRef.current;
     if (!node) {
-      onShowToast?.('Área do calendário não disponível para captura.', 'error');
+      triggerToast('Área do calendário não disponível para captura.', 'error');
       return;
     }
 
@@ -169,7 +192,7 @@ const Calendar = forwardRef(({
       document.body.removeChild(link);
     } catch (err) {
       console.error('Erro ao gerar imagem do calendário', err);
-      onShowToast?.('Erro ao gerar imagem. Instale html2canvas: npm install html2canvas', 'error');
+      triggerToast('Erro ao gerar imagem. Instale html2canvas: npm install html2canvas', 'error');
     }
   };
   // The CSV uses 1 = Domingo, 2 = Segunda, ..., 7 = Sábado (as in your example).
@@ -343,13 +366,13 @@ const Calendar = forwardRef(({
 
     // If missing forte prerequisites -> block
     if (det.faltandoForte && det.faltandoForte.length > 0) {
-      onShowToast?.(`Pré-requisitos fortes faltando: ${det.faltandoForte.map(f => getNomeMateria(f)).join(', ')}`, 'error');
+      triggerToast(`Pré-requisitos fortes faltando: ${det.faltandoForte.map(f => getNomeMateria(f)).join(', ')}`, 'error');
       return; // block
     }
 
     // If missing coreq -> block and show notification (yellow border)
     if (det.faltandoCoreq && det.faltandoCoreq.length > 0) {
-      onShowToast?.(`Co-requisito(s) necessários: ${det.faltandoCoreq.map(f => getNomeMateria(f)).join(', ')}`, 'warn');
+      triggerToast(`Co-requisito(s) necessários: ${det.faltandoCoreq.map(f => getNomeMateria(f)).join(', ')}`, 'warn');
       return;
     }
 
@@ -360,7 +383,7 @@ const Calendar = forwardRef(({
       // open modal to confirm the first missing minimo prereq
       openMinimoConfirm(faltandoMinimoAtivos[0], materia.codigo);
       // stop drag flow; user must confirm then try again
-      onShowToast?.(`Confirme o pré-requisito mínimo ${getNomeMateria(faltandoMinimoAtivos[0])} para destravar esta matéria.`, 'info');
+      triggerToast(`Confirme o pré-requisito mínimo ${getNomeMateria(faltandoMinimoAtivos[0])} para destravar esta matéria.`, 'info');
       return;
     }
 
@@ -375,11 +398,11 @@ const Calendar = forwardRef(({
     const currentTotal = calcTotalCreditos();
     const materiaCred = materia.creditos || 0;
     if (currentTotal >= CREDIT_MAX) {
-      onShowToast?.(`Limite de créditos atingido (${CREDIT_MAX}). Remova matérias para adicionar mais.`, 'error');
+      triggerToast(`Limite de créditos atingido (${CREDIT_MAX}). Remova matérias para adicionar mais.`, 'error');
       return;
     }
     if (currentTotal + materiaCred > CREDIT_MAX) {
-      onShowToast?.('Adicionar esta matéria excederia o limite de 32 créditos.', 'error');
+      triggerToast('Adicionar esta matéria excederia o limite de 32 créditos.', 'error');
       return;
     }
 
@@ -484,7 +507,7 @@ const Calendar = forwardRef(({
           if (typeof targetHorarioIdx === 'number' && typeof targetDiaIdx === 'number') {
             const ocupadas = getMateriasEmCelula(targetHorarioIdx, targetDiaIdx);
             if (ocupadas && ocupadas.length > 0) {
-              onShowToast?.('Horário já ocupado por outra matéria.', 'error');
+              triggerToast('Horário já ocupado por outra matéria.', 'error');
               resetDrag();
               return;
             }
@@ -495,21 +518,21 @@ const Calendar = forwardRef(({
           const materiaConflito = conflitResult.materiaConflito || conflitResult.mensagem;
 
           if (temConflito) {
-            onShowToast?.(`Conflito de horário com ${materiaConflito}!`, 'error');
+            triggerToast(`Conflito de horário com ${materiaConflito}!`, 'error');
           } else {
             // credit limit check before adding
             const currentTotal = calcTotalCreditos();
             const materiaCred = draggingMateria.creditos || 0;
             if (currentTotal >= CREDIT_MAX) {
-              onShowToast?.(`Limite de créditos atingido (${CREDIT_MAX}). Remova matérias para adicionar mais.`, 'error');
+              triggerToast(`Limite de créditos atingido (${CREDIT_MAX}). Remova matérias para adicionar mais.`, 'error');
             } else if (currentTotal + materiaCred > CREDIT_MAX) {
-              onShowToast?.('Adicionar esta matéria excederia o limite de 32 créditos.', 'error');
+              triggerToast('Adicionar esta matéria excederia o limite de 32 créditos.', 'error');
             } else {
               const isTurmaAnp = isAnpTurma(turma);
               if (isTurmaAnp) {
                 const slot = conflitResult.suggestedAnpSlot || findFirstAvailableAnpSlot(materiasNoCalendario);
                 if (!slot) {
-                  onShowToast?.('Sem vagas ANP disponíveis no sábado.', 'error');
+                  triggerToast('Sem vagas ANP disponíveis no sábado.', 'error');
                 } else {
                   const added = onAddMateria({
                     ...draggingMateria,
@@ -518,7 +541,7 @@ const Calendar = forwardRef(({
                     anpSlot: slot
                   });
                   if (!added) {
-                    onShowToast?.('Não foi possível adicionar a matéria (conflito ou limite).', 'error');
+                    triggerToast('Não foi possível adicionar a matéria (conflito ou limite).', 'error');
                   }
                 }
               } else {
@@ -528,7 +551,7 @@ const Calendar = forwardRef(({
                   horarios: turma.horarios
                 });
                 if (!added) {
-                  onShowToast?.('Não foi possível adicionar a matéria (conflito ou limite).', 'error');
+                  triggerToast('Não foi possível adicionar a matéria (conflito ou limite).', 'error');
                 }
               }
             }
@@ -704,12 +727,12 @@ const Calendar = forwardRef(({
           window.dispatchEvent(ev);
         } catch (e) {}
       }
-      onShowToast?.(`Pré-requisito ${getNomeMateria(codigo) || codigo} será ignorado como "mínimo" (confirmado).`, 'success');
+      triggerToast(`Pré-requisito ${getNomeMateria(codigo) || codigo} será ignorado como "mínimo" (confirmado).`, 'success');
       closeMinimoConfirm();
       return;
     }
 
-    onShowToast?.('Não foi possível marcar o pré-requisito - tente novamente.', 'error');
+    triggerToast('Não foi possível marcar o pré-requisito - tente novamente.', 'error');
     closeMinimoConfirm();
   };
 
