@@ -119,6 +119,7 @@ const Calendar = forwardRef(({
   const [minimoModal, setMinimoModal] = useState({ open: false, prereq: null, parent: null });
 
   const calendarTableRef = useRef(null);
+  const wrapperRef = useRef(null);
 
   // helper: calculate total credits currently in calendar
   const calcTotalCreditos = () => Object.values(materiasNoCalendario || {}).reduce((acc, m) => acc + (m.creditos || 0), 0);
@@ -127,6 +128,50 @@ const Calendar = forwardRef(({
   const horarios = gerarHorarios(7, 23);
   const baseHour = 7; // used to compute numeric hour from index
 
+  // Download (screenshot) handler: captures the calendar title + table and downloads JPEG
+  const handleDownloadPNG = async () => {
+    const node = wrapperRef.current;
+    if (!node) {
+      onShowToast?.('Área do calendário não disponível para captura.', 'error');
+      return;
+    }
+
+    try {
+      const html2canvasModule = await import('html2canvas');
+      const html2canvas = html2canvasModule.default || html2canvasModule;
+
+      // Use the element's computed background color so exported image matches theme
+      const comp = window.getComputedStyle(node);
+      let bg = comp && comp.backgroundColor ? comp.backgroundColor : null;
+      // If computed background is transparent, fall back to body background or a sensible dark default
+      if (!bg || bg === 'rgba(0, 0, 0, 0)' || bg === 'transparent') {
+        const bodyBg = window.getComputedStyle(document.body).backgroundColor;
+        bg = bodyBg && bodyBg !== 'rgba(0, 0, 0, 0)' ? bodyBg : '#121216';
+      }
+
+      const canvas = await html2canvas(node, {
+        backgroundColor: bg,
+        scale: 3, // ⭐ Mudança principal: forçar scale alto (2 ou 3)
+        useCORS: true, // Permitir imagens externas
+        allowTaint: false,
+        logging: false,
+        // Melhora a renderização de texto
+        foreignObjectRendering: false,
+      });
+
+      // ⭐ Manter PNG para melhor qualidade (sem compressão com perdas)
+      const dataUrl = canvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.href = dataUrl;
+      link.download = `grade-${semestreAtual || 'sem'}.png`; // Voltar para PNG
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error('Erro ao gerar imagem do calendário', err);
+      onShowToast?.('Erro ao gerar imagem. Instale html2canvas: npm install html2canvas', 'error');
+    }
+  };
   // The CSV uses 1 = Domingo, 2 = Segunda, ..., 7 = Sábado (as in your example).
   // Map that to 0..6 by shifting -1 (n-1 mod 7).
   // normalize dia numbers coming from CSV / data sources
@@ -859,11 +904,14 @@ const Calendar = forwardRef(({
         </div>
 
         {/* Calendário */}
-        <div className="calendar__wrapper">
-          <div className="calendar__title-container">
-            <h2 className="calendar__title">Sua Grade - {semestreAtual}º Semestre</h2>
+        <div className="calendar__wrapper" ref={wrapperRef}>
+           <div className="calendar__title-container">
+             <h2 className="calendar__title">Sua Grade - {semestreAtual}º Semestre</h2>
 
-            {/* Export button removed */}
+             {/* Download PNG button */}
+             <button className="calendar__download" onClick={handleDownloadPNG} title="Baixar PNG da grade">
+               <i className="fi fi-br-download" aria-hidden="true" />
+             </button>
 
             {/* Popup flutuante - Legenda das turmas durante o drag */}
             {isDragging && draggingMateria && (

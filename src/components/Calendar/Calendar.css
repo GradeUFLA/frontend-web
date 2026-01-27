@@ -424,13 +424,39 @@
 .calendar__title-container {
   position: relative;
   margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .calendar__title {
   color: var(--color-text);
   font-size: 1.5rem;
   text-align: center;
+  margin: 0 auto;
 }
+
+/* Download button positioned at top-right of the title container */
+.calendar__download {
+  position: absolute;
+  right: 8px;
+  top: 0px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  color: var(--color-text);
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.95rem;
+  transition: all 0.12s ease;
+}
+
+.calendar__download i { font-size: 1rem; }
+
+.calendar__download:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,0.35); }
 
 /* Popup flutuante das turmas */
 .calendar__turmas-popup {
