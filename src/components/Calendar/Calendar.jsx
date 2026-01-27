@@ -466,19 +466,25 @@ const Calendar = forwardRef(({
                 if (!slot) {
                   onShowToast?.('Sem vagas ANP disponíveis no sábado.', 'error');
                 } else {
-                  onAddMateria({
+                  const added = onAddMateria({
                     ...draggingMateria,
                     turmaId: turma.id,
                     horarios: turma.horarios,
                     anpSlot: slot
                   });
+                  if (!added) {
+                    onShowToast?.('Não foi possível adicionar a matéria (conflito ou limite).', 'error');
+                  }
                 }
               } else {
-                onAddMateria({
+                const added = onAddMateria({
                   ...draggingMateria,
                   turmaId: turma.id,
                   horarios: turma.horarios
                 });
+                if (!added) {
+                  onShowToast?.('Não foi possível adicionar a matéria (conflito ou limite).', 'error');
+                }
               }
             }
           }

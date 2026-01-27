@@ -56,6 +56,74 @@ const parseHour = (v) => {
   return null;
 };
 
+// ----------------- new helpers for conflict detection (used by App and modal) -----------------
+const SATURDAY_INDEX = 6;
+const ANP_BASE_HOUR = 9;
+const ANP_MAX_SLOTS = 14;
+const mapAnpSlotToHorarioIdx = (slot, baseHour = 7) => {
+  return (ANP_BASE_HOUR - baseHour) + (Number(slot) - 1);
+};
+const findFirstAvailableAnpSlotGlobal = (materiasState) => {
+  const used = new Set();
+  for (const m of Object.values(materiasState || {})) {
+    if (m.anpSlot) used.add(Number(m.anpSlot));
+  }
+  for (let s = 1; s <= ANP_MAX_SLOTS; s++) {
+    if (!used.has(s)) return s;
+  }
+  return null;
+};
+
+// returns {temConflito: boolean, materiaConflito?: string, suggestedAnpSlot?: number}
+const checkConflitoParaMateria = (materiaToCheck, materiasState) => {
+  if (!materiaToCheck || !materiaToCheck.horarios) return { temConflito: false };
+  // detect if turma is ANP-only: has saturday and no weekday
+  const horarios = materiaToCheck.horarios || [];
+  const hasWeekday = horarios.some(h => normalizeDiaValue(h?.dia) !== null && normalizeDiaValue(h?.dia) !== SATURDAY_INDEX);
+  const hasSaturday = horarios.some(h => normalizeDiaValue(h?.dia) === SATURDAY_INDEX);
+  const isAnp = hasSaturday && !hasWeekday;
+
+  if (isAnp) {
+    const slot = findFirstAvailableAnpSlotGlobal(materiasState);
+    if (slot === null) return { temConflito: true, mensagem: 'Sem slots ANP disponíveis' };
+    return { temConflito: false, suggestedAnpSlot: slot };
+  }
+
+  // for non-ANP, check each horario hour-by-hour against existing materias
+  for (const horario of horarios) {
+    const hdHorario = normalizeDiaValue(horario.dia);
+    const inicioHorario = parseHour(horario.inicio);
+    const fimHorario = parseHour(horario.fim);
+    if (hdHorario == null || Number.isNaN(inicioHorario) || Number.isNaN(fimHorario)) continue;
+
+    for (let hora = inicioHorario; hora < fimHorario; hora++) {
+      for (const existing of Object.values(materiasState || {})) {
+        // existing may have ANP slot: if it's occupying saturday slot map it to hour range
+        if (existing.anpSlot && hdHorario === SATURDAY_INDEX) {
+          const slotIdx = mapAnpSlotToHorarioIdx(existing.anpSlot, 7);
+          const slotStart = 7 + slotIdx; // since baseHour 7
+          const slotEnd = slotStart + 1;
+          if (hora >= slotStart && hora < slotEnd) {
+            return { temConflito: true, materiaConflito: existing.nome || existing.codigo };
+          }
+          continue;
+        }
+
+        for (const h of (existing.horarios || [])) {
+          const hd = normalizeDiaValue(h.dia);
+          const hStart = parseHour(h.inicio);
+          const hEnd = parseHour(h.fim);
+          if (hd == null || Number.isNaN(hStart) || Number.isNaN(hEnd)) continue;
+          if (hd === hdHorario && hora >= hStart && hora < hEnd) {
+            return { temConflito: true, materiaConflito: existing.nome || existing.codigo };
+          }
+        }
+      }
+    }
+  }
+  return { temConflito: false };
+};
+
 
 function App() {
   const calendarioRef = useRef(null);
@@ -170,58 +238,83 @@ function App() {
 
   // Handlers do calendário
   const handleAddMateria = (materia) => {
-    // If the selected turma has only saturday horários (ANP-only), auto-place on the next free saturday block.
-    // But if the turma includes weekday horários as well, keep all horários as provided.
+    // add returns true on success, false on failure (conflict etc)
+    if (!materia) return false;
+
     const horariosArray = materia.horarios || [];
     const hasAnyWeekday = horariosArray.some(h => {
       const nd = normalizeDiaValue(h?.dia);
-      return nd !== null && nd !== 6;
+      return nd !== null && nd !== SATURDAY_INDEX;
     });
 
-    const hasSaturday = horariosArray.some(h => normalizeDiaValue(h?.dia) === 6);
+    const hasSaturday = horariosArray.some(h => normalizeDiaValue(h?.dia) === SATURDAY_INDEX);
 
-    if (!hasAnyWeekday && horariosArray.length > 0 && hasSaturday) {
-      // Build set of occupied saturday hours (consider ALL existing materias)
-      const occupied = new Set();
-      Object.values(materiasNoCalendario).forEach(m => {
-        (m.horarios || []).forEach(h => {
-          if (!h) return;
-          const nd = normalizeDiaValue(h.dia);
-          if (nd === 6) {
-            const inicio = parseHour(h.inicio);
-            const fim = parseHour(h.fim);
-            const startHour = (inicio !== null) ? inicio : 0;
-            const endHour = (fim !== null) ? fim : (startHour + 1);
-            for (let hour = startHour; hour < endHour; hour++) {
-              occupied.add(hour);
-            }
-          }
-        });
-      });
+    // We'll perform an atomic update: check conflicts against the latest state inside the functional updater
+    let wasAdded = false;
 
-      // ANP scheduling: allocate 1-hour slots starting at 8:00, using next free hour
-      const defaultStart = 8;
-      const maxHour = 22; // last start hour allowed
-      let chosenStart = null;
-      let start = defaultStart;
-      while (start <= maxHour) {
-        if (!occupied.has(start)) { chosenStart = start; break; }
-        start += 1; // next hour
+    setMateriasNoCalendario(prevState => {
+      // check conflict against prevState
+      const conflitoCheck = checkConflitoParaMateria(materia, prevState);
+      if (conflitoCheck.temConflito) {
+        const motivo = conflitoCheck.materiaConflito || conflitoCheck.mensagem || 'Conflito de horário';
+        addToast(`Conflito de horário: ${motivo}`, 'error');
+        wasAdded = false;
+        return prevState; // do not modify state
       }
 
-      if (chosenStart === null) chosenStart = defaultStart;
+      if (!hasAnyWeekday && horariosArray.length > 0 && hasSaturday) {
+        // Build set of occupied saturday hours (consider ALL existing materias)
+        const occupied = new Set();
+        Object.values(prevState).forEach(m => {
+          (m.horarios || []).forEach(h => {
+            if (!h) return;
+            const nd = normalizeDiaValue(h.dia);
+            if (nd === SATURDAY_INDEX) {
+              const inicio = parseHour(h.inicio);
+              const fim = parseHour(h.fim);
+              const startHour = (inicio !== null) ? inicio : 0;
+              const endHour = (fim !== null) ? fim : (startHour + 1);
+              for (let hour = startHour; hour < endHour; hour++) {
+                occupied.add(hour);
+              }
+            }
+          });
+          // also account for assigned anpSlot
+          if (m.anpSlot) {
+            const slotIdx = mapAnpSlotToHorarioIdx(m.anpSlot, 7);
+            const slotStart = 7 + slotIdx;
+            occupied.add(slotStart);
+          }
+        });
 
-      const horarios = [{ dia: 6, inicio: chosenStart, fim: chosenStart + 1 }];
-      const toAdd = { ...materia, turmaId: materia.turmaId || 'ANP', horarios };
-      setMateriasNoCalendario(prev => ({ ...prev, [materia.codigo]: toAdd }));
-      return;
-    }
+        // ANP scheduling: allocate 1-hour slots starting at 8:00, using next free hour
+        const defaultStart = 8;
+        const maxHour = 22; // last start hour allowed
+        let chosenStart = null;
+        let start = defaultStart;
+        while (start <= maxHour) {
+          if (!occupied.has(start)) { chosenStart = start; break; }
+          start += 1; // next hour
+        }
 
-    // normal add (from drag selection) - keep all horários (weekday + saturday if present)
-    setMateriasNoCalendario(prev => ({
-      ...prev,
-      [materia.codigo]: materia
-    }));
+        if (chosenStart === null) {
+          addToast('Sem vagas ANP disponíveis no sábado.', 'error');
+          wasAdded = false;
+          return prevState;
+        }
+
+        const horariosNew = [{ dia: 6, inicio: chosenStart, fim: chosenStart + 1 }];
+        const toAdd = { ...materia, turmaId: materia.turmaId || 'ANP', horarios: horariosNew };
+        wasAdded = true;
+        return { ...prevState, [materia.codigo]: toAdd };
+      }
+
+      // normal add (from drag selection) - keep all horários (weekday + saturday if present)
+      wasAdded = true;
+      return { ...prevState, [materia.codigo]: materia };
+    });
+
+    return wasAdded;
   };
 
   const handleRemoveMateria = (codigo) => {
@@ -277,7 +370,7 @@ function App() {
     <>
       <Particles />
       <div className="app-container">
-        <ToastContainer toasts={toasts} onRemove={removeToast} />
+        <ToastContainer toasts={toasts} removeToast={removeToast} />
         <AboutMe />
         <div className="calendario-container" ref={calendarioRef}>
           {etapa === ETAPAS.INICIO && (
@@ -335,13 +428,12 @@ function App() {
             materia={modalMateria}
             onClose={() => setModalMateria(null)}
             onSave={(novaMateria) => {
-              setMateriasNoCalendario(prev => ({
-                ...prev,
-                [novaMateria.codigo]: novaMateria
-              }));
-              setModalMateria(null);
+              const ok = handleAddMateria(novaMateria);
+              if (ok) setModalMateria(null);
             }}
            materiasAprovadas={materiasAprovadas}
+          checkConflito={(m) => checkConflitoParaMateria(m, materiasNoCalendario)}
+          onShowToast={(msg, type) => addToast(msg, type)}
           />
         )}
       </div>

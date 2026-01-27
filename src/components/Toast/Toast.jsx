@@ -4,7 +4,7 @@ import './Toast.css';
 const Toast = ({ message, type = 'error', onClose }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
-      onClose?.();
+      if (typeof onClose === 'function') onClose();
     }, 3000);
 
     return () => clearTimeout(timer);
@@ -32,7 +32,7 @@ const ToastContainer = ({ toasts, removeToast }) => {
           key={toast.id}
           message={toast.message}
           type={toast.type}
-          onClose={() => removeToast(toast.id)}
+          onClose={() => { if (typeof removeToast === 'function') removeToast(toast.id); }}
         />
       ))}
     </div>
@@ -56,4 +56,3 @@ export const useToast = () => {
 };
 
 export default ToastContainer;
-
