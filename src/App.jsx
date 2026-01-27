@@ -158,7 +158,16 @@ function App() {
     };
 
     window.addEventListener('gradeufla-toast', handler);
-    return () => window.removeEventListener('gradeufla-toast', handler);
+    // also expose a direct global function fallback for legacy callers
+    // set on window so other modules can call window.gradeuflaAddToast(msg, level)
+    // This is cleaned up on unmount
+    // eslint-disable-next-line no-undef
+    window.gradeuflaAddToast = (msg, level = 'info') => addToast(msg, level);
+
+    return () => {
+      window.removeEventListener('gradeufla-toast', handler);
+      try { delete window.gradeuflaAddToast; } catch (e) { window.gradeuflaAddToast = undefined; }
+    };
   }, [addToast]);
 
   // Obtém dados do curso selecionado (consultas a curso são feitas nos componentes que precisarem)
@@ -402,6 +411,7 @@ function App() {
               setMatrizSelecionada={setMatrizSelecionada}
               semestreSelecionado={semestreAtual}
               setSemestreSelecionado={setSemestreAtual}
+              onShowToast={(msg, type) => addToast(msg, type)}
               onComplete={handleSetupComplete}
               initialStep={setupInitialStep}
               onVoltar={handleVoltarParaInicio}

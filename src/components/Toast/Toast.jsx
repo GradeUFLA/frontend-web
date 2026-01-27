@@ -24,8 +24,12 @@ export function useToast() {
   const [toasts, setToasts] = useState([]);
 
   const addToast = useCallback((message, type = 'info') => {
+    // normalize type aliases so CSS classes align (some callers send 'warn' etc)
+    let normalized = (type || 'info').toString().toLowerCase();
+    if (normalized === 'warn') normalized = 'warning';
+    if (normalized === 'err') normalized = 'error';
     const id = `${Date.now()}-${Math.floor(Math.random() * 10000)}`;
-    setToasts(prev => [...prev, { id, message, type }]);
+    setToasts(prev => [...prev, { id, message, type: normalized }]);
     return id;
   }, []);
 

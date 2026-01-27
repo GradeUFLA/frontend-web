@@ -142,6 +142,15 @@ const Calendar = forwardRef(({
       // eslint-disable-next-line no-console
       console.log(`[toast:${level}]`, message);
     }
+
+    // Additional direct global fallback in case the App listener isn't attached yet
+    try {
+      if (typeof window !== 'undefined' && typeof window.gradeuflaAddToast === 'function') {
+        window.gradeuflaAddToast(message, level);
+      }
+    } catch (e) {
+      // ignore
+    }
   };
 
   // helper: calculate total credits currently in calendar
