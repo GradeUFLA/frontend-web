@@ -103,7 +103,8 @@ export async function loadCursos() {
         nome: nome || id,
         // optional: try to parse other fields if present
         tipo: r.tipo || r.type || 'Bacharelado',
-        totalSemestres: Number(r.totalSemestres || r.total_semestres || r.periodos || 8) || 8,
+        // totalSemestres will be computed dynamically from subjects later
+        totalSemestres: 8, // fallback value
         // If not specified, assume course is available (implemented) when loaded from CSV
         implementado: (r.implementado || 'true').toString().toLowerCase() === 'true',
         // collect matrices found for this course
@@ -128,6 +129,63 @@ export async function loadCursos() {
   });
 
   return result;
+}
+
+// Compute totalSemestres for each course/matriz dynamically from subjects
+export function computeTotalSemestres(cursos, materias) {
+  // Group materias by curso + matriz
+  const matrizSemestresMap = new Map(); // key: "cursoId|matriz" -> max semestre found
+
+  console.log('DEBUG: Iniciando computeTotalSemestres com', materias.length, 'matérias');
+
+  materias.forEach(m => {
+    if (!m.curso || !m.matriz || m.tipo !== 'obrigatoria') return;
+    if (m.semestre == null || String(m.semestre).toLowerCase() === 'indefinido') return;
+
+    const semestreNum = Number(m.semestre);
+    if (isNaN(semestreNum) || semestreNum <= 0) return;
+
+    const key = `${m.curso}|${m.matriz}`;
+    const current = matrizSemestresMap.get(key) || 0;
+    if (semestreNum > current) {
+      matrizSemestresMap.set(key, semestreNum);
+    }
+  });
+
+  // Debug: log computed values for matrices with 10+ semesters
+  console.log('DEBUG: Matrizes com 10+ semestres:', Array.from(matrizSemestresMap.entries()).filter(([k,v]) => v >= 10));
+
+  // Apply computed values to cursos - store totalSemestres BY MATRIZ, not just the most recent one
+  cursos.forEach(curso => {
+    if (!curso.matrizes || curso.matrizes.length === 0) return;
+
+    // Store totalSemestres for each matriz in a map
+    if (!curso.totalSemestresPorMatriz) {
+      curso.totalSemestresPorMatriz = {};
+    }
+
+    curso.matrizes.forEach(matrizId => {
+      const key = `${curso.id}|${matrizId}`;
+      const computed = matrizSemestresMap.get(key);
+      if (computed && computed > 0) {
+        curso.totalSemestresPorMatriz[matrizId] = computed;
+      } else {
+        curso.totalSemestresPorMatriz[matrizId] = 8; // fallback
+      }
+    });
+
+    // Also set totalSemestres to the most recent matriz for backward compatibility
+    const mainMatriz = curso.matrizes[0];
+    const mainKey = `${curso.id}|${mainMatriz}`;
+    const mainComputed = matrizSemestresMap.get(mainKey);
+    curso.totalSemestres = mainComputed && mainComputed > 0 ? mainComputed : 8;
+
+    if (curso.totalSemestresPorMatriz && Object.values(curso.totalSemestresPorMatriz).some(v => v >= 10)) {
+      console.log(`DEBUG: ${curso.nome} (${curso.id}) - Semestres por matriz:`, curso.totalSemestresPorMatriz);
+    }
+  });
+
+  return cursos;
 }
 
 export async function loadMaterias() {

@@ -1,4 +1,4 @@
-import { forwardRef, useState, useRef } from 'react';
+import { forwardRef, useState, useRef, useEffect } from 'react';
 import {
   verificarPreRequisitosDetalhada,
   getNomeMateria
@@ -121,6 +121,59 @@ const Calendar = forwardRef(({
   const calendarTableRef = useRef(null);
   const wrapperRef = useRef(null);
 
+  // Detecta se está em dispositivo mobile
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 1000);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Registra eventos globais de mouse/touch para o drag
+  useEffect(() => {
+    const handleGlobalMove = (e) => {
+      if (!isDragging) return;
+      e.preventDefault();
+
+      // Suporte para touch e mouse
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+      setDragPosition({ x: clientX, y: clientY });
+    };
+
+    const handleGlobalUp = (e) => {
+      if (isDragging) {
+        handleMouseUp(e);
+      }
+    };
+
+    if (isDragging) {
+      // Mouse events
+      document.addEventListener('mousemove', handleGlobalMove, { passive: false });
+      document.addEventListener('mouseup', handleGlobalUp);
+
+      // Touch events para mobile
+      document.addEventListener('touchmove', handleGlobalMove, { passive: false });
+      document.addEventListener('touchend', handleGlobalUp);
+      document.addEventListener('touchcancel', handleGlobalUp);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleGlobalMove);
+      document.removeEventListener('mouseup', handleGlobalUp);
+      document.removeEventListener('touchmove', handleGlobalMove);
+      document.removeEventListener('touchend', handleGlobalUp);
+      document.removeEventListener('touchcancel', handleGlobalUp);
+    };
+  }, [isDragging]);
+
   // Robust toast trigger: use parent's onShowToast if provided, otherwise dispatch an event
   const triggerToast = (message, level = 'info') => {
     if (typeof onShowToast === 'function') {
@@ -160,7 +213,7 @@ const Calendar = forwardRef(({
   const horarios = gerarHorarios(7, 23);
   const baseHour = 7; // used to compute numeric hour from index
 
-  // Download (screenshot) handler: captures the calendar title + table and downloads JPEG
+  // Download (screenshot) handler: captures the calendar title + table and downloads PNG
   const handleDownloadPNG = async () => {
     const node = wrapperRef.current;
     if (!node) {
@@ -172,36 +225,101 @@ const Calendar = forwardRef(({
       const html2canvasModule = await import('html2canvas');
       const html2canvas = html2canvasModule.default || html2canvasModule;
 
-      // Use the element's computed background color so exported image matches theme
+      // Add capturing class for special styling
+      node.classList.add('capturing');
+
+      // Store original styles to restore later
+      const container = node.querySelector('.calendar__container');
+      const table = node.querySelector('.calendar__table');
+
+      const originalStyles = {
+        nodeOverflow: node.style.overflow,
+        nodeMaxWidth: node.style.maxWidth,
+        nodeWidth: node.style.width,
+        containerOverflow: container?.style.overflow,
+        containerMaxWidth: container?.style.maxWidth,
+        containerWidth: container?.style.width,
+        tableMinWidth: table?.style.minWidth,
+      };
+
+      // Temporarily expand everything to show full content
+      node.style.overflow = 'visible';
+      node.style.maxWidth = 'none';
+      node.style.width = 'auto';
+
+      if (container) {
+        container.style.overflow = 'visible';
+        container.style.maxWidth = 'none';
+        container.style.width = 'auto';
+      }
+
+      if (table) {
+        table.style.minWidth = 'auto';
+      }
+
+      // Force reflow to get accurate dimensions
+      await new Promise(resolve => setTimeout(resolve, 150));
+
+      // Use the element's computed background color
       const comp = window.getComputedStyle(node);
       let bg = comp && comp.backgroundColor ? comp.backgroundColor : null;
-      // If computed background is transparent, fall back to body background or a sensible dark default
       if (!bg || bg === 'rgba(0, 0, 0, 0)' || bg === 'transparent') {
         const bodyBg = window.getComputedStyle(document.body).backgroundColor;
         bg = bodyBg && bodyBg !== 'rgba(0, 0, 0, 0)' ? bodyBg : '#121216';
       }
 
+      // Get actual full dimensions
+      const fullWidth = Math.max(node.scrollWidth, node.offsetWidth);
+      const fullHeight = Math.max(node.scrollHeight, node.offsetHeight);
+
       const canvas = await html2canvas(node, {
         backgroundColor: bg,
-        scale: 3, // ⭐ Mudança principal: forçar scale alto (2 ou 3)
-        useCORS: true, // Permitir imagens externas
+        scale: 2,
+        useCORS: true,
         allowTaint: false,
         logging: false,
-        // Melhora a renderização de texto
         foreignObjectRendering: false,
+        scrollX: 0,
+        scrollY: 0,
+        width: fullWidth,
+        height: fullHeight,
+        windowWidth: fullWidth,
+        windowHeight: fullHeight,
       });
 
-      // ⭐ Manter PNG para melhor qualidade (sem compressão com perdas)
+      // Remove capturing class
+      node.classList.remove('capturing');
+
+      // Restore original styles
+      node.style.overflow = originalStyles.nodeOverflow || '';
+      node.style.maxWidth = originalStyles.nodeMaxWidth || '';
+      node.style.width = originalStyles.nodeWidth || '';
+
+      if (container) {
+        container.style.overflow = originalStyles.containerOverflow || '';
+        container.style.maxWidth = originalStyles.containerMaxWidth || '';
+        container.style.width = originalStyles.containerWidth || '';
+      }
+
+      if (table) {
+        table.style.minWidth = originalStyles.tableMinWidth || '';
+      }
+
+      // Download PNG
       const dataUrl = canvas.toDataURL('image/png');
       const link = document.createElement('a');
       link.href = dataUrl;
-      link.download = `grade-${semestreAtual || 'sem'}.png`; // Voltar para PNG
+      link.download = `grade-${semestreAtual || 'sem'}.png`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+
+      triggerToast('Grade baixada com sucesso!', 'success');
     } catch (err) {
       console.error('Erro ao gerar imagem do calendário', err);
-      triggerToast('Erro ao gerar imagem. Instale html2canvas: npm install html2canvas', 'error');
+      // Remove capturing class in case of error
+      if (node) node.classList.remove('capturing');
+      triggerToast('Erro ao gerar imagem. Tente novamente.', 'error');
     }
   };
   // The CSV uses 1 = Domingo, 2 = Segunda, ..., 7 = Sábado (as in your example).
@@ -400,7 +518,7 @@ const Calendar = forwardRef(({
       return;
     }
 
-    // Prevent default mouse behavior early
+    // Prevent default mouse/touch behavior early
     e.preventDefault();
 
     // credit limit checks (before enabling drag state)
@@ -415,10 +533,14 @@ const Calendar = forwardRef(({
       return;
     }
 
+    // Suporte para touch e mouse
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
     // Now enable dragging state
     setDraggingMateria(materia);
     setIsDragging(true);
-    setDragPosition({ x: e.clientX, y: e.clientY });
+    setDragPosition({ x: clientX, y: clientY });
     setSelectedTurmaIndex(null);
   };
 
@@ -445,15 +567,19 @@ const Calendar = forwardRef(({
       return;
     }
 
+    // Suporte para touch e mouse
+    const clientX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
+    const clientY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
+
     // Verifica se soltou dentro do calendário
     const calendarTable = calendarTableRef.current;
     if (calendarTable) {
       const rect = calendarTable.getBoundingClientRect();
       const isInsideCalendar =
-        e.clientX >= rect.left &&
-        e.clientX <= rect.right &&
-        e.clientY >= rect.top &&
-        e.clientY <= rect.bottom;
+        clientX >= rect.left &&
+        clientX <= rect.right &&
+        clientY >= rect.top &&
+        clientY <= rect.bottom;
 
       if (isInsideCalendar) {
         // If user hasn't hovered/select a turma, compute target cell from mouse coords
@@ -470,14 +596,14 @@ const Calendar = forwardRef(({
             // find which header cell contains the x
             let foundHeaderIndex = headerCells.findIndex(h => {
               const hr = h.getBoundingClientRect();
-              return e.clientX >= hr.left && e.clientX <= hr.right;
+              return clientX >= hr.left && clientX <= hr.right;
             });
 
             if (foundHeaderIndex === -1) {
               // fallback: compute approximate column by proportion
               const timeCol = headerCells[0];
               const timeW = timeCol ? timeCol.getBoundingClientRect().width : rect.width * 0.12;
-              const relativeX = e.clientX - rect.left - timeW;
+              const relativeX = clientX - rect.left - timeW;
               const contentW = rect.width - timeW;
               const approxCol = Math.floor((relativeX / contentW) * DIAS_SEMANA.length);
               foundHeaderIndex = approxCol + 1; // +1 because headerCells includes time column
@@ -489,7 +615,7 @@ const Calendar = forwardRef(({
             // compute row index inside tbody
             const tbodyRect = tbody.getBoundingClientRect();
             const rowHeight = tbodyRect.height / Math.max(1, horarios.length);
-            const yInBody = e.clientY - tbodyRect.top;
+            const yInBody = clientY - tbodyRect.top;
             targetHorarioIdx = Math.min(horarios.length - 1, Math.max(0, Math.floor(yInBody / rowHeight)));
             targetDiaIdx = dayIndex;
 
@@ -664,10 +790,18 @@ const Calendar = forwardRef(({
       <div
         key={materia.codigo}
         className={cardClasses}
-        onMouseDown={(e) => cumpridoAdjusted && handleDragStart(e, materia)}
+        onMouseDown={(e) => !isMobile && cumpridoAdjusted && handleDragStart(e, materia)}
+        onTouchStart={(e) => !isMobile && cumpridoAdjusted && handleDragStart(e, materia)}
+        onClick={(e) => {
+          // No mobile, clicar no card abre as informações
+          if (isMobile && cumpridoAdjusted) {
+            e.stopPropagation();
+            onMateriaClick?.(materia);
+          }
+        }}
         style={{
           borderLeftColor: getCorMateria(materia.codigo),
-          cursor: cumpridoAdjusted ? 'grab' : 'not-allowed'
+          cursor: isMobile ? (cumpridoAdjusted ? 'pointer' : 'not-allowed') : (cumpridoAdjusted ? 'grab' : 'not-allowed')
         }}
       >
         <div className="materia-card__header">
@@ -773,7 +907,8 @@ const Calendar = forwardRef(({
           </div>
 
           <p className="calendar__instructions">
-            Arraste uma matéria e solte no horário desejado
+            <span className="calendar__instructions-desktop">Arraste uma matéria e solte no horário desejado</span>
+            <span className="calendar__instructions-mobile">Clique na matéria e selecione um horário disponível para colocar na grade</span>
           </p>
 
           {/* Matérias Obrigatórias */}
@@ -813,19 +948,21 @@ const Calendar = forwardRef(({
             >
               <i className="fi fi-br-bullseye-pointer calendar__category-icon"></i>
               <span>Eletivas</span>
+              {mostrarEletivas && (
+                <input
+                  type="text"
+                  className="calendar__eletivas-search"
+                  placeholder="Pesquisar..."
+                  value={eletivasQuery}
+                  onChange={(e) => setEletivasQuery(e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
+                />
+              )}
               <i className={`fi fi-br-angle-${mostrarEletivas ? 'down' : 'right'} calendar__toggle-icon`}></i>
             </button>
 
             {mostrarEletivas && (
               <div className="calendar__materias" style={{ marginTop: '10px' }}>
-                <input
-                  type="text"
-                  className="calendar__eletivas-search"
-                  placeholder="Pesquisar eletivas..."
-                  value={eletivasQuery}
-                  onChange={(e) => setEletivasQuery(e.target.value)}
-                  style={{ marginBottom: '10px' }}
-                />
                 {eletivasDisponiveis.length === 0 ? (
                   <p className="calendar__no-electives">
                     Nenhuma eletiva disponível.
@@ -880,19 +1017,21 @@ const Calendar = forwardRef(({
              >
                <i className="fi fi-br-rocket calendar__category-icon"></i>
                <span>Matérias Futuras</span>
+               {mostrarFuturas && (
+                 <input
+                   type="text"
+                   className="calendar__eletivas-search"
+                   placeholder="Pesquisar..."
+                   value={futurasQuery}
+                   onChange={(e) => setFuturasQuery(e.target.value)}
+                   onClick={(e) => e.stopPropagation()}
+                 />
+               )}
                <i className={`fi fi-br-angle-${mostrarFuturas ? 'down' : 'right'} calendar__toggle-icon`}></i>
              </button>
 
              {mostrarFuturas && (
                <div className="calendar__materias" style={{ marginTop: '10px' }}>
-                 <input
-                   type="text"
-                   className="calendar__eletivas-search"
-                   placeholder="Pesquisar matérias futuras..."
-                   value={futurasQuery}
-                   onChange={(e) => setFuturasQuery(e.target.value)}
-                   style={{ marginBottom: '10px' }}
-                 />
                  {(() => {
                    const startSem = Number(semestreAtual) || 1;
                    // collect materias only from semesters strictly greater than current
@@ -1066,6 +1205,13 @@ const Calendar = forwardRef(({
                 <span className="calendar__legend-text">{m.nome}</span>
               </div>
             ))}
+          </div>
+
+          <div className="calendar__footer">
+            <p className="calendar__footer-text">
+              Não se esqueça de fazer sua matrícula no SIG! Este aplicativo não tem nenhum vínculo com a UFLA.<br />
+              Banco de dados atualizado em 01/02/26 - 15:50 | Matriz 2026/1
+            </p>
           </div>
         </div>
       </div>

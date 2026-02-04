@@ -159,6 +159,15 @@
   border-radius: 8px;
 }
 
+/* Por padrão, mostra instrução desktop e esconde mobile */
+.calendar__instructions-mobile {
+  display: none;
+}
+
+.calendar__instructions-desktop {
+  display: block;
+}
+
 .calendar__materias {
   display: flex;
   flex-direction: column;
@@ -185,6 +194,11 @@
   transition: all 0.2s;
   border-left: 4px solid var(--color-tropical-mint);
   user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: none;
   position: relative;
   overflow: visible; /* allow child icons/buttons to render outside without being cropped */
 }
@@ -370,6 +384,8 @@
 .calendar__toggle-icon {
   margin-left: auto;
   font-size: 0.7rem;
+  flex-shrink: 0;
+  flex: 0 0 auto;
 }
 
 .calendar__no-electives {
@@ -399,6 +415,30 @@
 
 .calendar__futuras-toggle:hover {
   background: rgba(56, 58, 66, 0.6);
+}
+
+/* Campo de pesquisa dentro do toggle */
+.calendar__eletivas-search {
+  flex: 1;
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: rgba(18, 18, 22, 0.6);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--color-text);
+  font-size: 0.85rem;
+  transition: all 0.2s;
+  min-width: 120px;
+}
+
+.calendar__eletivas-search:focus {
+  outline: none;
+  border-color: rgba(0, 240, 181, 0.4);
+  background: rgba(18, 18, 22, 0.8);
+}
+
+.calendar__eletivas-search::placeholder {
+  color: rgba(255,255,255,0.4);
+  font-size: 0.8rem;
 }
 
 .calendar__eletiva-group-title {
@@ -761,6 +801,9 @@
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
   transform: rotate(-2deg);
   opacity: 0.95;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 /* Legenda */
@@ -799,25 +842,192 @@
     width: 100%;
     position: static;
     max-height: none;
+    overflow-x: auto;
+    overflow-y: visible;
+  }
+
+  /* Layout horizontal para matérias obrigatórias no mobile */
+  .calendar__materias {
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+    overflow-x: auto;
+    overflow-y: visible;
+    padding-bottom: 10px;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .materia-card {
+    min-width: 280px;
+    max-width: 280px;
+    flex-shrink: 0;
+    scroll-snap-align: start;
+    cursor: pointer; /* Mobile usa pointer ao invés de grab */
+  }
+
+  .materia-card:active {
+    cursor: pointer; /* Não muda para grabbing no mobile */
+  }
+
+  /* Layout horizontal para grupos de eletivas no mobile */
+  .calendar__eletiva-group-list {
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+    overflow-x: auto;
+    overflow-y: visible;
+    padding-bottom: 10px;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .calendar__eletiva-group-list .materia-card {
+    min-width: 280px;
+    max-width: 280px;
+    flex-shrink: 0;
+    scroll-snap-align: start;
+  }
+
+  /* Esconder scrollbar mas manter funcionalidade */
+  .calendar__materias::-webkit-scrollbar,
+  .calendar__eletiva-group-list::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  .calendar__materias::-webkit-scrollbar-track,
+  .calendar__eletiva-group-list::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+  }
+
+  .calendar__materias::-webkit-scrollbar-thumb,
+  .calendar__eletiva-group-list::-webkit-scrollbar-thumb {
+    background: rgba(0, 240, 181, 0.3);
+    border-radius: 10px;
+  }
+
+  .calendar__materias::-webkit-scrollbar-thumb:hover,
+  .calendar__eletiva-group-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 240, 181, 0.5);
+  }
+
+  /* Ajustes na tabela do calendário para mobile */
+  .calendar__table {
+    font-size: 0.7rem;
+  }
+
+  .calendar__col-time {
+    width: 45px;
+    min-width: 45px;
+  }
+
+  .calendar__col-day {
+    width: 60px;
+    min-width: 60px;
+  }
+
+  .calendar__table td {
+    height: 35px;
+    width: 60px;
+    padding: 2px;
+  }
+
+  /* Garante que coluna de tempo fique na frente das matérias */
+  .calendar__cell-time {
+    z-index: 10;
+    position: sticky;
+    left: 0;
+  }
+
+  .calendar__cell-subject {
+    font-size: 0.5rem;
+    padding: 1px;
+  }
+
+  .calendar__cell-remove {
+    font-size: 0.85rem;
+    right: 3px;
+  }
+
+  .calendar__cell-remove i {
+    font-size: 0.9rem;
+  }
+
+  /* Ajustar título e botão de download no mobile */
+  .calendar__title-container {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .calendar__title {
+    font-size: 1.2rem;
+  }
+
+  .calendar__download {
+    position: static;
+    margin: 0 auto;
+  }
+
+  /* Ajustar footer no mobile */
+  .calendar__footer {
+    padding: 15px;
+    margin-top: 20px;
+  }
+
+  .calendar__footer-text {
+    font-size: 0.75rem;
+    line-height: 1.5;
+  }
+
+  /* Ajustar legenda no mobile */
+  .calendar__legend {
+    gap: 10px;
+    margin-top: 15px;
+  }
+
+  .calendar__legend-item {
+    font-size: 0.75rem;
+  }
+
+  .calendar__legend-color {
+    width: 14px;
+    height: 14px;
+  }
+
+  /* Ajustar campo de pesquisa para mobile - horizontal ao lado do toggle */
+  .calendar__electives-toggle,
+  .calendar__futuras-toggle {
+    flex-wrap: nowrap;
+    gap: 10px;
+  }
+
+  .calendar__eletivas-search {
+    flex: 1;
+    min-width: 0;
+    padding: 6px 10px;
+    font-size: 0.85rem;
+  }
+
+  .calendar__toggle-icon {
+    flex-shrink: 0;
+  }
+
+  /* Instruções - trocar mensagem para mobile */
+  .calendar__instructions-desktop {
+    display: none;
+  }
+
+  .calendar__instructions-mobile {
+    display: block;
   }
 }
 
-.calendar__eletivas-search {
-  width: 100%;
-  padding: 10px 12px;
-  border-radius: 8px;
-  background: rgba(255,255,255,0.02);
-  border: 1px solid rgba(255,255,255,0.06);
-  color: var(--color-text);
-  font-size: 0.9rem;
-}
-
-.calendar__eletivas-search::placeholder {
-  color: rgba(255,255,255,0.4);
-}
-
 .calendar__eletiva-group-title {
-  margin-top: 8px;
+  color: var(--color-text);
+  font-size: 0.95rem;
+  margin: 8px 0;
+  font-weight: 700;
 }
 
 .btn-voltar {
@@ -925,3 +1135,91 @@
   background: var(--color-tropical-mint);
   color: #0b0b0b;
 }
+
+/* ========== CALENDAR FOOTER ========== */
+.calendar__footer {
+  margin-top: 30px;
+  padding: 20px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.calendar__footer-text {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.calendar__footer-text br {
+  margin-bottom: 4px;
+}
+
+/* ========== ESTILOS PARA CAPTURA DE IMAGEM ========== */
+.calendar__wrapper.capturing {
+  padding: 40px;
+  max-width: none !important;
+  width: auto !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.calendar__wrapper.capturing .calendar__title-container {
+  justify-content: center;
+  margin-bottom: 25px;
+  width: auto;
+  text-align: center;
+}
+
+.calendar__wrapper.capturing .calendar__title {
+  text-align: center;
+  font-size: 1.8rem;
+  margin: 0 auto;
+}
+
+.calendar__wrapper.capturing .calendar__download {
+  display: none !important;
+}
+
+.calendar__wrapper.capturing .calendar__container {
+  overflow: visible !important;
+  max-width: none !important;
+  width: auto !important;
+  display: flex;
+  justify-content: center;
+  padding: 0;
+  margin: 0 auto;
+}
+
+.calendar__wrapper.capturing .calendar__table {
+  width: auto !important;
+  min-width: auto !important;
+  max-width: none !important;
+  margin: 0;
+  table-layout: auto;
+}
+
+.calendar__wrapper.capturing .calendar__legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 12px 20px;
+  margin-top: 25px;
+  padding: 0;
+  width: auto;
+  max-width: 100%;
+}
+
+.calendar__wrapper.capturing .calendar__legend-item {
+  font-size: 0.85rem;
+}
+
+.calendar__wrapper.capturing .calendar__footer {
+  display: none !important;
+}
+

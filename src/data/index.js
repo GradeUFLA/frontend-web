@@ -1,7 +1,7 @@
 /* eslint-disable */
 // Central data loader: prefer CSVs from /public/data when available; do NOT fall back to in-memory mock modules
 
-import { loadCursos, loadMaterias } from './csvLoader';
+import { loadCursos, loadMaterias, computeTotalSemestres } from './csvLoader';
 
 let csvCursos = null;
 let csvDadosPorCurso = null;
@@ -9,8 +9,11 @@ let csvDadosPorCurso = null;
 // Try loading CSVs immediately (non-blocking). If they succeed, the exported getters below will use CSV data.
 async function loadDataFromCsv() {
   try {
-    const cursos = await loadCursos();
+    let cursos = await loadCursos();
     const materiasRows = await loadMaterias();
+
+    // Compute totalSemestres dynamically based on subjects
+    cursos = computeTotalSemestres(cursos, materiasRows);
 
     // build materias grouped by course -> matrix -> semestre
     const dadosPorCurso = {};
@@ -72,6 +75,24 @@ loadDataFromCsv();
 export const getCursoInfo = (cursoId) => {
   if (!csvCursos) return null;
   return (csvCursos || []).find(c => c.id === cursoId) || null;
+};
+
+// Get total semestres for a specific course/matriz combination
+export const getTotalSemestres = (cursoId, matrizId) => {
+  if (!csvCursos || !cursoId) return 8; // fallback
+  const curso = csvCursos.find(c => c.id === cursoId);
+  if (!curso) return 8;
+
+  // If no matriz specified, use the most recent (backward compatibility)
+  if (!matrizId) return curso.totalSemestres || 8;
+
+  // Use the matriz-specific value if available
+  if (curso.totalSemestresPorMatriz && curso.totalSemestresPorMatriz[matrizId]) {
+    return curso.totalSemestresPorMatriz[matrizId];
+  }
+
+  // Fallback to default
+  return curso.totalSemestres || 8;
 };
 
 // Get materias por semestre (CSV-aware) - returns [] when not available
