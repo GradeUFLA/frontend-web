@@ -375,6 +375,13 @@ const Calendar = forwardRef(({
     };
   };
 
+  // Constrói lista completa de matérias para verificação de requisitos do mesmo período
+  // Movido para cima para estar disponível nas funções handleDragStart, etc.
+  const allMateriasList = [
+    ...Object.values(materiasPorSemestre).flat(),
+    ...eletivas
+  ];
+
   const getCorMateria = (codigo) => {
     const keys = Object.keys(materiasNoCalendario);
     const index = keys.indexOf(codigo);
@@ -494,7 +501,7 @@ const Calendar = forwardRef(({
   // Inicia o drag
   const handleDragStart = async (e, materia) => {
     // Use detailed prereq check
-    const det = verificarPreRequisitosDetalhada(materia, materiasAprovadas, materiasNoCalendario);
+    const det = verificarPreRequisitosDetalhada(materia, materiasAprovadas, materiasNoCalendario, allMateriasList);
 
     // Filter all prereq types using confirmed list
     const faltandoForteRaw = det.faltandoForte || [];
@@ -764,9 +771,10 @@ const Calendar = forwardRef(({
   else if (totalCreditos > CREDIT_WARN) creditClass = 'calendar__credits--warn';
   const { obrigatorias, pendentes, eletivas: eletivasDisponiveis } = getMateriasDisponiveis();
 
+
   const renderMateriaCard = (materia, tipo = 'obrigatoria') => {
     const jaNoCalendario = materiasNoCalendario[materia.codigo];
-    const det = verificarPreRequisitosDetalhada(materia, materiasAprovadas, materiasNoCalendario);
+    const det = verificarPreRequisitosDetalhada(materia, materiasAprovadas, materiasNoCalendario, allMateriasList);
 
     // Filter ALL prereq types using confirmed list so confirmed prereqs are ignored
     const faltandoForteRaw = det.faltandoForte || [];
