@@ -1210,7 +1210,7 @@ const Calendar = forwardRef(({
           <div className="calendar__footer">
             <p className="calendar__footer-text">
               Não se esqueça de fazer sua matrícula no SIG! Este aplicativo não tem nenhum vínculo com a UFLA.<br />
-              Banco de dados atualizado em 01/02/26 - 15:50 | Matriz 2026/1
+              Banco de dados atualizado em 01/02/26 - 15:50 | Matriz 2025/2
             </p>
           </div>
         </div>
