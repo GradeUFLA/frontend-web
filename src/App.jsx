@@ -283,8 +283,7 @@ function App() {
       // check conflict against prevState
       const conflitoCheck = checkConflitoParaMateria(materia, prevState);
       if (conflitoCheck.temConflito) {
-        const motivo = conflitoCheck.materiaConflito || conflitoCheck.mensagem || 'Conflito de horário';
-        addToast(`Conflito de horário: ${motivo}`, 'error');
+        // Don't show toast here - the calling component (Calendar or MateriaModal) already showed it
         wasAdded = false;
         return prevState; // do not modify state
       }
@@ -460,8 +459,10 @@ function App() {
               handleAddMateria(novaMateria);
              }}
             materiasAprovadas={materiasAprovadas}
-          checkConflito={(m) => checkConflitoParaMateria(m, materiasNoCalendario)}
-          onShowToast={(msg, type) => addToast(msg, type)}
+            materiasNoCalendario={materiasNoCalendario}
+            materiasMinimoConfirmadas={minimoConfirmados}
+            checkConflito={(m) => checkConflitoParaMateria(m, materiasNoCalendario)}
+            onShowToast={(msg, type) => addToast(msg, type)}
           />
         )}
       </div>

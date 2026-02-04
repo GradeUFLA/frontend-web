@@ -948,23 +948,23 @@ const Calendar = forwardRef(({
       return;
     }
 
+    // Remove duplicatas da lista de pré-requisitos
+    const prereqsUnicos = [...new Set(prereqs.map(p => String(p).trim()))].filter(Boolean);
+
     // Confirmar todos os pré-requisitos da lista
-    prereqs.forEach(prereq => {
-      const codigo = String(prereq).trim();
-      if (codigo) {
-        if (typeof onConfirmMinimo === 'function') {
-          onConfirmMinimo(codigo);
-        } else {
-          try {
-            const ev = new CustomEvent('gradeufla-confirm-minimo', { detail: { codigo } });
-            window.dispatchEvent(ev);
-          } catch (e) {}
-        }
+    prereqsUnicos.forEach(codigo => {
+      if (typeof onConfirmMinimo === 'function') {
+        onConfirmMinimo(codigo);
+      } else {
+        try {
+          const ev = new CustomEvent('gradeufla-confirm-minimo', { detail: { codigo } });
+          window.dispatchEvent(ev);
+        } catch (e) {}
       }
     });
 
-    // Mensagem personalizada por tipo
-    const nomes = prereqs.map(p => getNomeMateria(p) || p).join(', ');
+    // Mensagem personalizada por tipo (apenas UMA notificação com todos os nomes)
+    const nomes = prereqsUnicos.map(p => getNomeMateria(p) || p).join(', ');
     let mensagem;
 
     if (tipo === 'forte') {
