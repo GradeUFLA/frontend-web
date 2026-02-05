@@ -788,6 +788,11 @@
   transform: translateY(-50%) scale(1.05);
 }
 
+/* Ocultar botão X no mobile */
+.calendar__cell-remove--mobile-hidden {
+  display: none !important;
+}
+
 /* Drag Ghost - elemento que segue o mouse */
 .drag-ghost {
   position: fixed;

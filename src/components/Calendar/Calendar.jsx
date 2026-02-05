@@ -1284,7 +1284,7 @@ const Calendar = forwardRef(({
                                 >
                                   <span className="calendar__cell-subject-name">{mec.nome}</span>
                                   <button
-                                    className="calendar__cell-remove"
+                                    className={`calendar__cell-remove ${isMobile ? 'calendar__cell-remove--mobile-hidden' : ''}`}
                                     onClick={(ev) => { ev.stopPropagation(); onRemoveMateria(mec.codigo); }}
                                     title="Remover matéria"
                                   >

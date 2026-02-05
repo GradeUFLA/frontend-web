@@ -8,12 +8,16 @@ const MateriaModal = ({
   materiasAprovadas,
   onClose,
   onSave,
+  onRemove,
   checkConflito,
   onShowToast,
   materiasNoCalendario = {},
   materiasMinimoConfirmadas = []
 }) => {
   if (!materia) return null;
+
+  // Verificar se a matéria já está no calendário
+  const jaNoCalendario = materiasNoCalendario[materia.codigo];
 
   const normalizeDiaForLabel = (d) => {
     const n = Number(d);
@@ -123,6 +127,24 @@ const MateriaModal = ({
             <span className="modal-value">{materia.turmas?.length || 1}</span>
           </div>
         </div>
+
+        {jaNoCalendario && (
+          <div className="modal-remover-container">
+            <button
+              className="modal-remover-btn"
+              onClick={() => {
+                if (typeof onRemove === 'function') {
+                  onRemove(materia.codigo);
+                  onClose();
+                }
+              }}
+              title="Remover do calendário"
+            >
+              <i className="fi fi-br-trash"></i>
+              Remover do Calendário
+            </button>
+          </div>
+        )}
 
         <div className="modal-turmas">
           <span className="modal-label">Turmas disponíveis:</span>

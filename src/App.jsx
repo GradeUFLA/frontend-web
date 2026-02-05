@@ -513,6 +513,15 @@ function App() {
               // Add the turma to calendar but do NOT show toast here (modal actions are silent)
               handleAddMateria(novaMateria);
              }}
+            onRemove={(codigo) => {
+              // Remove matéria do calendário
+              setMateriasNoCalendario(prev => {
+                const updated = { ...prev };
+                delete updated[codigo];
+                return updated;
+              });
+              addToast('Matéria removida do calendário', 'success');
+            }}
             materiasAprovadas={materiasAprovadas}
             materiasNoCalendario={materiasNoCalendario}
             materiasMinimoConfirmadas={minimoConfirmados}
