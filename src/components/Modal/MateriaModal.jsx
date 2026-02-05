@@ -1,10 +1,23 @@
-import { getNomeMateria } from '../../data';
+import { getNomeMateria, verificarPreRequisitosDetalhada } from '../../data';
 import './Modal.css';
 
 const DIAS_SEMANA = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
-const MateriaModal = ({ materia, materiasAprovadas, onClose, onSave, checkConflito, onShowToast }) => {
+const MateriaModal = ({
+  materia,
+  materiasAprovadas,
+  onClose,
+  onSave,
+  onRemove,
+  checkConflito,
+  onShowToast,
+  materiasNoCalendario = {},
+  materiasMinimoConfirmadas = []
+}) => {
   if (!materia) return null;
+
+  // Verificar se a matéria já está no calendário
+  const jaNoCalendario = materiasNoCalendario[materia.codigo];
 
   const normalizeDiaForLabel = (d) => {
     const n = Number(d);
@@ -20,12 +33,60 @@ const MateriaModal = ({ materia, materiasAprovadas, onClose, onSave, checkConfli
 
   const handleAddTurmaClick = (turma) => {
     if (!turma) return;
+
+    // Verificar pré-requisitos ANTES de adicionar
+    const det = verificarPreRequisitosDetalhada(materia, materiasAprovadas, materiasNoCalendario);
+
+    // Filter prereqs usando lista de confirmados
+    const faltandoForteRaw = det.faltandoForte || [];
+    const faltandoForte = faltandoForteRaw.filter(pr => !materiasMinimoConfirmadas.includes(pr));
+
+    const faltandoCoreqRaw = det.faltandoCoreq || [];
+    const faltandoCoreq = faltandoCoreqRaw.filter(pr => !materiasMinimoConfirmadas.includes(pr));
+
+    const faltandoMinimoRaw = det.faltandoMinimo || [];
+    const faltandoMinimo = faltandoMinimoRaw.filter(pr => !materiasMinimoConfirmadas.includes(pr));
+
+    // Se falta pré-requisito forte -> bloquear
+    if (faltandoForte.length > 0) {
+      if (typeof onShowToast === 'function') {
+        onShowToast(
+          `Pré-requisitos fortes faltando: ${faltandoForte.map(f => getNomeMateria(f)).join(', ')}`,
+          'error'
+        );
+      }
+      return;
+    }
+
+    // Se falta co-requisito -> bloquear
+    if (faltandoCoreq.length > 0) {
+      if (typeof onShowToast === 'function') {
+        onShowToast(
+          `Co-requisito(s) necessários: ${faltandoCoreq.map(f => getNomeMateria(f)).join(', ')}`,
+          'error'
+        );
+      }
+      return;
+    }
+
+    // Se falta pré-requisito mínimo -> bloquear
+    if (faltandoMinimo.length > 0) {
+      if (typeof onShowToast === 'function') {
+        onShowToast(
+          `Pré-requisito mínimo necessário: ${faltandoMinimo.map(f => getNomeMateria(f)).join(', ')}`,
+          'error'
+        );
+      }
+      return;
+    }
+
     const nova = {
       ...materia,
       turmaId: turma.id,
       horarios: turma.horarios || []
     };
-    // If parent provided a checkConflito, use it to verify before attempting add
+
+    // Verificar conflito de horário
     if (typeof checkConflito === 'function') {
       const check = checkConflito(nova);
       if (check?.temConflito) {
@@ -36,6 +97,7 @@ const MateriaModal = ({ materia, materiasAprovadas, onClose, onSave, checkConfli
         return;
       }
     }
+
     if (typeof onSave === 'function') {
       // call onSave but do NOT close the modal here; parent controls closing
       onSave(nova);
@@ -65,6 +127,24 @@ const MateriaModal = ({ materia, materiasAprovadas, onClose, onSave, checkConfli
             <span className="modal-value">{materia.turmas?.length || 1}</span>
           </div>
         </div>
+
+        {jaNoCalendario && (
+          <div className="modal-remover-container">
+            <button
+              className="modal-remover-btn"
+              onClick={() => {
+                if (typeof onRemove === 'function') {
+                  onRemove(materia.codigo);
+                  onClose();
+                }
+              }}
+              title="Remover do calendário"
+            >
+              <i className="fi fi-br-trash"></i>
+              Remover do Calendário
+            </button>
+          </div>
+        )}
 
         <div className="modal-turmas">
           <span className="modal-label">Turmas disponíveis:</span>

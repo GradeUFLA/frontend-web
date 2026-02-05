@@ -53,6 +53,9 @@ const Historico = forwardRef(({
     onToggleMateria(materia.codigo);
   };
 
+  // Validação para evitar array length inválido
+  const numSemestresAnteriores = Math.max(0, (semestreAtual || 1) - 1);
+
   return (
     <section className="historico" ref={ref}>
       <div className="historico__container">
@@ -62,7 +65,7 @@ const Historico = forwardRef(({
         </p>
 
         <div className="historico__grid">
-          {[...Array(semestreAtual - 1)].map((_, semIdx) => {
+          {[...Array(numSemestresAnteriores)].map((_, semIdx) => {
             const sem = semIdx + 1;
             const materias = materiasPorSemestre[sem] || [];
 

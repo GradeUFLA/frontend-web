@@ -129,7 +129,20 @@ function App() {
   const calendarioRef = useRef(null);
 
   // Estados do sistema
-  const [etapa, setEtapa] = useState(ETAPAS.INICIO);
+  // Inicializa etapa baseado no histórico do navegador (se houver)
+  const getInitialEtapa = () => {
+    try {
+      const state = window.history.state;
+      if (state && state.etapa && ETAPAS[state.etapa.toUpperCase()]) {
+        return state.etapa;
+      }
+    } catch (e) {
+      // Ignore errors
+    }
+    return ETAPAS.INICIO;
+  };
+
+  const [etapa, setEtapa] = useState(getInitialEtapa);
   const [cursoSelecionado, setCursoSelecionado] = useState(null);
   const [matrizSelecionada, setMatrizSelecionada] = useState(null);
   const [semestreAtual, setSemestreAtual] = useState(null);
@@ -142,6 +155,48 @@ function App() {
 
   // Hook de toast para notificações
   const { toasts, addToast, removeToast } = useToast();
+
+  // Integração com histórico do navegador (botões voltar/avançar)
+  useEffect(() => {
+    // Inicializa o estado no histórico se ainda não existir
+    if (!window.history.state || !window.history.state.etapa) {
+      window.history.replaceState({ etapa }, document.title, window.location.href);
+    }
+
+    // Handler para quando usuário clica em voltar/avançar
+    const handlePopState = (event) => {
+      if (event.state && event.state.etapa) {
+        const novaEtapa = event.state.etapa;
+
+        // Se estava em MONTAGEM e está saindo, limpa o calendário
+        // Evita inconsistências de matérias de um período quando usuário muda de semestre
+        if (etapa === ETAPAS.MONTAGEM && novaEtapa !== ETAPAS.MONTAGEM) {
+          setMateriasNoCalendario({});
+        }
+
+        setEtapa(novaEtapa);
+
+        // Scroll suave para a seção apropriada
+        if (novaEtapa === ETAPAS.MONTAGEM || novaEtapa === ETAPAS.HISTORICO) {
+          setTimeout(() => {
+            calendarioRef.current?.scrollIntoView({ behavior: 'smooth' });
+          }, 100);
+        }
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [etapa]);
+
+  // Função helper para mudar de etapa e atualizar o histórico
+  const navegarParaEtapa = (novaEtapa) => {
+    if (novaEtapa !== etapa) {
+      setEtapa(novaEtapa);
+      // Adiciona ao histórico do navegador
+      window.history.pushState({ etapa: novaEtapa }, document.title, window.location.href);
+    }
+  };
 
   // Listen for fallback toast events dispatched by components that can't call addToast directly
   useEffect(() => {
@@ -184,7 +239,7 @@ function App() {
     }
     // default to first step when starting flow
     setSetupInitialStep(1);
-    setEtapa(ETAPAS.SETUP);
+    navegarParaEtapa(ETAPAS.SETUP);
     setTimeout(() => {
       calendarioRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, 100);
@@ -204,20 +259,20 @@ function App() {
     }
     setMateriasAprovadas(materiasAnteriores);
 
-    setEtapa(ETAPAS.HISTORICO);
+    navegarParaEtapa(ETAPAS.HISTORICO);
   };
 
   const handleVoltarParaInicio = () => {
     // clear calendar when leaving montagem/setup flow
     setMateriasNoCalendario({});
-    setEtapa(ETAPAS.INICIO);
+    navegarParaEtapa(ETAPAS.INICIO);
   };
 
   const handleVoltarParaSetup = () => {
     // when requesting to go back to the setup, respect setupInitialStep (already set when navigating from calendar)
     // clear calendar when leaving montagem
     setMateriasNoCalendario({});
-    setEtapa(ETAPAS.SETUP);
+    navegarParaEtapa(ETAPAS.SETUP);
   };
 
   const handleVoltarParaHistorico = () => {
@@ -225,11 +280,11 @@ function App() {
     setSetupInitialStep(3);
     // clear calendar when leaving montagem
     setMateriasNoCalendario({});
-    setEtapa(ETAPAS.HISTORICO);
+    navegarParaEtapa(ETAPAS.HISTORICO);
   };
 
   const handleContinuar = () => {
-    setEtapa(ETAPAS.MONTAGEM);
+    navegarParaEtapa(ETAPAS.MONTAGEM);
   };
 
   // Handler para toggle de matéria aprovada
@@ -283,8 +338,7 @@ function App() {
       // check conflict against prevState
       const conflitoCheck = checkConflitoParaMateria(materia, prevState);
       if (conflitoCheck.temConflito) {
-        const motivo = conflitoCheck.materiaConflito || conflitoCheck.mensagem || 'Conflito de horário';
-        addToast(`Conflito de horário: ${motivo}`, 'error');
+        // Don't show toast here - the calling component (Calendar or MateriaModal) already showed it
         wasAdded = false;
         return prevState; // do not modify state
       }
@@ -459,9 +513,20 @@ function App() {
               // Add the turma to calendar but do NOT show toast here (modal actions are silent)
               handleAddMateria(novaMateria);
              }}
+            onRemove={(codigo) => {
+              // Remove matéria do calendário
+              setMateriasNoCalendario(prev => {
+                const updated = { ...prev };
+                delete updated[codigo];
+                return updated;
+              });
+              addToast('Matéria removida do calendário', 'success');
+            }}
             materiasAprovadas={materiasAprovadas}
-          checkConflito={(m) => checkConflitoParaMateria(m, materiasNoCalendario)}
-          onShowToast={(msg, type) => addToast(msg, type)}
+            materiasNoCalendario={materiasNoCalendario}
+            materiasMinimoConfirmadas={minimoConfirmados}
+            checkConflito={(m) => checkConflitoParaMateria(m, materiasNoCalendario)}
+            onShowToast={(msg, type) => addToast(msg, type)}
           />
         )}
       </div>

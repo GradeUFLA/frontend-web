@@ -136,8 +136,6 @@ export function computeTotalSemestres(cursos, materias) {
   // Group materias by curso + matriz
   const matrizSemestresMap = new Map(); // key: "cursoId|matriz" -> max semestre found
 
-  console.log('DEBUG: Iniciando computeTotalSemestres com', materias.length, 'matérias');
-
   materias.forEach(m => {
     if (!m.curso || !m.matriz || m.tipo !== 'obrigatoria') return;
     if (m.semestre == null || String(m.semestre).toLowerCase() === 'indefinido') return;
@@ -151,9 +149,6 @@ export function computeTotalSemestres(cursos, materias) {
       matrizSemestresMap.set(key, semestreNum);
     }
   });
-
-  // Debug: log computed values for matrices with 10+ semesters
-  console.log('DEBUG: Matrizes com 10+ semestres:', Array.from(matrizSemestresMap.entries()).filter(([k,v]) => v >= 10));
 
   // Apply computed values to cursos - store totalSemestres BY MATRIZ, not just the most recent one
   cursos.forEach(curso => {
@@ -179,10 +174,6 @@ export function computeTotalSemestres(cursos, materias) {
     const mainKey = `${curso.id}|${mainMatriz}`;
     const mainComputed = matrizSemestresMap.get(mainKey);
     curso.totalSemestres = mainComputed && mainComputed > 0 ? mainComputed : 8;
-
-    if (curso.totalSemestresPorMatriz && Object.values(curso.totalSemestresPorMatriz).some(v => v >= 10)) {
-      console.log(`DEBUG: ${curso.nome} (${curso.id}) - Semestres por matriz:`, curso.totalSemestresPorMatriz);
-    }
   });
 
   return cursos;

@@ -188,3 +188,44 @@
   background: rgba(232, 72, 85, 0.2);
   color: var(--color-watermelon);
 }
+
+/* Botão de remover do calendário */
+.modal-remover-container {
+  margin: 20px 0;
+  padding: 15px;
+  background: rgba(232, 72, 85, 0.1);
+  border-radius: 8px;
+  border: 1px solid rgba(232, 72, 85, 0.2);
+}
+
+.modal-remover-btn {
+  width: 100%;
+  background: var(--color-watermelon);
+  color: #fff;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.modal-remover-btn:hover {
+  background: #d63647;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(232, 72, 85, 0.3);
+}
+
+.modal-remover-btn:active {
+  transform: translateY(0);
+}
+
+.modal-remover-btn i {
+  font-size: 1.1rem;
+}
+

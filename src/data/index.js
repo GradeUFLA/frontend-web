@@ -240,16 +240,65 @@ export function getNomeMateria(codigo) {
 export { loadDataFromCsv as ensureCsvLoaded };
 
 // Detailed prereq verifier using CSV parsed structure when available
-export function verificarPreRequisitosDetalhada(materia, materiasAprovadas, materiasNoCalendario = {}) {
+export function verificarPreRequisitosDetalhada(materia, materiasAprovadas, materiasNoCalendario = {}, allMateriasList = null) {
   const pad = materia?.preRequisitosDetalhada;
   if (!pad) {
     const faltando = (materia.preRequisitos || []).filter(pr => !materiasAprovadas.includes(pr));
     return { cumprido: faltando.length === 0, faltandoForte: faltando, faltandoMinimo: [], faltandoCoreq: [] };
   }
 
-  const faltandoForte = (pad.forte || []).filter(pr => !materiasAprovadas.includes(pr));
-  const faltandoMinimo = (pad.minimo || []).filter(pr => !materiasAprovadas.includes(pr));
-  const faltandoCoreq = (pad.coreq || []).filter(pr => !(materiasAprovadas.includes(pr) || Object.keys(materiasNoCalendario || {}).includes(pr)));
+  // Helper: verifica se um pré-requisito está no mesmo período que a matéria atual
+  const isSamePeriod = (prereqCodigo) => {
+    // Usa 'semestre' como campo principal, 'semestreOriginal' como fallback (para pendentes)
+    const materiaSemestre = materia.semestre ?? materia.semestreOriginal;
+
+    // Se a matéria não tem período definido, não filtra (mantém comportamento padrão)
+    if (materiaSemestre == null || materiaSemestre === '' || materiaSemestre === 'Indefinido') {
+      return false;
+    }
+
+    // Se não tem lista de matérias, não filtra
+    if (!allMateriasList || allMateriasList.length === 0) {
+      return false;
+    }
+
+    // Procura o pré-requisito na lista fornecida para descobrir seu período
+    const prereqMateria = allMateriasList.find(m => m.codigo === prereqCodigo);
+    if (!prereqMateria) return false;
+
+    // Usa 'semestre' como campo principal, 'semestreOriginal' como fallback
+    const prereqSemestre = prereqMateria.semestre ?? prereqMateria.semestreOriginal;
+
+    // Se o pré-requisito não tem semestre definido, não é do mesmo período
+    if (prereqSemestre == null || prereqSemestre === '' || prereqSemestre === 'Indefinido') {
+      return false;
+    }
+
+    // Compara os semestres convertendo ambos para número para garantir comparação correta
+    const semMateria = Number(materiaSemestre);
+    const semPrereq = Number(prereqSemestre);
+
+    // Se ambos são números válidos, compara numericamente
+    if (!isNaN(semMateria) && !isNaN(semPrereq)) {
+      return semMateria === semPrereq;
+    }
+
+    // Fallback para comparação de strings
+    return String(materiaSemestre).trim() === String(prereqSemestre).trim();
+  };
+
+  // Filtra pré-requisitos, removendo os que estão no mesmo período
+  const faltandoForte = (pad.forte || [])
+    .filter(pr => !materiasAprovadas.includes(pr))
+    .filter(pr => !isSamePeriod(pr));
+
+  const faltandoMinimo = (pad.minimo || [])
+    .filter(pr => !materiasAprovadas.includes(pr))
+    .filter(pr => !isSamePeriod(pr));
+
+  const faltandoCoreq = (pad.coreq || [])
+    .filter(pr => !(materiasAprovadas.includes(pr) || Object.keys(materiasNoCalendario || {}).includes(pr)))
+    .filter(pr => !isSamePeriod(pr));
 
   const anyMissing = (faltandoForte.length > 0) || (faltandoMinimo.length > 0) || (faltandoCoreq.length > 0);
 
