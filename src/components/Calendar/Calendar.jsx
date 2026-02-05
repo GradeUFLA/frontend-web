@@ -177,6 +177,7 @@ const Calendar = forwardRef(({
       document.removeEventListener('touchend', handleGlobalUp);
       document.removeEventListener('touchcancel', handleGlobalUp);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDragging]);
 
   // Robust toast trigger: use parent's onShowToast if provided, otherwise dispatch an event
@@ -998,10 +999,12 @@ const Calendar = forwardRef(({
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
     >
-      <button className="btn-voltar btn-voltar--calendar" onClick={onVoltar}>
-        <i className="fi fi-br-arrow-left"></i>
-        <span className="btn-voltar__text">Voltar</span>
-      </button>
+      <div className="calendar__header-wrapper">
+        <button className="btn-voltar btn-voltar--calendar" onClick={onVoltar}>
+          <i className="fi fi-br-arrow-left"></i>
+          <span className="btn-voltar__text">Voltar</span>
+        </button>
+      </div>
 
       <div className="calendar__layout">
         {/* Sidebar de matérias */}

@@ -16,6 +16,10 @@
   margin: 0 auto;
 }
 
+.calendar__header-wrapper {
+  margin-bottom: 0;
+}
+
 /* Sidebar de matérias */
 .calendar__sidebar {
   width: 320px;
@@ -1037,6 +1041,13 @@
 .btn-voltar__text {
   display: inline-block;
   transform: translateY(0); /* keep neutral in calendar context */
+}
+
+/* Espaçamento melhor no mobile */
+@media (max-width: 768px) {
+  .calendar__header-wrapper {
+    margin-bottom: 30px;
+  }
 }
 
 .materia-card__minimo-btn {
