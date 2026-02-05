@@ -500,9 +500,10 @@
 /* Popup flutuante das turmas */
 .calendar__turmas-popup {
   position: absolute;
-  top: 100%;
+  top: -300%;
   left: 50%;
   transform: translateX(-50%);
+  margin-top: 20px;
   background: var(--color-surface);
   border-radius: 12px;
   padding: 12px 16px;
