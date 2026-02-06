@@ -12,7 +12,8 @@ const MateriaModal = ({
   checkConflito,
   onShowToast,
   materiasNoCalendario = {},
-  materiasMinimoConfirmadas = []
+  materiasMinimoConfirmadas = [],
+  allMateriasList = []
 }) => {
   if (!materia) return null;
 
@@ -35,7 +36,7 @@ const MateriaModal = ({
     if (!turma) return;
 
     // Verificar pré-requisitos ANTES de adicionar
-    const det = verificarPreRequisitosDetalhada(materia, materiasAprovadas, materiasNoCalendario);
+    const det = verificarPreRequisitosDetalhada(materia, materiasAprovadas, materiasNoCalendario, allMateriasList);
 
     // Filter prereqs usando lista de confirmados
     const faltandoForteRaw = det.faltandoForte || [];

@@ -231,6 +231,9 @@ function App() {
   const materiasPorSemestre = cursoSelecionado ? getMateriasPorSemestre(cursoSelecionado, undefined, matrizSelecionada) : {};
   const eletivas = cursoSelecionado ? getEletivas(cursoSelecionado, matrizSelecionada) : [];
 
+  // Criar lista completa de todas as matérias (obrigatórias + eletivas) para verificação de pré-requisitos
+  const allMateriasList = [...Object.values(materiasPorSemestre).flat(), ...eletivas];
+
   // Handlers de navegação
   const handleGetStartedClick = async () => {
     if (!csvLoaded) {
@@ -525,6 +528,7 @@ function App() {
             materiasAprovadas={materiasAprovadas}
             materiasNoCalendario={materiasNoCalendario}
             materiasMinimoConfirmadas={minimoConfirmados}
+            allMateriasList={allMateriasList}
             checkConflito={(m) => checkConflitoParaMateria(m, materiasNoCalendario)}
             onShowToast={(msg, type) => addToast(msg, type)}
           />
