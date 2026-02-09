@@ -174,6 +174,16 @@ function App() {
           setMateriasNoCalendario({});
         }
 
+        // Se está voltando para SETUP de HISTORICO ou MONTAGEM, começar na última etapa (seleção de semestre)
+        if (novaEtapa === ETAPAS.SETUP && (etapa === ETAPAS.HISTORICO || etapa === ETAPAS.MONTAGEM)) {
+          setSetupInitialStep(3);
+        }
+
+        // Se está indo do SETUP para INICIO, resetar o setupInitialStep para 1
+        if (novaEtapa === ETAPAS.INICIO && etapa === ETAPAS.SETUP) {
+          setSetupInitialStep(1);
+        }
+
         setEtapa(novaEtapa);
 
         // Scroll suave para a seção apropriada
@@ -272,7 +282,8 @@ function App() {
   };
 
   const handleVoltarParaSetup = () => {
-    // when requesting to go back to the setup, respect setupInitialStep (already set when navigating from calendar)
+    // when requesting to go back to the setup, start at last step (semestre selection)
+    setSetupInitialStep(3);
     // clear calendar when leaving montagem
     setMateriasNoCalendario({});
     navegarParaEtapa(ETAPAS.SETUP);
