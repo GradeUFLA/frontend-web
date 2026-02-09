@@ -109,6 +109,7 @@ const Calendar = forwardRef(({
   const [eletivasQuery, setEletivasQuery] = useState('');
   const [futurasQuery, setFuturasQuery] = useState('');
   const [mostrarFuturas, setMostrarFuturas] = useState(false);
+  const [filtroHorario, setFiltroHorario] = useState({ ativo: false, dia: null, horaInicio: null, horaFim: null });
   // Credit limits
   const CREDIT_WARN = 25;
   const CREDIT_MAX = 32;
@@ -374,6 +375,35 @@ const Calendar = forwardRef(({
       pendentes: materiasAnteriores,
       eletivas: eletivasDisponiveis
     };
+  };
+
+  // Verifica se uma matéria tem alguma turma que se encaixa no filtro de horário
+  const materiaSeEncaixaNoFiltro = (materia) => {
+    if (!filtroHorario.ativo) return true;
+    if (!materia.turmas || materia.turmas.length === 0) return false;
+
+    const { dia, horaInicio, horaFim } = filtroHorario;
+
+    return materia.turmas.some(turma => {
+      if (!turma.horarios || turma.horarios.length === 0) return false;
+
+      return turma.horarios.some(h => {
+        const hDia = normalizeDia(h.dia);
+        const hInicio = parseHour(h.inicio);
+        const hFim = parseHour(h.fim);
+
+        // Se o dia não corresponde, não serve
+        if (dia !== null && hDia !== dia) return false;
+
+        // Se temos filtro de hora, verificar se o horário da turma se encaixa
+        if (horaInicio !== null && horaFim !== null) {
+          // Verifica se há alguma sobreposição entre o horário da turma e o filtro
+          return !(hFim <= horaInicio || hInicio >= horaFim);
+        }
+
+        return true;
+      });
+    });
   };
 
   // Constrói lista completa de matérias para verificação de requisitos do mesmo período
@@ -794,6 +824,9 @@ const Calendar = forwardRef(({
 
     if (jaNoCalendario) return null;
 
+    // Aplicar filtro de horário
+    if (!materiaSeEncaixaNoFiltro(materia)) return null;
+
     const cardClasses = [
       'materia-card',
       tipo === 'pendente' && 'materia-card--pending',
@@ -1023,6 +1056,100 @@ const Calendar = forwardRef(({
             <span className="calendar__instructions-desktop">Arraste uma matéria e solte no horário desejado</span>
             <span className="calendar__instructions-mobile">Clique na matéria e selecione um horário disponível para colocar na grade</span>
           </p>
+
+          {/* Filtro de Horário */}
+          <div className="calendar__time-filter">
+            <button
+              className={`calendar__time-filter-toggle ${filtroHorario.ativo ? 'active' : ''}`}
+              onClick={() => setFiltroHorario({ ...filtroHorario, ativo: !filtroHorario.ativo })}
+              title="Filtrar matérias por horário"
+            >
+              <i className="fi fi-br-search-alt"></i>
+              <span>Filtrar por Horário</span>
+              <i className={`fi fi-br-angle-${filtroHorario.ativo ? 'down' : 'right'}`} style={{ marginLeft: 'auto' }}></i>
+            </button>
+
+            {filtroHorario.ativo && (
+              <div className="calendar__time-filter-content">
+                <div className="calendar__time-filter-row">
+                  <label htmlFor="filter-dia">Dia:</label>
+                  <select
+                    id="filter-dia"
+                    value={filtroHorario.dia ?? ''}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setFiltroHorario({
+                        ...filtroHorario,
+                        dia: val === '' ? null : Number(val)
+                      });
+                    }}
+                  >
+                    <option value="">Qualquer dia</option>
+                    {DIAS_SEMANA.map((dia, idx) => (
+                      <option key={idx} value={idx}>{dia}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="calendar__time-filter-row">
+                  <label htmlFor="filter-inicio">Hora início:</label>
+                  <select
+                    id="filter-inicio"
+                    value={filtroHorario.horaInicio ?? ''}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setFiltroHorario({
+                        ...filtroHorario,
+                        horaInicio: val === '' ? null : Number(val)
+                      });
+                    }}
+                  >
+                    <option value="">-</option>
+                    {gerarHorarios(7, 23).map((h, idx) => (
+                      <option key={idx} value={7 + idx}>{h}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="calendar__time-filter-row">
+                  <label htmlFor="filter-fim">Hora fim:</label>
+                  <select
+                    id="filter-fim"
+                    value={filtroHorario.horaFim ?? ''}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setFiltroHorario({
+                        ...filtroHorario,
+                        horaFim: val === '' ? null : Number(val)
+                      });
+                    }}
+                  >
+                    <option value="">-</option>
+                    {gerarHorarios(7, 24).map((h, idx) => (
+                      <option key={idx} value={7 + idx}>{h}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {(filtroHorario.dia !== null || filtroHorario.horaInicio !== null || filtroHorario.horaFim !== null) && (
+                  <button
+                    className="calendar__time-filter-clear"
+                    onClick={() => setFiltroHorario({ ativo: true, dia: null, horaInicio: null, horaFim: null })}
+                    title="Limpar filtros"
+                  >
+                    <i className="fi fi-br-broom"></i>
+                    <span>Limpar Filtros</span>
+                  </button>
+                )}
+
+                <p className="calendar__time-filter-hint">
+                  {filtroHorario.dia !== null || filtroHorario.horaInicio !== null || filtroHorario.horaFim !== null
+                    ? `Mostrando matérias com turmas disponíveis${filtroHorario.dia !== null ? ` às ${DIAS_SEMANA[filtroHorario.dia]}s` : ''}${filtroHorario.horaInicio !== null ? ` das ${String(filtroHorario.horaInicio).padStart(2, '0')}:00` : ''}${filtroHorario.horaFim !== null ? ` às ${String(filtroHorario.horaFim).padStart(2, '0')}:00` : ''}`
+                    : 'Configure o filtro acima para buscar matérias em horários específicos'}
+                </p>
+              </div>
+            )}
+          </div>
 
           {/* Matérias Obrigatórias */}
           <div className="calendar__category">
@@ -1323,6 +1450,7 @@ const Calendar = forwardRef(({
           <div className="calendar__footer">
             <p className="calendar__footer-text">
               Não se esqueça de fazer sua matrícula no SIG! Este aplicativo não tem nenhum vínculo com a UFLA.<br />
+              Os horarios das turmas são baseados nos dados oficiais, mas podem sofrer alterações pela universidade. Use como guia, mas sempre confirme no SIG.<br />
               Banco de dados atualizado em 01/02/26 - 15:50 | Matriz 2025/2
             </p>
           </div>

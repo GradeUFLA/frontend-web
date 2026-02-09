@@ -1238,3 +1238,141 @@
   display: none !important;
 }
 
+/* ========================================
+   TIME FILTER STYLES
+   ======================================== */
+.calendar__time-filter {
+  margin: 15px 0 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.calendar__time-filter-toggle {
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 12px 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #fff;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.calendar__time-filter-toggle:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.calendar__time-filter-toggle.active {
+  background: rgba(0, 240, 181, 0.1);
+  color: var(--color-tropical-mint);
+}
+
+.calendar__time-filter-toggle i:first-child {
+  font-size: 1.1rem;
+}
+
+.calendar__time-filter-toggle i:last-child {
+  font-size: 1.3rem;
+  opacity: 0.7;
+}
+
+.calendar__time-filter-content {
+  padding: 15px;
+  background: rgba(0, 0, 0, 0.2);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.calendar__time-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.calendar__time-filter-row:last-of-type {
+  margin-bottom: 15px;
+}
+
+.calendar__time-filter-row label {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  min-width: 80px;
+  font-weight: 500;
+}
+
+.calendar__time-filter-row select {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: #fff;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.calendar__time-filter-row select:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.calendar__time-filter-row select:focus {
+  outline: none;
+  border-color: var(--color-tropical-mint);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.calendar__time-filter-row select option {
+  background: var(--color-gunmetal);
+  color: #fff;
+}
+
+.calendar__time-filter-clear {
+  width: 100%;
+  background: rgba(232, 72, 85, 0.15);
+  border: 1px solid rgba(232, 72, 85, 0.3);
+  border-radius: 8px;
+  padding: 10px 15px;
+  color: var(--color-watermelon);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.calendar__time-filter-clear:hover {
+  background: rgba(232, 72, 85, 0.25);
+  border-color: rgba(232, 72, 85, 0.5);
+  transform: translateY(-1px);
+}
+
+.calendar__time-filter-clear:active {
+  transform: translateY(0);
+}
+
+.calendar__time-filter-clear i {
+  font-size: 1rem;
+}
+
+.calendar__time-filter-hint {
+  margin: 0;
+  padding: 10px;
+  background: rgba(0, 240, 181, 0.05);
+  border-radius: 8px;
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  text-align: center;
+}
