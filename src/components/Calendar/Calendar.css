@@ -93,7 +93,7 @@
 .calendar__category-icon,
 .calendar__toggle-icon,
 .materia-card__info-btn i,
-.calendar__cell-remove i,
+.calendar__cell-info i,
 .calendar__turmas-popup-color,
 .calendar__legend-color,
 .btn-voltar i {
@@ -788,57 +788,42 @@
   pointer-events: none;
 }
 
-.calendar__cell-remove {
+.calendar__cell-info {
   position: absolute;
   /* vertically center the icon and place it at the right edge */
   top: 50%;
   right: 6px;
   transform: translateY(-50%);
-  background: transparent; /* remove circle */
+  background: transparent;
   border: none;
-  color: var(--color-watermelon); /* use palette red */
-  padding: 0; /* no extra padding, only the icon */
+  color: rgba(26, 26, 46, 0.7);
+  padding: 0;
   width: auto;
   height: auto;
   border-radius: 0;
   cursor: pointer;
-  font-size: 1rem; /* slightly larger X for visibility */
-  /* Garantir que o botão seja clicável mesmo com pointer-events: none no texto */
+  font-size: 0.9rem;
+  /* Garantir que o botão seja clicável */
   pointer-events: auto;
   z-index: 5;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   opacity: 0;
-  transition: color 0.15s, opacity 0.15s, transform 0.15s;
-  z-index: 30; /* ensure it's above other elements */
+  transition: opacity 0.2s ease, color 0.2s ease;
 }
 
-/* Icon styling: white with black contour using multiple text-shadow offsets */
-.calendar__cell-remove i {
-  color: #fff; /* white X */
-  font-size: 1.05rem;
-  line-height: 1;
-  -webkit-font-smoothing: antialiased;
-  text-shadow:
-    -1px -1px 0 #000,
-     1px -1px 0 #000,
-    -1px  1px 0 #000,
-     1px  1px 0 #000;
+.calendar__cell-info:hover {
+  color: #1a1a2e;
 }
 
-.calendar__cell:hover .calendar__cell-remove {
-  opacity: 1;
+/* Mostrar botão de info no hover da célula (desktop) */
+@media (hover: hover) and (pointer: fine) {
+  .calendar__cell--has-subject:hover .calendar__cell-info {
+    opacity: 1;
+  }
 }
 
-.calendar__cell-remove:hover {
-  /* keep hover subtle: slightly scale the icon */
-  transform: translateY(-50%) scale(1.05);
-}
-
-/* Ocultar botão X no mobile */
-.calendar__cell-remove--mobile-hidden {
-  display: none !important;
+/* Esconder no mobile */
+.calendar__cell-info--mobile-hidden {
+  display: none;
 }
 
 /* Drag Ghost - elemento que segue o mouse */

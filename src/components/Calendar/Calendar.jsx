@@ -1568,10 +1568,10 @@ const Calendar = forwardRef(({
                             }
                           }}
                           onClick={(e) => {
-                            // Se clicou no botão de remover, não abrir modal
-                            if (e.target.closest('.calendar__cell-remove')) return;
-                            // If there is at least one subject in this cell, clicking the cell opens the modal for that subject.
-                            if (materiasEmCelula && materiasEmCelula.length > 0) {
+                            // Se clicou no botão de info, não fazer nada aqui (o botão trata)
+                            if (e.target.closest('.calendar__cell-info')) return;
+                            // No mobile, clicar na célula abre o modal. No desktop, não faz nada (só drag)
+                            if (isMobile && materiasEmCelula && materiasEmCelula.length > 0) {
                               e.stopPropagation();
                               onMateriaClick?.(materiasEmCelula[0]);
                             }
@@ -1587,19 +1587,19 @@ const Calendar = forwardRef(({
                                 >
                                   <span className="calendar__cell-subject-name">{mec.nome}</span>
                                   <button
-                                    className={`calendar__cell-remove ${isMobile ? 'calendar__cell-remove--mobile-hidden' : ''}`}
+                                    className={`calendar__cell-info ${isMobile ? 'calendar__cell-info--mobile-hidden' : ''}`}
                                     onClick={(ev) => {
                                       ev.stopPropagation();
                                       ev.preventDefault();
-                                      onRemoveMateria(mec.codigo);
+                                      onMateriaClick?.(mec);
                                     }}
                                     onMouseDown={(ev) => {
                                       ev.stopPropagation();
                                       ev.preventDefault();
                                     }}
-                                    title="Remover matéria"
+                                    title="Ver informações"
                                   >
-                                    <i className="fi fi-br-cross-small"></i>
+                                    <i className="fi fi-br-menu-dots-vertical"></i>
                                   </button>
                                 </div>
                               ))}
