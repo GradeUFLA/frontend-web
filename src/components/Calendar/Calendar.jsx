@@ -117,6 +117,7 @@ const Calendar = forwardRef(({
   const [dragPosition, setDragPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [selectedTurmaIndex, setSelectedTurmaIndex] = useState(null);
+  const [draggingFromCalendar, setDraggingFromCalendar] = useState(false); // Nova flag para saber se está arrastando do calendário
   const [minimoModal, setMinimoModal] = useState({
     open: false,
     prereqs: [], // array de pré-requisitos (pode ser múltiplos)
@@ -529,6 +530,32 @@ const Calendar = forwardRef(({
     return -1;
   };
 
+  // Inicia o drag de uma matéria que já está no calendário
+  const handleDragStartFromCalendar = (e, materiaNoCalendario) => {
+    // Prevent default mouse/touch behavior early
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Suporte para touch e mouse
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+    // Encontrar a matéria completa (com todas as turmas) para permitir realocação
+    const materiaCompleta = allMateriasList.find(m => m.codigo === materiaNoCalendario.codigo);
+
+    if (!materiaCompleta) {
+      // Se não encontrar a matéria completa, usa os dados básicos só para remoção
+      setDraggingMateria(materiaNoCalendario);
+    } else {
+      setDraggingMateria(materiaCompleta);
+    }
+
+    setIsDragging(true);
+    setDragPosition({ x: clientX, y: clientY });
+    setSelectedTurmaIndex(null);
+    setDraggingFromCalendar(true); // Arrastando do calendário
+  };
+
   // Inicia o drag
   const handleDragStart = async (e, materia) => {
     // Use detailed prereq check
@@ -587,6 +614,7 @@ const Calendar = forwardRef(({
     setIsDragging(true);
     setDragPosition({ x: clientX, y: clientY });
     setSelectedTurmaIndex(null);
+    setDraggingFromCalendar(false); // Arrastando da sidebar
   };
 
   // Durante o drag
@@ -616,23 +644,39 @@ const Calendar = forwardRef(({
     const clientX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
     const clientY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
 
-    // Verifica se soltou dentro do calendário
-    const calendarTable = calendarTableRef.current;
-    if (calendarTable) {
-      const rect = calendarTable.getBoundingClientRect();
-      const isInsideCalendar =
-        clientX >= rect.left &&
-        clientX <= rect.right &&
-        clientY >= rect.top &&
-        clientY <= rect.bottom;
+    // Se estava arrastando do calendário
+    if (draggingFromCalendar) {
+      // Verificar se soltou na sidebar (área de matérias disponíveis)
+      const sidebar = document.querySelector('.calendar__sidebar');
+      if (sidebar) {
+        const sidebarRect = sidebar.getBoundingClientRect();
+        const isInsideSidebar =
+          clientX >= sidebarRect.left &&
+          clientX <= sidebarRect.right &&
+          clientY >= sidebarRect.top &&
+          clientY <= sidebarRect.bottom;
 
-      if (isInsideCalendar) {
-        // If user hasn't hovered/select a turma, compute target cell from mouse coords
-        let turmaIdxToUse = selectedTurmaIndex;
-        let targetHorarioIdx = null;
-        let targetDiaIdx = null;
+        if (isInsideSidebar) {
+          // Remover a matéria do calendário
+          onRemoveMateria(draggingMateria.codigo);
+          triggerToast(`${draggingMateria.nome} removida do calendário`, 'info');
+          resetDrag();
+          return;
+        }
+      }
 
-        if (turmaIdxToUse === null) {
+      // Se não soltou na sidebar, verificar se soltou em outra célula do calendário
+      const calendarTable = calendarTableRef.current;
+      if (calendarTable) {
+        const rect = calendarTable.getBoundingClientRect();
+        const isInsideCalendar =
+          clientX >= rect.left &&
+          clientX <= rect.right &&
+          clientY >= rect.top &&
+          clientY <= rect.bottom;
+
+        if (isInsideCalendar) {
+          // Encontrar a célula de destino e realocar
           try {
             const thead = calendarTable.querySelector('thead');
             const tbody = calendarTable.querySelector('tbody');
@@ -645,93 +689,209 @@ const Calendar = forwardRef(({
             });
 
             if (foundHeaderIndex === -1) {
-              // fallback: compute approximate column by proportion
               const timeCol = headerCells[0];
               const timeW = timeCol ? timeCol.getBoundingClientRect().width : rect.width * 0.12;
               const relativeX = clientX - rect.left - timeW;
               const contentW = rect.width - timeW;
               const approxCol = Math.floor((relativeX / contentW) * DIAS_SEMANA.length);
-              foundHeaderIndex = approxCol + 1; // +1 because headerCells includes time column
+              foundHeaderIndex = approxCol + 1;
             }
 
-            // map header index to day index (header 0 = time column)
             const dayIndex = Math.max(0, foundHeaderIndex - 1);
-
-            // compute row index inside tbody
             const tbodyRect = tbody.getBoundingClientRect();
             const rowHeight = tbodyRect.height / Math.max(1, horarios.length);
             const yInBody = clientY - tbodyRect.top;
-            targetHorarioIdx = Math.min(horarios.length - 1, Math.max(0, Math.floor(yInBody / rowHeight)));
-            targetDiaIdx = dayIndex;
+            const targetHorarioIdx = Math.min(horarios.length - 1, Math.max(0, Math.floor(yInBody / rowHeight)));
 
-            // attempt to find turma index for that cell
-            const computedTurmaIndex = getTurmaIndexParaCelula(targetHorarioIdx, targetDiaIdx);
-            if (computedTurmaIndex !== -1) {
-              turmaIdxToUse = computedTurmaIndex;
-            } else if (targetDiaIdx === SATURDAY_INDEX) {
-              // saturday fallback: pick first ANP turma if any
-              const anpIdx = (draggingMateria.turmas || []).findIndex(t => isAnpTurma(t));
-              if (anpIdx !== -1) turmaIdxToUse = anpIdx;
+            // Verificar se a célula de destino está ocupada
+            const ocupadas = getMateriasEmCelula(targetHorarioIdx, dayIndex);
+            const materiaAtual = ocupadas.find(m => m.codigo === draggingMateria.codigo);
+
+            // Se é a mesma célula onde já está, não fazer nada
+            if (materiaAtual) {
+              resetDrag();
+              return;
             }
-          } catch (err) {
-            // parsing failed; leave turmaIdxToUse as null
-            // console.warn('could not compute cell from mouse coords', err);
-          }
-        }
 
-        // If we have a resolved turma index, proceed like before
-        if (turmaIdxToUse !== null && turmaIdxToUse !== -1) {
-          const turma = draggingMateria.turmas[turmaIdxToUse];
-
-          // If we computed a concrete target cell, ensure it's empty (no overlapping cell item)
-          if (typeof targetHorarioIdx === 'number' && typeof targetDiaIdx === 'number') {
-            const ocupadas = getMateriasEmCelula(targetHorarioIdx, targetDiaIdx);
+            // Se há outra matéria na célula, mostrar erro
             if (ocupadas && ocupadas.length > 0) {
               triggerToast('Horário já ocupado por outra matéria.', 'error');
               resetDrag();
               return;
             }
+
+            // Tentar realocar a matéria
+            const materiaCompleta = allMateriasList.find(m => m.codigo === draggingMateria.codigo);
+            if (materiaCompleta && materiaCompleta.turmas) {
+              const turmaIndex = getTurmaIndexParaCelula(targetHorarioIdx, dayIndex);
+
+              if (turmaIndex !== -1) {
+                const turma = materiaCompleta.turmas[turmaIndex];
+                const conflitResult = verificarConflito(turma);
+
+                if (conflitResult.temConflito) {
+                  triggerToast(`Conflito de horário com ${conflitResult.materiaConflito || conflitResult.mensagem}!`, 'error');
+                } else {
+                  // Remover da posição atual e adicionar na nova
+                  onRemoveMateria(draggingMateria.codigo);
+
+                  const isTurmaAnp = isAnpTurma(turma);
+                  if (isTurmaAnp) {
+                    const slot = conflitResult.suggestedAnpSlot || findFirstAvailableAnpSlot(materiasNoCalendario);
+                    if (!slot) {
+                      triggerToast('Sem vagas ANP disponíveis no sábado.', 'error');
+                    } else {
+                      const added = onAddMateria({
+                        ...materiaCompleta,
+                        turmaId: turma.id,
+                        horarios: turma.horarios,
+                        anpSlot: slot
+                      });
+                      if (added) {
+                        triggerToast(`${materiaCompleta.nome} realocada com sucesso!`, 'success');
+                      }
+                    }
+                  } else {
+                    const added = onAddMateria({
+                      ...materiaCompleta,
+                      turmaId: turma.id,
+                      horarios: turma.horarios
+                    });
+                    if (added) {
+                      triggerToast(`${materiaCompleta.nome} realocada com sucesso!`, 'success');
+                    }
+                  }
+                }
+              }
+            }
+          } catch (err) {
+            triggerToast('Erro ao realocar matéria', 'error');
+          }
+        } else {
+          // Se soltou fora do calendário e da sidebar, manter na posição original
+          resetDrag();
+          return;
+        }
+      }
+    } else {
+      // Comportamento original para drag da sidebar
+      // Verifica se soltou dentro do calendário
+      const calendarTable = calendarTableRef.current;
+      if (calendarTable) {
+        const rect = calendarTable.getBoundingClientRect();
+        const isInsideCalendar =
+          clientX >= rect.left &&
+          clientX <= rect.right &&
+          clientY >= rect.top &&
+          clientY <= rect.bottom;
+
+        if (isInsideCalendar) {
+          // If user hasn't hovered/select a turma, compute target cell from mouse coords
+          let turmaIdxToUse = selectedTurmaIndex;
+          let targetHorarioIdx = null;
+          let targetDiaIdx = null;
+
+          if (turmaIdxToUse === null) {
+            try {
+              const thead = calendarTable.querySelector('thead');
+              const tbody = calendarTable.querySelector('tbody');
+              const headerCells = Array.from(thead.querySelectorAll('th'));
+
+              // find which header cell contains the x
+              let foundHeaderIndex = headerCells.findIndex(h => {
+                const hr = h.getBoundingClientRect();
+                return clientX >= hr.left && clientX <= hr.right;
+              });
+
+              if (foundHeaderIndex === -1) {
+                // fallback: compute approximate column by proportion
+                const timeCol = headerCells[0];
+                const timeW = timeCol ? timeCol.getBoundingClientRect().width : rect.width * 0.12;
+                const relativeX = clientX - rect.left - timeW;
+                const contentW = rect.width - timeW;
+                const approxCol = Math.floor((relativeX / contentW) * DIAS_SEMANA.length);
+                foundHeaderIndex = approxCol + 1; // +1 because headerCells includes time column
+              }
+
+              // map header index to day index (header 0 = time column)
+              const dayIndex = Math.max(0, foundHeaderIndex - 1);
+
+              // compute row index inside tbody
+              const tbodyRect = tbody.getBoundingClientRect();
+              const rowHeight = tbodyRect.height / Math.max(1, horarios.length);
+              const yInBody = clientY - tbodyRect.top;
+              targetHorarioIdx = Math.min(horarios.length - 1, Math.max(0, Math.floor(yInBody / rowHeight)));
+              targetDiaIdx = dayIndex;
+
+              // attempt to find turma index for that cell
+              const computedTurmaIndex = getTurmaIndexParaCelula(targetHorarioIdx, targetDiaIdx);
+              if (computedTurmaIndex !== -1) {
+                turmaIdxToUse = computedTurmaIndex;
+              } else if (targetDiaIdx === SATURDAY_INDEX) {
+                // saturday fallback: pick first ANP turma if any
+                const anpIdx = (draggingMateria.turmas || []).findIndex(t => isAnpTurma(t));
+                if (anpIdx !== -1) turmaIdxToUse = anpIdx;
+              }
+            } catch (err) {
+              // parsing failed; leave turmaIdxToUse as null
+              // console.warn('could not compute cell from mouse coords', err);
+            }
           }
 
-          const conflitResult = verificarConflito(turma);
-          const temConflito = conflitResult.temConflito;
-          const materiaConflito = conflitResult.materiaConflito || conflitResult.mensagem;
+          // If we have a resolved turma index, proceed like before
+          if (turmaIdxToUse !== null && turmaIdxToUse !== -1) {
+            const turma = draggingMateria.turmas[turmaIdxToUse];
 
-          if (temConflito) {
-            triggerToast(`Conflito de horário com ${materiaConflito}!`, 'error');
-          } else {
-            // credit limit check before adding
-            const currentTotal = calcTotalCreditos();
-            const materiaCred = draggingMateria.creditos || 0;
-            if (currentTotal >= CREDIT_MAX) {
-              triggerToast(`Limite de créditos atingido (${CREDIT_MAX}). Remova matérias para adicionar mais.`, 'error');
-            } else if (currentTotal + materiaCred > CREDIT_MAX) {
-              triggerToast('Adicionar esta matéria excederia o limite de 32 créditos.', 'error');
+            // If we computed a concrete target cell, ensure it's empty (no overlapping cell item)
+            if (typeof targetHorarioIdx === 'number' && typeof targetDiaIdx === 'number') {
+              const ocupadas = getMateriasEmCelula(targetHorarioIdx, targetDiaIdx);
+              if (ocupadas && ocupadas.length > 0) {
+                triggerToast('Horário já ocupado por outra matéria.', 'error');
+                resetDrag();
+                return;
+              }
+            }
+
+            const conflitResult = verificarConflito(turma);
+            const temConflito = conflitResult.temConflito;
+            const materiaConflito = conflitResult.materiaConflito || conflitResult.mensagem;
+
+            if (temConflito) {
+              triggerToast(`Conflito de horário com ${materiaConflito}!`, 'error');
             } else {
-              const isTurmaAnp = isAnpTurma(turma);
-              if (isTurmaAnp) {
-                const slot = conflitResult.suggestedAnpSlot || findFirstAvailableAnpSlot(materiasNoCalendario);
-                if (!slot) {
-                  triggerToast('Sem vagas ANP disponíveis no sábado.', 'error');
+              // credit limit check before adding
+              const currentTotal = calcTotalCreditos();
+              const materiaCred = draggingMateria.creditos || 0;
+              if (currentTotal >= CREDIT_MAX) {
+                triggerToast(`Limite de créditos atingido (${CREDIT_MAX}). Remova matérias para adicionar mais.`, 'error');
+              } else if (currentTotal + materiaCred > CREDIT_MAX) {
+                triggerToast('Adicionar esta matéria excederia o limite de 32 créditos.', 'error');
+              } else {
+                const isTurmaAnp = isAnpTurma(turma);
+                if (isTurmaAnp) {
+                  const slot = conflitResult.suggestedAnpSlot || findFirstAvailableAnpSlot(materiasNoCalendario);
+                  if (!slot) {
+                    triggerToast('Sem vagas ANP disponíveis no sábado.', 'error');
+                  } else {
+                    const added = onAddMateria({
+                      ...draggingMateria,
+                      turmaId: turma.id,
+                      horarios: turma.horarios,
+                      anpSlot: slot
+                    });
+                    if (!added) {
+                      triggerToast('Não foi possível adicionar a matéria (conflito ou limite).', 'error');
+                    }
+                  }
                 } else {
                   const added = onAddMateria({
                     ...draggingMateria,
                     turmaId: turma.id,
-                    horarios: turma.horarios,
-                    anpSlot: slot
+                    horarios: turma.horarios
                   });
                   if (!added) {
                     triggerToast('Não foi possível adicionar a matéria (conflito ou limite).', 'error');
                   }
-                }
-              } else {
-                const added = onAddMateria({
-                  ...draggingMateria,
-                  turmaId: turma.id,
-                  horarios: turma.horarios
-                });
-                if (!added) {
-                  triggerToast('Não foi possível adicionar a matéria (conflito ou limite).', 'error');
                 }
               }
             }
@@ -747,6 +907,7 @@ const Calendar = forwardRef(({
     setDraggingMateria(null);
     setIsDragging(false);
     setSelectedTurmaIndex(null);
+    setDraggingFromCalendar(false);
   };
 
   // Verifica se uma célula faz parte de alguma turma da matéria sendo arrastada
@@ -1041,7 +1202,7 @@ const Calendar = forwardRef(({
 
       <div className="calendar__layout">
         {/* Sidebar de matérias */}
-        <div className="calendar__sidebar">
+        <div className={`calendar__sidebar ${isDragging && draggingFromCalendar ? 'calendar__sidebar--drop-zone' : ''}`}>
           <div className="calendar__sidebar-header">
             <h3 className="calendar__sidebar-title">
               <i className="fi fi-br-book-alt"></i>
@@ -1053,8 +1214,14 @@ const Calendar = forwardRef(({
           </div>
 
           <p className="calendar__instructions">
-            <span className="calendar__instructions-desktop">Arraste uma matéria e solte no horário desejado</span>
-            <span className="calendar__instructions-mobile">Clique na matéria e selecione um horário disponível para colocar na grade</span>
+            <span className="calendar__instructions-desktop">
+              Arraste uma matéria da lista e solte no horário desejado.
+              Para remover ou realocar, arraste a matéria do calendário para a sidebar ou outro horário.
+            </span>
+            <span className="calendar__instructions-mobile">
+              Clique na matéria da lista e selecione um horário.
+              Clique na matéria do calendário para ver informações.
+            </span>
           </p>
 
           {/* Filtro de Horário */}
@@ -1380,7 +1547,10 @@ const Calendar = forwardRef(({
                           className={cellClasses}
                           style={
                             materiasEmCelula.length > 0
-                              ? { backgroundColor: getCorMateria(materiasEmCelula[0].codigo) }
+                              ? {
+                                  backgroundColor: getCorMateria(materiasEmCelula[0].codigo),
+                                  cursor: isMobile ? 'pointer' : 'grab'
+                                }
                               : previewInfo
                                 ? {
                                     backgroundColor: previewInfo.hasConflict
@@ -1390,14 +1560,22 @@ const Calendar = forwardRef(({
                                   }
                                 : {}
                           }
+                          onMouseDown={(e) => {
+                            // Se a célula tem matéria e não clicou no botão de remover, iniciar drag (desktop)
+                            if (materiasEmCelula.length > 0 && !isMobile) {
+                              if (e.target.closest('.calendar__cell-remove')) return;
+                              handleDragStartFromCalendar(e, materiasEmCelula[0]);
+                            }
+                          }}
                           onClick={(e) => {
+                            // Se clicou no botão de remover, não abrir modal
+                            if (e.target.closest('.calendar__cell-remove')) return;
                             // If there is at least one subject in this cell, clicking the cell opens the modal for that subject.
                             if (materiasEmCelula && materiasEmCelula.length > 0) {
                               e.stopPropagation();
                               onMateriaClick?.(materiasEmCelula[0]);
                             }
-                          }
-                          }
+                          }}
                           onMouseEnter={() => handleCellHover(indexHora, indexDia)}
                         >
                           {materiasEmCelula.length > 0 && (
@@ -1406,13 +1584,19 @@ const Calendar = forwardRef(({
                                 <div
                                   key={mec.codigo}
                                   className="calendar__cell-subject"
-                                  // Keep the subject block clickable as well; remove button stops propagation
-                                  onClick={(e) => { e.stopPropagation(); onMateriaClick?.(mec); }}
                                 >
                                   <span className="calendar__cell-subject-name">{mec.nome}</span>
                                   <button
                                     className={`calendar__cell-remove ${isMobile ? 'calendar__cell-remove--mobile-hidden' : ''}`}
-                                    onClick={(ev) => { ev.stopPropagation(); onRemoveMateria(mec.codigo); }}
+                                    onClick={(ev) => {
+                                      ev.stopPropagation();
+                                      ev.preventDefault();
+                                      onRemoveMateria(mec.codigo);
+                                    }}
+                                    onMouseDown={(ev) => {
+                                      ev.stopPropagation();
+                                      ev.preventDefault();
+                                    }}
                                     title="Remover matéria"
                                   >
                                     <i className="fi fi-br-cross-small"></i>

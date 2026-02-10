@@ -33,6 +33,31 @@
   overflow-y: auto;
   position: sticky;
   top: 20px;
+  transition: all 0.2s ease;
+}
+
+/* Estado quando é uma drop zone (arrastando matéria do calendário) */
+.calendar__sidebar--drop-zone {
+  border-color: #4ecdc4;
+  background: rgba(78, 205, 196, 0.1);
+  box-shadow: 0 0 20px rgba(78, 205, 196, 0.3);
+}
+
+.calendar__sidebar--drop-zone::before {
+  content: "Solte aqui para remover do calendário";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(78, 205, 196, 0.9);
+  color: white;
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  z-index: 10;
+  pointer-events: none;
+  white-space: nowrap;
 }
 
 .calendar__sidebar-header {
@@ -715,6 +740,21 @@
 
 .calendar__cell--has-subject {
   padding: 2px !important;
+  transition: all 0.15s ease;
+}
+
+/* Hover effects para célula com matéria apenas em desktop */
+@media (hover: hover) and (pointer: fine) {
+  .calendar__cell--has-subject:hover {
+    transform: scale(1.03);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 10;
+    position: relative;
+  }
+
+  .calendar__cell--has-subject:active {
+    transform: scale(0.98);
+  }
 }
 
 .calendar__cell-subject {
@@ -728,9 +768,13 @@
   font-weight: 600;
   font-size: 0.55rem;
   position: relative;
-  padding: 2px; /* reverted: center text as before; icon may overlay on hover */
+  padding: 2px;
   line-height: 1.1;
-  overflow: visible; /* allow remove button to be fully visible when cell is small */
+  overflow: visible;
+  user-select: none;
+  /* Permitir que eventos de mouse passem para o TD pai */
+  pointer-events: none;
+  box-sizing: border-box;
 }
 
 .calendar__cell-subject-name {
@@ -741,6 +785,7 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   word-break: break-word;
+  pointer-events: none;
 }
 
 .calendar__cell-remove {
@@ -758,6 +803,9 @@
   border-radius: 0;
   cursor: pointer;
   font-size: 1rem; /* slightly larger X for visibility */
+  /* Garantir que o botão seja clicável mesmo com pointer-events: none no texto */
+  pointer-events: auto;
+  z-index: 5;
   display: inline-flex;
   align-items: center;
   justify-content: center;
