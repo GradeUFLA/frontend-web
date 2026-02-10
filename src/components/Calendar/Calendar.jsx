@@ -233,91 +233,56 @@ const Calendar = forwardRef(({
       const html2canvasModule = await import('html2canvas');
       const html2canvas = html2canvasModule.default || html2canvasModule;
 
-      // Add capturing class for special styling
+      // Tamanho fixo da imagem final: 1600x2338 pixels
+      const FIXED_WIDTH = 1600;
+      const FIXED_HEIGHT = 2338;
+
+      // Salvar estilos originais
+      const originalWidth = node.style.width;
+      const originalMinWidth = node.style.minWidth;
+      const originalHeight = node.style.height;
+      const originalMinHeight = node.style.minHeight;
+
+      // Forçar dimensões fixas para captura
+      node.style.width = `${FIXED_WIDTH / 2}px`;
+      node.style.minWidth = `${FIXED_WIDTH / 2}px`;
+      node.style.height = 'auto';
+      node.style.minHeight = 'auto';
+
+      // Adicionar classe de captura
       node.classList.add('capturing');
 
-      // Store original styles to restore later
-      const container = node.querySelector('.calendar__container');
-      const table = node.querySelector('.calendar__table');
+      // Aguardar renderização com a classe de captura
+      await new Promise(resolve => setTimeout(resolve, 200));
 
-      const originalStyles = {
-        nodeOverflow: node.style.overflow,
-        nodeMaxWidth: node.style.maxWidth,
-        nodeWidth: node.style.width,
-        containerOverflow: container?.style.overflow,
-        containerMaxWidth: container?.style.maxWidth,
-        containerWidth: container?.style.width,
-        tableMinWidth: table?.style.minWidth,
-      };
-
-      // Temporarily expand everything to show full content
-      node.style.overflow = 'visible';
-      node.style.maxWidth = 'none';
-      node.style.width = 'auto';
-
-      if (container) {
-        container.style.overflow = 'visible';
-        container.style.maxWidth = 'none';
-        container.style.width = 'auto';
-      }
-
-      if (table) {
-        table.style.minWidth = 'auto';
-      }
-
-      // Force reflow to get accurate dimensions
-      await new Promise(resolve => setTimeout(resolve, 150));
-
-      // Use the element's computed background color
-      const comp = window.getComputedStyle(node);
-      let bg = comp && comp.backgroundColor ? comp.backgroundColor : null;
-      if (!bg || bg === 'rgba(0, 0, 0, 0)' || bg === 'transparent') {
-        const bodyBg = window.getComputedStyle(document.body).backgroundColor;
-        bg = bodyBg && bodyBg !== 'rgba(0, 0, 0, 0)' ? bodyBg : '#121216';
-      }
-
-      // Get actual full dimensions
-      const fullWidth = Math.max(node.scrollWidth, node.offsetWidth);
-      const fullHeight = Math.max(node.scrollHeight, node.offsetHeight);
-
+      // Capturar o elemento com dimensões fixas
       const canvas = await html2canvas(node, {
-        backgroundColor: bg,
-        scale: 2,
+        backgroundColor: '#121216',
+        scale: 2, // 800 * 2 = 1600 de largura
         useCORS: true,
         allowTaint: false,
         logging: false,
         foreignObjectRendering: false,
         scrollX: 0,
         scrollY: 0,
-        width: fullWidth,
-        height: fullHeight,
-        windowWidth: fullWidth,
-        windowHeight: fullHeight,
+        width: FIXED_WIDTH / 2,
+        height: FIXED_HEIGHT / 2,
+        windowWidth: FIXED_WIDTH / 2,
+        windowHeight: FIXED_HEIGHT / 2,
       });
 
-      // Remove capturing class
+      // Remover classe de captura e restaurar estilos
       node.classList.remove('capturing');
-
-      // Restore original styles
-      node.style.overflow = originalStyles.nodeOverflow || '';
-      node.style.maxWidth = originalStyles.nodeMaxWidth || '';
-      node.style.width = originalStyles.nodeWidth || '';
-
-      if (container) {
-        container.style.overflow = originalStyles.containerOverflow || '';
-        container.style.maxWidth = originalStyles.containerMaxWidth || '';
-        container.style.width = originalStyles.containerWidth || '';
-      }
-
-      if (table) {
-        table.style.minWidth = originalStyles.tableMinWidth || '';
-      }
+      node.style.width = originalWidth;
+      node.style.minWidth = originalMinWidth;
+      node.style.height = originalHeight;
+      node.style.minHeight = originalMinHeight;
 
       // Download PNG
-      const dataUrl = canvas.toDataURL('image/png');
+      const dataUrl = canvas.toDataURL('image/png', 1.0);
       const link = document.createElement('a');
       link.href = dataUrl;
-      link.download = `grade-${semestreAtual || 'sem'}.png`;
+      link.download = `grade-${semestreAtual}semestre.png`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -325,8 +290,13 @@ const Calendar = forwardRef(({
       triggerToast('Grade baixada com sucesso!', 'success');
     } catch (err) {
       console.error('Erro ao gerar imagem do calendário', err);
-      // Remove capturing class in case of error
-      if (node) node.classList.remove('capturing');
+      if (node) {
+        node.classList.remove('capturing');
+        node.style.width = '';
+        node.style.minWidth = '';
+        node.style.height = '';
+        node.style.minHeight = '';
+      }
       triggerToast('Erro ao gerar imagem. Tente novamente.', 'error');
     }
   };

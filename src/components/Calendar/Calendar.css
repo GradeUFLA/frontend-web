@@ -1290,25 +1290,27 @@
 
 /* ========== ESTILOS PARA CAPTURA DE IMAGEM ========== */
 .calendar__wrapper.capturing {
-  padding: 40px;
+  padding: 50px;
+  width: 100% !important;
   max-width: none !important;
-  width: auto !important;
+  min-width: 800px !important;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   box-sizing: border-box;
+  background-color: #121216;
 }
 
 .calendar__wrapper.capturing .calendar__title-container {
   justify-content: center;
-  margin-bottom: 25px;
-  width: auto;
+  margin-bottom: 30px;
+  width: 100%;
   text-align: center;
 }
 
 .calendar__wrapper.capturing .calendar__title {
   text-align: center;
-  font-size: 1.8rem;
+  font-size: 2rem;
   margin: 0 auto;
 }
 
@@ -1316,41 +1318,73 @@
   display: none !important;
 }
 
+.calendar__wrapper.capturing .calendar__turmas-popup {
+  display: none !important;
+}
+
 .calendar__wrapper.capturing .calendar__container {
   overflow: visible !important;
   max-width: none !important;
-  width: auto !important;
+  width: 100% !important;
   display: flex;
-  justify-content: center;
+  justify-content: stretch;
   padding: 0;
-  margin: 0 auto;
+  margin: 0;
 }
 
 .calendar__wrapper.capturing .calendar__table {
-  width: auto !important;
-  min-width: auto !important;
+  width: 100% !important;
+  min-width: 100% !important;
   max-width: none !important;
   margin: 0;
-  table-layout: auto;
+  table-layout: fixed;
 }
 
 .calendar__wrapper.capturing .calendar__legend {
   display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 25px;
+  margin-top: 40px;
+  padding: 30px;
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 16px;
+}
+
+.calendar__wrapper.capturing .calendar__legend-section {
+  width: 100%;
+}
+
+.calendar__wrapper.capturing .calendar__legend-section-title {
+  font-size: 1.3rem;
+  margin-bottom: 15px;
+  font-weight: 600;
+}
+
+.calendar__wrapper.capturing .calendar__legend-items {
+  display: flex;
   flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  gap: 12px 20px;
-  margin-top: 25px;
-  padding: 0;
-  width: auto;
-  max-width: 100%;
+  gap: 12px 30px;
 }
 
 .calendar__wrapper.capturing .calendar__legend-item {
-  font-size: 0.85rem;
+  font-size: 1rem;
+}
+
+.calendar__wrapper.capturing .calendar__legend-color {
+  width: 20px;
+  height: 20px;
 }
 
 .calendar__wrapper.capturing .calendar__footer {
+  display: none !important;
+}
+
+/* Esconder elementos de interação durante captura */
+.calendar__wrapper.capturing .calendar__cell-remove,
+.calendar__wrapper.capturing .calendar__cell-options {
   display: none !important;
 }
 
