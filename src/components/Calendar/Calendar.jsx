@@ -427,6 +427,27 @@ const Calendar = forwardRef(({
     return CORES_TURMAS[index % CORES_TURMAS.length];
   };
 
+  // Determina o tipo de matéria (eletiva, obrigatória ou futura)
+  const getTipoMateria = (codigo) => {
+    const materiaNoCalendario = materiasNoCalendario[codigo];
+    if (!materiaNoCalendario) return null;
+
+    // Verifica se é eletiva
+    const isEletiva = eletivas.some(e => e.codigo === codigo);
+    if (isEletiva) return 'eletiva';
+
+    // Verifica se é futura (de semestres posteriores ao atual)
+    for (let sem = Number(semestreAtual) + 1; sem <= 10; sem++) {
+      const materiasSem = materiasPorSemestre[sem] || [];
+      if (materiasSem.some(m => m.codigo === codigo)) {
+        return 'futura';
+      }
+    }
+
+    // Se não é eletiva nem futura, é obrigatória
+    return 'obrigatoria';
+  };
+
   // Verifica se uma célula está ocupada por alguma matéria já adicionada
   const getMateriasEmCelula = (horarioIdx, diaIdx) => {
     const hora = baseHour + horarioIdx;
@@ -1533,9 +1554,15 @@ const Calendar = forwardRef(({
                       const materiasEmCelula = getMateriasEmCelula(indexHora, indexDia);
                       const previewInfo = getCellPreviewInfo(indexHora, indexDia);
 
+                      // Determinar tipo da primeira matéria na célula
+                      const tipoMateria = materiasEmCelula.length > 0 ? getTipoMateria(materiasEmCelula[0].codigo) : null;
+
                       const cellClasses = [
                         'calendar__cell',
                         materiasEmCelula.length > 0 && 'calendar__cell--has-subject',
+                        tipoMateria === 'eletiva' && 'calendar__cell--eletiva',
+                        tipoMateria === 'futura' && 'calendar__cell--futura',
+                        tipoMateria === 'obrigatoria' && 'calendar__cell--obrigatoria',
                         previewInfo && !previewInfo.hasConflict && 'calendar__cell--preview',
                         previewInfo?.hasConflict && 'calendar__cell--preview-conflito',
                         previewInfo?.isSelected && 'calendar__cell--preview-selected'
@@ -1623,12 +1650,80 @@ const Calendar = forwardRef(({
           </div>
 
           <div className="calendar__legend">
-            {Object.entries(materiasNoCalendario).map(([codigo, m]) => (
-              <div key={codigo} className="calendar__legend-item">
-                <span className="calendar__legend-color" style={{ backgroundColor: getCorMateria(codigo) }}></span>
-                <span className="calendar__legend-text">{m.nome}</span>
-              </div>
-            ))}
+            {(() => {
+              // Separar matérias por tipo
+              const obrigatorias = [];
+              const eletivas = [];
+              const futuras = [];
+
+              Object.entries(materiasNoCalendario).forEach(([codigo, m]) => {
+                const tipo = getTipoMateria(codigo);
+                const item = { codigo, ...m };
+
+                if (tipo === 'eletiva') {
+                  eletivas.push(item);
+                } else if (tipo === 'futura') {
+                  futuras.push(item);
+                } else {
+                  obrigatorias.push(item);
+                }
+              });
+
+              return (
+                <>
+                  {obrigatorias.length > 0 && (
+                    <div className="calendar__legend-section">
+                      <h4 className="calendar__legend-section-title">Obrigatórias</h4>
+                      <div className="calendar__legend-items">
+                        {obrigatorias.map((m) => (
+                          <div key={m.codigo} className="calendar__legend-item">
+                            <span
+                              className="calendar__legend-color"
+                              style={{ backgroundColor: getCorMateria(m.codigo) }}
+                            ></span>
+                            <span className="calendar__legend-text">{m.nome}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {eletivas.length > 0 && (
+                    <div className="calendar__legend-section">
+                      <h4 className="calendar__legend-section-title">Eletivas</h4>
+                      <div className="calendar__legend-items">
+                        {eletivas.map((m) => (
+                          <div key={m.codigo} className="calendar__legend-item calendar__legend-item--eletiva">
+                            <span
+                              className="calendar__legend-color calendar__legend-color--eletiva"
+                              style={{ backgroundColor: getCorMateria(m.codigo) }}
+                            ></span>
+                            <span className="calendar__legend-text">{m.nome}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {futuras.length > 0 && (
+                    <div className="calendar__legend-section">
+                      <h4 className="calendar__legend-section-title">Futuras</h4>
+                      <div className="calendar__legend-items">
+                        {futuras.map((m) => (
+                          <div key={m.codigo} className="calendar__legend-item calendar__legend-item--futura">
+                            <span
+                              className="calendar__legend-color calendar__legend-color--futura"
+                              style={{ backgroundColor: getCorMateria(m.codigo) }}
+                            ></span>
+                            <span className="calendar__legend-text">{m.nome}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              );
+            })()}
           </div>
 
           <div className="calendar__footer">
