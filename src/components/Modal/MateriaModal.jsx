@@ -1,4 +1,5 @@
 import { getNomeMateria, verificarPreRequisitosDetalhada } from '../../data';
+import { useRef } from 'react';
 import './Modal.css';
 
 const DIAS_SEMANA = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
@@ -12,12 +13,14 @@ const MateriaModal = ({
   checkConflito,
   onShowToast,
   materiasNoCalendario = {},
-  materiasMinimoConfirmadas = []
+  materiasMinimoConfirmadas = [],
+  allMateriasList = []
 }) => {
-  if (!materia) return null;
+  // Ref para prevenir múltiplas chamadas rápidas (debounce simples)
+  const isProcessingRef = useRef(false);
 
   // Verificar se a matéria já está no calendário
-  const jaNoCalendario = materiasNoCalendario[materia.codigo];
+  const jaNoCalendario = materia ? materiasNoCalendario[materia.codigo] : false;
 
   const normalizeDiaForLabel = (d) => {
     const n = Number(d);
@@ -34,8 +37,32 @@ const MateriaModal = ({
   const handleAddTurmaClick = (turma) => {
     if (!turma) return;
 
+    // Prevenir múltiplas execuções rápidas
+    if (isProcessingRef.current) return;
+    isProcessingRef.current = true;
+
+    // Resetar o flag após um pequeno delay
+    setTimeout(() => {
+      isProcessingRef.current = false;
+    }, 300);
+
+    // Verificar limite de créditos ANTES de tudo
+    const CREDIT_MAX = 32;
+    const creditosAtuais = Object.values(materiasNoCalendario || {}).reduce((acc, m) => acc + (m.creditos || 0), 0);
+    const novoTotal = creditosAtuais + (materia.creditos || 0);
+
+    if (novoTotal > CREDIT_MAX) {
+      if (typeof onShowToast === 'function') {
+        onShowToast(
+          `Adicionar esta matéria excederia o limite de 32 créditos.`,
+          'error'
+        );
+      }
+      return;
+    }
+
     // Verificar pré-requisitos ANTES de adicionar
-    const det = verificarPreRequisitosDetalhada(materia, materiasAprovadas, materiasNoCalendario);
+    const det = verificarPreRequisitosDetalhada(materia, materiasAprovadas, materiasNoCalendario, allMateriasList);
 
     // Filter prereqs usando lista de confirmados
     const faltandoForteRaw = det.faltandoForte || [];
@@ -83,7 +110,9 @@ const MateriaModal = ({
     const nova = {
       ...materia,
       turmaId: turma.id,
-      horarios: turma.horarios || []
+      horarios: turma.horarios || [],
+      anp: turma.anp === true,  // Passa a flag anp da turma
+      turmaAnp: turma.anp === true  // Backup da flag
     };
 
     // Verificar conflito de horário
@@ -103,6 +132,8 @@ const MateriaModal = ({
       onSave(nova);
     }
   };
+
+  if (!materia) return null;
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -156,7 +187,17 @@ const MateriaModal = ({
                 <div
                   key={turma.id}
                   className={`turma-item ${check?.temConflito ? 'turma-item--disabled' : ''}`}
-                  onClick={() => handleAddTurmaClick(turma)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleAddTurmaClick(turma);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleAddTurmaClick(turma);
+                    }
+                  }}
                   role="button"
                   tabIndex={0}
                 >

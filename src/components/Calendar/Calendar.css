@@ -33,6 +33,31 @@
   overflow-y: auto;
   position: sticky;
   top: 20px;
+  transition: all 0.2s ease;
+}
+
+/* Estado quando é uma drop zone (arrastando matéria do calendário) */
+.calendar__sidebar--drop-zone {
+  border-color: #4ecdc4;
+  background: rgba(78, 205, 196, 0.1);
+  box-shadow: 0 0 20px rgba(78, 205, 196, 0.3);
+}
+
+.calendar__sidebar--drop-zone::before {
+  content: "Solte aqui para remover do calendário";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(78, 205, 196, 0.9);
+  color: white;
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  z-index: 10;
+  pointer-events: none;
+  white-space: nowrap;
 }
 
 .calendar__sidebar-header {
@@ -68,7 +93,7 @@
 .calendar__category-icon,
 .calendar__toggle-icon,
 .materia-card__info-btn i,
-.calendar__cell-remove i,
+.calendar__cell-info i,
 .calendar__turmas-popup-color,
 .calendar__legend-color,
 .btn-voltar i {
@@ -715,6 +740,43 @@
 
 .calendar__cell--has-subject {
   padding: 2px !important;
+  transition: all 0.15s ease;
+}
+
+/* Textura listrada para matérias eletivas - diagonal 45° */
+.calendar__cell--eletiva {
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 8px,
+    rgba(255, 255, 255, 0.2) 8px,
+    rgba(255, 255, 255, 0.2) 16px
+  ) !important;
+}
+
+/* Textura listrada para matérias futuras - horizontal 90° */
+.calendar__cell--futura {
+  background-image: repeating-linear-gradient(
+    90deg,
+    transparent,
+    transparent 8px,
+    rgba(255, 255, 255, 0.2) 8px,
+    rgba(255, 255, 255, 0.2) 16px
+  ) !important;
+}
+
+/* Hover effects para célula com matéria apenas em desktop */
+@media (hover: hover) and (pointer: fine) {
+  .calendar__cell--has-subject:hover {
+    transform: scale(1.03);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 10;
+    position: relative;
+  }
+
+  .calendar__cell--has-subject:active {
+    transform: scale(0.98);
+  }
 }
 
 .calendar__cell-subject {
@@ -728,9 +790,13 @@
   font-weight: 600;
   font-size: 0.55rem;
   position: relative;
-  padding: 2px; /* reverted: center text as before; icon may overlay on hover */
+  padding: 2px;
   line-height: 1.1;
-  overflow: visible; /* allow remove button to be fully visible when cell is small */
+  overflow: visible;
+  user-select: none;
+  /* Permitir que eventos de mouse passem para o TD pai */
+  pointer-events: none;
+  box-sizing: border-box;
 }
 
 .calendar__cell-subject-name {
@@ -741,56 +807,45 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   word-break: break-word;
+  pointer-events: none;
 }
 
-.calendar__cell-remove {
+.calendar__cell-info {
   position: absolute;
   /* vertically center the icon and place it at the right edge */
   top: 50%;
   right: 6px;
   transform: translateY(-50%);
-  background: transparent; /* remove circle */
+  background: transparent;
   border: none;
-  color: var(--color-watermelon); /* use palette red */
-  padding: 0; /* no extra padding, only the icon */
+  color: rgba(26, 26, 46, 0.7);
+  padding: 0;
   width: auto;
   height: auto;
   border-radius: 0;
   cursor: pointer;
-  font-size: 1rem; /* slightly larger X for visibility */
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  font-size: 0.9rem;
+  /* Garantir que o botão seja clicável */
+  pointer-events: auto;
+  z-index: 5;
   opacity: 0;
-  transition: color 0.15s, opacity 0.15s, transform 0.15s;
-  z-index: 30; /* ensure it's above other elements */
+  transition: opacity 0.2s ease, color 0.2s ease;
 }
 
-/* Icon styling: white with black contour using multiple text-shadow offsets */
-.calendar__cell-remove i {
-  color: #fff; /* white X */
-  font-size: 1.05rem;
-  line-height: 1;
-  -webkit-font-smoothing: antialiased;
-  text-shadow:
-    -1px -1px 0 #000,
-     1px -1px 0 #000,
-    -1px  1px 0 #000,
-     1px  1px 0 #000;
+.calendar__cell-info:hover {
+  color: #1a1a2e;
 }
 
-.calendar__cell:hover .calendar__cell-remove {
-  opacity: 1;
+/* Mostrar botão de info no hover da célula (desktop) */
+@media (hover: hover) and (pointer: fine) {
+  .calendar__cell--has-subject:hover .calendar__cell-info {
+    opacity: 1;
+  }
 }
 
-.calendar__cell-remove:hover {
-  /* keep hover subtle: slightly scale the icon */
-  transform: translateY(-50%) scale(1.05);
-}
-
-/* Ocultar botão X no mobile */
-.calendar__cell-remove--mobile-hidden {
-  display: none !important;
+/* Esconder no mobile */
+.calendar__cell-info--mobile-hidden {
+  display: none;
 }
 
 /* Drag Ghost - elemento que segue o mouse */
@@ -818,10 +873,34 @@
 /* Legenda */
 .calendar__legend {
   display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 20px;
+  padding: 20px;
+  background: var(--color-surface);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.calendar__legend-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.calendar__legend-section-title {
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin: 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.calendar__legend-items {
+  display: flex;
   flex-wrap: wrap;
   gap: 15px;
-  margin-top: 20px;
-  justify-content: center;
 }
 
 .calendar__legend-item {
@@ -833,6 +912,43 @@
 .calendar__legend-color {
   width: 16px;
   height: 16px;
+  border-radius: 4px;
+  position: relative;
+}
+
+/* Textura listrada na legenda para eletivas - diagonal 45° */
+.calendar__legend-color--eletiva::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 3px,
+    rgba(255, 255, 255, 0.4) 3px,
+    rgba(255, 255, 255, 0.4) 6px
+  );
+  border-radius: 4px;
+}
+
+/* Textura listrada na legenda para futuras - horizontal 90° */
+.calendar__legend-color--futura::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: repeating-linear-gradient(
+    90deg,
+    transparent,
+    transparent 3px,
+    rgba(255, 255, 255, 0.4) 3px,
+    rgba(255, 255, 255, 0.4) 6px
+  );
   border-radius: 4px;
 }
 
@@ -1174,25 +1290,27 @@
 
 /* ========== ESTILOS PARA CAPTURA DE IMAGEM ========== */
 .calendar__wrapper.capturing {
-  padding: 40px;
+  padding: 50px;
+  width: 100% !important;
   max-width: none !important;
-  width: auto !important;
+  min-width: 800px !important;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   box-sizing: border-box;
+  background-color: #121216;
 }
 
 .calendar__wrapper.capturing .calendar__title-container {
   justify-content: center;
-  margin-bottom: 25px;
-  width: auto;
+  margin-bottom: 30px;
+  width: 100%;
   text-align: center;
 }
 
 .calendar__wrapper.capturing .calendar__title {
   text-align: center;
-  font-size: 1.8rem;
+  font-size: 2rem;
   margin: 0 auto;
 }
 
@@ -1200,41 +1318,211 @@
   display: none !important;
 }
 
+.calendar__wrapper.capturing .calendar__turmas-popup {
+  display: none !important;
+}
+
 .calendar__wrapper.capturing .calendar__container {
   overflow: visible !important;
   max-width: none !important;
-  width: auto !important;
+  width: 100% !important;
   display: flex;
-  justify-content: center;
+  justify-content: stretch;
   padding: 0;
-  margin: 0 auto;
+  margin: 0;
 }
 
 .calendar__wrapper.capturing .calendar__table {
-  width: auto !important;
-  min-width: auto !important;
+  width: 100% !important;
+  min-width: 100% !important;
   max-width: none !important;
   margin: 0;
-  table-layout: auto;
+  table-layout: fixed;
 }
 
 .calendar__wrapper.capturing .calendar__legend {
   display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 25px;
+  margin-top: 40px;
+  padding: 30px;
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 16px;
+}
+
+.calendar__wrapper.capturing .calendar__legend-section {
+  width: 100%;
+}
+
+.calendar__wrapper.capturing .calendar__legend-section-title {
+  font-size: 1.3rem;
+  margin-bottom: 15px;
+  font-weight: 600;
+}
+
+.calendar__wrapper.capturing .calendar__legend-items {
+  display: flex;
   flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  gap: 12px 20px;
-  margin-top: 25px;
-  padding: 0;
-  width: auto;
-  max-width: 100%;
+  gap: 12px 30px;
 }
 
 .calendar__wrapper.capturing .calendar__legend-item {
-  font-size: 0.85rem;
+  font-size: 1rem;
+}
+
+.calendar__wrapper.capturing .calendar__legend-color {
+  width: 20px;
+  height: 20px;
 }
 
 .calendar__wrapper.capturing .calendar__footer {
   display: none !important;
 }
 
+/* Esconder elementos de interação durante captura */
+.calendar__wrapper.capturing .calendar__cell-remove,
+.calendar__wrapper.capturing .calendar__cell-options {
+  display: none !important;
+}
+
+/* ========================================
+   TIME FILTER STYLES
+   ======================================== */
+.calendar__time-filter {
+  margin: 15px 0 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.calendar__time-filter-toggle {
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 12px 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #fff;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.calendar__time-filter-toggle:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.calendar__time-filter-toggle.active {
+  background: rgba(0, 240, 181, 0.1);
+  color: var(--color-tropical-mint);
+}
+
+.calendar__time-filter-toggle i:first-child {
+  font-size: 1.1rem;
+}
+
+.calendar__time-filter-toggle i:last-child {
+  font-size: 1.3rem;
+  opacity: 0.7;
+}
+
+.calendar__time-filter-content {
+  padding: 15px;
+  background: rgba(0, 0, 0, 0.2);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.calendar__time-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.calendar__time-filter-row:last-of-type {
+  margin-bottom: 15px;
+}
+
+.calendar__time-filter-row label {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  min-width: 80px;
+  font-weight: 500;
+}
+
+.calendar__time-filter-row select {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: #fff;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.calendar__time-filter-row select:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.calendar__time-filter-row select:focus {
+  outline: none;
+  border-color: var(--color-tropical-mint);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.calendar__time-filter-row select option {
+  background: var(--color-gunmetal);
+  color: #fff;
+}
+
+.calendar__time-filter-clear {
+  width: 100%;
+  background: rgba(232, 72, 85, 0.15);
+  border: 1px solid rgba(232, 72, 85, 0.3);
+  border-radius: 8px;
+  padding: 10px 15px;
+  color: var(--color-watermelon);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.calendar__time-filter-clear:hover {
+  background: rgba(232, 72, 85, 0.25);
+  border-color: rgba(232, 72, 85, 0.5);
+  transform: translateY(-1px);
+}
+
+.calendar__time-filter-clear:active {
+  transform: translateY(0);
+}
+
+.calendar__time-filter-clear i {
+  font-size: 1rem;
+}
+
+.calendar__time-filter-hint {
+  margin: 0;
+  padding: 10px;
+  background: rgba(0, 240, 181, 0.05);
+  border-radius: 8px;
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  text-align: center;
+}

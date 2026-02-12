@@ -56,40 +56,50 @@ const parseHour = (v) => {
   return null;
 };
 
-// ----------------- new helpers for conflict detection (used by App and modal) -----------------
+// ----------------- helpers for conflict detection -----------------
 const SATURDAY_INDEX = 6;
-const ANP_BASE_HOUR = 9;
-const ANP_MAX_SLOTS = 14;
-const mapAnpSlotToHorarioIdx = (slot, baseHour = 7) => {
-  return (ANP_BASE_HOUR - baseHour) + (Number(slot) - 1);
+const ANP_START_HOUR = 9; // ANP começa às 9h
+
+// Verifica se uma matéria é ANP (pela tag anp na turma ou no objeto)
+const isAnpMateria = (materia) => {
+  if (!materia) return false;
+  // Se já tem a flag anp definida
+  if (materia.anp === true) return true;
+  // Se a turma tem a flag anp
+  if (materia.turmaAnp === true) return true;
+  return false;
 };
-const findFirstAvailableAnpSlotGlobal = (materiasState) => {
-  const used = new Set();
+
+// Encontra o primeiro horário disponível para ANP no sábado (9h, 10h, 11h...)
+const findNextAnpHour = (materiasState) => {
+  const usedHours = new Set();
   for (const m of Object.values(materiasState || {})) {
-    if (m.anpSlot) used.add(Number(m.anpSlot));
+    if (m.anp && m.anpHour != null) {
+      usedHours.add(Number(m.anpHour));
+    }
   }
-  for (let s = 1; s <= ANP_MAX_SLOTS; s++) {
-    if (!used.has(s)) return s;
+  // Procurar primeiro horário livre começando às 9h
+  for (let hour = ANP_START_HOUR; hour <= 22; hour++) {
+    if (!usedHours.has(hour)) return hour;
   }
-  return null;
+  return null; // Sem horários disponíveis
 };
 
-// returns {temConflito: boolean, materiaConflito?: string, suggestedAnpSlot?: number}
+// Verifica conflito de horário para matérias normais (não-ANP)
 const checkConflitoParaMateria = (materiaToCheck, materiasState) => {
-  if (!materiaToCheck || !materiaToCheck.horarios) return { temConflito: false };
-  // detect if turma is ANP-only: has saturday and no weekday
-  const horarios = materiaToCheck.horarios || [];
-  const hasWeekday = horarios.some(h => normalizeDiaValue(h?.dia) !== null && normalizeDiaValue(h?.dia) !== SATURDAY_INDEX);
-  const hasSaturday = horarios.some(h => normalizeDiaValue(h?.dia) === SATURDAY_INDEX);
-  const isAnp = hasSaturday && !hasWeekday;
+  if (!materiaToCheck) return { temConflito: false };
 
-  if (isAnp) {
-    const slot = findFirstAvailableAnpSlotGlobal(materiasState);
-    if (slot === null) return { temConflito: true, mensagem: 'Sem slots ANP disponíveis' };
-    return { temConflito: false, suggestedAnpSlot: slot };
+  // Matérias ANP nunca têm conflito (são alocadas automaticamente)
+  if (isAnpMateria(materiaToCheck)) {
+    const nextHour = findNextAnpHour(materiasState);
+    if (nextHour === null) {
+      return { temConflito: true, mensagem: 'Sem vagas ANP disponíveis no sábado' };
+    }
+    return { temConflito: false };
   }
 
-  // for non-ANP, check each horario hour-by-hour against existing materias
+  // Para matérias normais: verificar conflito de horários
+  const horarios = materiaToCheck.horarios || [];
   for (const horario of horarios) {
     const hdHorario = normalizeDiaValue(horario.dia);
     const inicioHorario = parseHour(horario.inicio);
@@ -98,16 +108,8 @@ const checkConflitoParaMateria = (materiaToCheck, materiasState) => {
 
     for (let hora = inicioHorario; hora < fimHorario; hora++) {
       for (const existing of Object.values(materiasState || {})) {
-        // existing may have ANP slot: if it's occupying saturday slot map it to hour range
-        if (existing.anpSlot && hdHorario === SATURDAY_INDEX) {
-          const slotIdx = mapAnpSlotToHorarioIdx(existing.anpSlot, 7);
-          const slotStart = 7 + slotIdx; // since baseHour 7
-          const slotEnd = slotStart + 1;
-          if (hora >= slotStart && hora < slotEnd) {
-            return { temConflito: true, materiaConflito: existing.nome || existing.codigo };
-          }
-          continue;
-        }
+        // Ignorar matérias ANP (elas ficam no sábado separadas)
+        if (existing.anp) continue;
 
         for (const h of (existing.horarios || [])) {
           const hd = normalizeDiaValue(h.dia);
@@ -174,6 +176,16 @@ function App() {
           setMateriasNoCalendario({});
         }
 
+        // Se está voltando para SETUP de HISTORICO ou MONTAGEM, começar na última etapa (seleção de semestre)
+        if (novaEtapa === ETAPAS.SETUP && (etapa === ETAPAS.HISTORICO || etapa === ETAPAS.MONTAGEM)) {
+          setSetupInitialStep(3);
+        }
+
+        // Se está indo do SETUP para INICIO, resetar o setupInitialStep para 1
+        if (novaEtapa === ETAPAS.INICIO && etapa === ETAPAS.SETUP) {
+          setSetupInitialStep(1);
+        }
+
         setEtapa(novaEtapa);
 
         // Scroll suave para a seção apropriada
@@ -231,6 +243,9 @@ function App() {
   const materiasPorSemestre = cursoSelecionado ? getMateriasPorSemestre(cursoSelecionado, undefined, matrizSelecionada) : {};
   const eletivas = cursoSelecionado ? getEletivas(cursoSelecionado, matrizSelecionada) : [];
 
+  // Criar lista completa de todas as matérias (obrigatórias + eletivas) para verificação de pré-requisitos
+  const allMateriasList = [...Object.values(materiasPorSemestre).flat(), ...eletivas];
+
   // Handlers de navegação
   const handleGetStartedClick = async () => {
     if (!csvLoaded) {
@@ -269,7 +284,8 @@ function App() {
   };
 
   const handleVoltarParaSetup = () => {
-    // when requesting to go back to the setup, respect setupInitialStep (already set when navigating from calendar)
+    // when requesting to go back to the setup, start at last step (semestre selection)
+    setSetupInitialStep(3);
     // clear calendar when leaving montagem
     setMateriasNoCalendario({});
     navegarParaEtapa(ETAPAS.SETUP);
@@ -320,77 +336,44 @@ function App() {
 
   // Handlers do calendário
   const handleAddMateria = (materia) => {
-    // add returns true on success, false on failure (conflict etc)
     if (!materia) return false;
 
-    const horariosArray = materia.horarios || [];
-    const hasAnyWeekday = horariosArray.some(h => {
-      const nd = normalizeDiaValue(h?.dia);
-      return nd !== null && nd !== SATURDAY_INDEX;
-    });
-
-    const hasSaturday = horariosArray.some(h => normalizeDiaValue(h?.dia) === SATURDAY_INDEX);
-
-    // We'll perform an atomic update: check conflicts against the latest state inside the functional updater
     let wasAdded = false;
 
     setMateriasNoCalendario(prevState => {
-      // check conflict against prevState
-      const conflitoCheck = checkConflitoParaMateria(materia, prevState);
-      if (conflitoCheck.temConflito) {
-        // Don't show toast here - the calling component (Calendar or MateriaModal) already showed it
-        wasAdded = false;
-        return prevState; // do not modify state
-      }
+      // Verifica se é ANP pela tag
+      const isAnp = isAnpMateria(materia);
 
-      if (!hasAnyWeekday && horariosArray.length > 0 && hasSaturday) {
-        // Build set of occupied saturday hours (consider ALL existing materias)
-        const occupied = new Set();
-        Object.values(prevState).forEach(m => {
-          (m.horarios || []).forEach(h => {
-            if (!h) return;
-            const nd = normalizeDiaValue(h.dia);
-            if (nd === SATURDAY_INDEX) {
-              const inicio = parseHour(h.inicio);
-              const fim = parseHour(h.fim);
-              const startHour = (inicio !== null) ? inicio : 0;
-              const endHour = (fim !== null) ? fim : (startHour + 1);
-              for (let hour = startHour; hour < endHour; hour++) {
-                occupied.add(hour);
-              }
-            }
-          });
-          // also account for assigned anpSlot
-          if (m.anpSlot) {
-            const slotIdx = mapAnpSlotToHorarioIdx(m.anpSlot, 7);
-            const slotStart = 7 + slotIdx;
-            occupied.add(slotStart);
-          }
-        });
-
-        // ANP scheduling: allocate 1-hour slots starting at 8:00, using next free hour
-        const defaultStart = 8;
-        const maxHour = 22; // last start hour allowed
-        let chosenStart = null;
-        let start = defaultStart;
-        while (start <= maxHour) {
-          if (!occupied.has(start)) { chosenStart = start; break; }
-          start += 1; // next hour
-        }
-
-        if (chosenStart === null) {
+      if (isAnp) {
+        // ANP: alocar no primeiro horário disponível no sábado (9h, 10h, 11h...)
+        const nextHour = findNextAnpHour(prevState);
+        if (nextHour === null) {
           addToast('Sem vagas ANP disponíveis no sábado.', 'error');
           wasAdded = false;
           return prevState;
         }
 
-        const horariosNew = [{ dia: 6, inicio: chosenStart, fim: chosenStart + 1 }];
-        const toAdd = { ...materia, turmaId: materia.turmaId || 'ANP', horarios: horariosNew };
+        // Preservar horários originais (seg-sex) + adicionar horário do sábado
+        const horariosOriginais = materia.horarios || [];
+        const horarioSabado = { dia: SATURDAY_INDEX, inicio: nextHour, fim: nextHour + 1 };
+
+        const toAdd = {
+          ...materia,
+          anp: true,
+          anpHour: nextHour,
+          horarios: [...horariosOriginais, horarioSabado]  // Preserva originais + adiciona sábado
+        };
         wasAdded = true;
         return { ...prevState, [materia.codigo]: toAdd };
       }
 
-      // normal add (from drag selection) - keep all horários (weekday + saturday if present)
+      // Matéria normal: verificar conflito
+      const conflitoCheck = checkConflitoParaMateria(materia, prevState);
+      if (conflitoCheck.temConflito) {
+        wasAdded = false;
+        return prevState;
+      }
+
       wasAdded = true;
       return { ...prevState, [materia.codigo]: materia };
     });
@@ -520,11 +503,11 @@ function App() {
                 delete updated[codigo];
                 return updated;
               });
-              addToast('Matéria removida do calendário', 'success');
             }}
             materiasAprovadas={materiasAprovadas}
             materiasNoCalendario={materiasNoCalendario}
             materiasMinimoConfirmadas={minimoConfirmados}
+            allMateriasList={allMateriasList}
             checkConflito={(m) => checkConflitoParaMateria(m, materiasNoCalendario)}
             onShowToast={(msg, type) => addToast(msg, type)}
           />
