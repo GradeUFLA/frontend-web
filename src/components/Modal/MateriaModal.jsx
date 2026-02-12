@@ -10,7 +10,6 @@ const MateriaModal = ({
   onClose,
   onSave,
   onRemove,
-  checkConflito,
   onShowToast,
   materiasNoCalendario = {},
   materiasMinimoConfirmadas = [],
@@ -32,6 +31,88 @@ const MateriaModal = ({
     const s = String(d).toLowerCase().slice(0,3);
     const idx = DIAS_SEMANA.findIndex(x => x.toLowerCase().slice(0,3) === s);
     return idx !== -1 ? idx : 0;
+  };
+
+  const parseHour = (val) => {
+    if (val == null) return null;
+    if (typeof val === 'number') return val;
+    if (typeof val === 'string') {
+      const match = val.match(/^(\d{1,2})[:.]?(\d{0,2})/);
+      if (match) return Number(match[1]);
+      const n = Number(val);
+      return Number.isNaN(n) ? null : n;
+    }
+    return null;
+  };
+
+  const normalizeDiaValue = (d) => {
+    if (d == null) return null;
+    const n = Number(d);
+    if (!Number.isNaN(n)) {
+      if (n >= 0 && n <= 6) return n;
+      if (n >= 1 && n <= 7) return ((n + 6) % 7 + 7) % 7;
+    }
+    const s = String(d).toLowerCase().slice(0,3);
+    const idx = DIAS_SEMANA.findIndex(x => x.toLowerCase().slice(0,3) === s);
+    return idx !== -1 ? idx : null;
+  };
+
+  const horariosConflitam = (horario1, horario2) => {
+    const dia1 = normalizeDiaValue(horario1.dia);
+    const dia2 = normalizeDiaValue(horario2.dia);
+
+    // Se dias são diferentes, não há conflito
+    if (dia1 !== dia2 || dia1 === null || dia2 === null) {
+      return false;
+    }
+
+    const inicio1 = parseHour(horario1.inicio);
+    const fim1 = parseHour(horario1.fim);
+    const inicio2 = parseHour(horario2.inicio);
+    const fim2 = parseHour(horario2.fim);
+
+    if (inicio1 === null || fim1 === null || inicio2 === null || fim2 === null) {
+      return false;
+    }
+
+    // Há conflito se: horario1 começa ANTES de horario2 terminar E horario1 termina DEPOIS de horario2 começar
+    return (inicio1 < fim2 && fim1 > inicio2);
+  };
+
+  const isAnpOnlyMateria = (m) => {
+    const horarios = m?.horarios || [];
+    if (horarios.length === 0) return true;
+    return horarios.every(h => normalizeDiaValue(h.dia) === 6);
+  };
+
+  const getConflitoParaTurma = (turma) => {
+    if (!turma) return { temConflito: false };
+
+    if (turma.anp === true && isAnpOnlyMateria(turma)) {
+      return { temConflito: false };
+    }
+
+    const horariosNovos = turma.horarios || [];
+    for (const [codigo, materiaExistente] of Object.entries(materiasNoCalendario || {})) {
+      if (materiaExistente.anp && isAnpOnlyMateria(materiaExistente)) continue;
+
+      const horariosExistentes = materiaExistente.horarios || [];
+      for (const novoHorario of horariosNovos) {
+        if (!novoHorario) continue;
+        for (const horarioExistente of horariosExistentes) {
+          if (!horarioExistente) continue;
+          if (horariosConflitam(novoHorario, horarioExistente)) {
+            return {
+              temConflito: true,
+              materiaConflito: materiaExistente.nome || codigo,
+              horarioConflito: horarioExistente
+            };
+          }
+        }
+      }
+    }
+
+    return { temConflito: false };
   };
 
   const handleAddTurmaClick = (turma) => {
@@ -107,6 +188,21 @@ const MateriaModal = ({
       return;
     }
 
+    // Verificar conflito de horários
+    const conflito = getConflitoParaTurma(turma);
+    if (conflito.temConflito) {
+      if (typeof onShowToast === 'function') {
+        const diaNome = DIAS_SEMANA[normalizeDiaValue(conflito.horarioConflito?.dia)] || 'Dia';
+        const inicio = parseHour(conflito.horarioConflito?.inicio);
+        const fim = parseHour(conflito.horarioConflito?.fim);
+        onShowToast(
+          `Conflito de horário com "${conflito.materiaConflito}" - ${diaNome} das ${inicio}:00 às ${fim}:00`,
+          'error'
+        );
+      }
+      return;
+    }
+
     const nova = {
       ...materia,
       turmaId: turma.id,
@@ -115,20 +211,9 @@ const MateriaModal = ({
       turmaAnp: turma.anp === true  // Backup da flag
     };
 
-    // Verificar conflito de horário
-    if (typeof checkConflito === 'function') {
-      const check = checkConflito(nova);
-      if (check?.temConflito) {
-        const motivo = check.materiaConflito || check.mensagem || 'Conflito de horário';
-        if (typeof onShowToast === 'function') {
-          onShowToast(`Conflito de horário: ${motivo}`, 'error');
-        }
-        return;
-      }
-    }
-
     if (typeof onSave === 'function') {
       // call onSave but do NOT close the modal here; parent controls closing
+      // handleAddMateria will verify conflicts with the latest state
       onSave(nova);
     }
   };
@@ -181,20 +266,30 @@ const MateriaModal = ({
           <span className="modal-label">Turmas disponíveis:</span>
           <div className="turmas-lista">
             {materia.turmas?.map((turma) => {
-              const nova = { ...materia, turmaId: turma.id, horarios: turma.horarios || [] };
-              const check = typeof checkConflito === 'function' ? checkConflito(nova) : { temConflito: false };
+              const conflito = getConflitoParaTurma(turma);
+              const conflitoLabel = conflito.temConflito
+                ? (() => {
+                    const diaNome = DIAS_SEMANA[normalizeDiaValue(conflito.horarioConflito?.dia)] || 'Dia';
+                    const inicio = parseHour(conflito.horarioConflito?.inicio);
+                    const fim = parseHour(conflito.horarioConflito?.fim);
+                    return `Conflito com ${conflito.materiaConflito} - ${diaNome} ${inicio}:00-${fim}:00`;
+                  })()
+                : '';
+
               return (
                 <div
                   key={turma.id}
-                  className={`turma-item ${check?.temConflito ? 'turma-item--disabled' : ''}`}
+                  className={`turma-item ${conflito.temConflito ? 'turma-item--conflito' : ''}`}
                   onClick={(e) => {
                     e.stopPropagation();
+                    if (conflito.temConflito) return;
                     handleAddTurmaClick(turma);
                   }}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
                       e.stopPropagation();
+                      if (conflito.temConflito) return;
                       handleAddTurmaClick(turma);
                     }
                   }}
@@ -203,12 +298,22 @@ const MateriaModal = ({
                 >
                   <span className="turma-id">Turma {turma.id}</span>
                   <div className="turma-horarios">
-                    {turma.horarios.map((h, i) => (
-                      <span key={i} className="horario-badge">
-                        {DIAS_SEMANA[normalizeDiaForLabel(h.dia)]} {h.inicio}{typeof h.inicio === 'number' ? 'h' : ''}-{h.fim}{typeof h.fim === 'number' ? 'h' : ''}
-                      </span>
-                    ))}
+                    {(turma.horarios && turma.horarios.length > 0) ? (
+                      turma.horarios.map((h, i) => (
+                        <span key={i} className="horario-badge">
+                          {DIAS_SEMANA[normalizeDiaForLabel(h.dia)]} {h.inicio}{typeof h.inicio === 'number' ? 'h' : ''}-{h.fim}{typeof h.fim === 'number' ? 'h' : ''}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="horario-badge horario-badge--anp">ANP</span>
+                    )}
                   </div>
+                  {conflito.temConflito && (
+                    <div className="turma-conflito">
+                      <i className="fi fi-br-triangle-warning" aria-hidden="true" />
+                      <span>{conflitoLabel}</span>
+                    </div>
+                  )}
                 </div>
               );
             })}
