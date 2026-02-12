@@ -110,7 +110,9 @@ const MateriaModal = ({
     const nova = {
       ...materia,
       turmaId: turma.id,
-      horarios: turma.horarios || []
+      horarios: turma.horarios || [],
+      anp: turma.anp === true,  // Passa a flag anp da turma
+      turmaAnp: turma.anp === true  // Backup da flag
     };
 
     // Verificar conflito de horário

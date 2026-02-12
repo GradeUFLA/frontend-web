@@ -31,18 +31,17 @@ const gerarHorarios = (start = 7, end = 23) => {
   return horarios;
 };
 
-// ANP / Saturday stacking helpers
-const SATURDAY_INDEX = 6; // normalized day 6 = Sábado
-const ANP_BASE_HOUR = 9; // first ANP visual row starts at 09:00
-const ANP_MAX_SLOTS = 14; // slots 1..14
+// Constantes
+const SATURDAY_INDEX = 6;
+const ANP_START_HOUR = 9;
 
-// lightweight static normalizer used only by top-level helpers (does not rely on component internals)
+// Normaliza dia da semana para índice 0-6
 const normalizeDiaStatic = (d) => {
   if (d == null) return d;
   const n = Number(d);
   if (!Number.isNaN(n)) {
     if (n >= 0 && n <= 6) return n;
-    if (n >= 1 && n <= 7) return ((n + 6) % 7 + 7) % 7; // 1->0 .. 7->6
+    if (n >= 1 && n <= 7) return ((n + 6) % 7 + 7) % 7;
     return n;
   }
   const s = String(d).toLowerCase().slice(0,3);
@@ -50,7 +49,7 @@ const normalizeDiaStatic = (d) => {
   return idx !== -1 ? idx : d;
 };
 
-// parse hour values which may come as numbers or strings like "08:00"
+// Parse hora de string ou número
 const parseHour = (val) => {
   if (val == null) return NaN;
   if (typeof val === 'number') return val;
@@ -63,31 +62,24 @@ const parseHour = (val) => {
   return NaN;
 };
 
+// Verifica se turma é ANP pela tag anp
 const isAnpTurma = (turma) => {
   if (!turma) return false;
-  if (turma.anp) return true;
-  const horarios = turma.horarios || [];
-  if (horarios.length === 0) return false;
-  if (horarios.some(h => h && h.anp === true)) return true;
-  const hasSat = horarios.some(h => normalizeDiaStatic(h.dia) === SATURDAY_INDEX);
-  const hasWeekday = horarios.some(h => normalizeDiaStatic(h.dia) !== SATURDAY_INDEX);
-  return hasSat && !hasWeekday;
+  return turma.anp === true;
 };
 
-const mapAnpSlotToHorarioIdx = (slot, baseHour = 7) => {
-  // slot 1 => row for ANP_BASE_HOUR, so index = ANP_BASE_HOUR - baseHour + (slot-1)
-  return (ANP_BASE_HOUR - baseHour) + (Number(slot) - 1);
-};
-
-const findFirstAvailableAnpSlot = (materiasNoCalendario) => {
-  const used = new Set();
+// Encontra próximo horário ANP disponível
+const findNextAnpHour = (materiasNoCalendario) => {
+  const usedHours = new Set();
   for (const m of Object.values(materiasNoCalendario || {})) {
-    if (m.anpSlot) used.add(Number(m.anpSlot));
+    if (m.anp && m.anpHour != null) {
+      usedHours.add(Number(m.anpHour));
+    }
   }
-  for (let s = 1; s <= ANP_MAX_SLOTS; s++) {
-    if (!used.has(s)) return s;
+  for (let hour = ANP_START_HOUR; hour <= 22; hour++) {
+    if (!usedHours.has(hour)) return hour;
   }
-  return null; // none available
+  return null;
 };
 
 const Calendar = forwardRef(({
@@ -422,16 +414,35 @@ const Calendar = forwardRef(({
   const getMateriasEmCelula = (horarioIdx, diaIdx) => {
     const hora = baseHour + horarioIdx;
     const found = [];
+
     for (const [codigo, materiaData] of Object.entries(materiasNoCalendario)) {
-      // If materia has an assigned ANP slot, map it to the corresponding saturday row
-      if (materiaData.anpSlot && diaIdx === SATURDAY_INDEX) {
-        const slotIdx = mapAnpSlotToHorarioIdx(materiaData.anpSlot, baseHour);
-        if (slotIdx === horarioIdx) {
-          found.push({ ...materiaData, codigo });
+      // Matéria ANP:
+      // - No sábado: aparece no horário ANP (anpHour)
+      // - Seg-Sex: aparece nos horários normais cadastrados
+      if (materiaData.anp) {
+        // No sábado: usar anpHour
+        if (diaIdx === SATURDAY_INDEX) {
+          if (materiaData.anpHour != null && hora === materiaData.anpHour) {
+            found.push({ ...materiaData, codigo });
+          }
+        } else {
+          // Seg-Sex: usar horários normais cadastrados
+          for (const h of (materiaData.horarios || [])) {
+            if (!h) continue;
+            const hd = normalizeDia(h.dia);
+            const hStart = parseHour(h.inicio);
+            const hEnd = parseHour(h.fim);
+            // Só processar se não for sábado (horários de seg-sex)
+            if (hd !== SATURDAY_INDEX && hd === diaIdx && !Number.isNaN(hStart) && !Number.isNaN(hEnd) && hora >= hStart && hora < hEnd) {
+              found.push({ ...materiaData, codigo });
+              break;
+            }
+          }
         }
-        continue; // ignore declared saturday horarios for ANP -- they're shown using slot
+        continue;
       }
 
+      // Matéria normal: verificar pelos horários normalmente
       for (const h of (materiaData.horarios || [])) {
         if (!h) continue;
         const hd = normalizeDia(h.dia);
@@ -439,49 +450,43 @@ const Calendar = forwardRef(({
         const hEnd = parseHour(h.fim);
         if (hd === diaIdx && !Number.isNaN(hStart) && !Number.isNaN(hEnd) && hora >= hStart && hora < hEnd) {
           found.push({ ...materiaData, codigo });
-          break; // avoid duplicate push for same materia
+          break;
         }
       }
     }
-    return found; // possivelmente array vazia
+    return found;
   };
 
-  // Verifica se os horários de uma turma conflitam com matérias já no calendário
-  // verificarConflito now accepts a 'turma' object so we can detect ANP-style turmas
+  // Verifica se uma turma tem conflito de horário
   const verificarConflito = (turma) => {
-    // If turma is ANP (has anp flag or only saturday horários) => treat specially
-    const isAnp = isAnpTurma(turma);
-    if (isAnp) {
-      // find first available ANP slot
-      const slot = findFirstAvailableAnpSlot(materiasNoCalendario);
-      if (slot === null) return { temConflito: true, mensagem: 'Sem slots ANP disponíveis' };
-      return { temConflito: false, suggestedAnpSlot: slot };
+    // Turma ANP: só verifica se há horário disponível no sábado
+    if (isAnpTurma(turma)) {
+      const nextHour = findNextAnpHour(materiasNoCalendario);
+      if (nextHour === null) {
+        return { temConflito: true, mensagem: 'Sem vagas ANP disponíveis no sábado' };
+      }
+      return { temConflito: false };
     }
 
-    // non-ANP: normal conflict detection across all existing materias
+    // Turma normal: verificar conflito de horários
     for (const horario of turma.horarios || []) {
       const hdHorario = normalizeDia(horario.dia);
       const inicioHorario = parseHour(horario.inicio);
       const fimHorario = parseHour(horario.fim);
+
       if (Number.isNaN(inicioHorario) || Number.isNaN(fimHorario)) continue;
+
       for (let hora = inicioHorario; hora < fimHorario; hora++) {
         for (const materia of Object.values(materiasNoCalendario)) {
-          // existing materia may have anpSlot -- treat it as occupying a specific saturday row
-          for (const h of (materia.horarios || [])) {
-            const hd = normalizeDia(h.dia);
-            // if existing materia has anpSlot and checking saturday, map to pseudo-hour range
-            if (hd === SATURDAY_INDEX && materia.anpSlot) {
-              const slotIdx = mapAnpSlotToHorarioIdx(materia.anpSlot, baseHour);
-              const slotStart = baseHour + slotIdx;
-              const slotEnd = slotStart + 1;
-              if (hdHorario === SATURDAY_INDEX && hora >= slotStart && hora < slotEnd) {
-                return { temConflito: true, materiaConflito: materia.nome };
-              }
-              continue; // skip normal saturday horario comparison for this existing materia
-            }
+          // Ignorar matérias ANP (elas ficam no sábado separadas)
+          if (materia.anp) continue;
 
+          for (const h of (materia.horarios || [])) {
+            if (!h) continue;
+            const hd = normalizeDia(h.dia);
             const hStart = parseHour(h.inicio);
             const hEnd = parseHour(h.fim);
+
             if (hd === hdHorario && !Number.isNaN(hStart) && !Number.isNaN(hEnd) && hora >= hStart && hora < hEnd) {
               return { temConflito: true, materiaConflito: materia.nome };
             }
@@ -489,6 +494,7 @@ const Calendar = forwardRef(({
         }
       }
     }
+
     return { temConflito: false };
   };
 
@@ -499,16 +505,15 @@ const Calendar = forwardRef(({
 
     for (let i = 0; i < draggingMateria.turmas.length; i++) {
       const turma = draggingMateria.turmas[i];
-      // If turma is ANP and we're hovering a saturday cell, accept: we'll map to ANP slot row
-      const turmaIsAnp = isAnpTurma(turma);
-      if (turmaIsAnp && diaIdx === SATURDAY_INDEX) {
-        // highlight only the row that corresponds to the first available slot
-        const slot = findFirstAvailableAnpSlot(materiasNoCalendario);
-        const slotRow = slot ? mapAnpSlotToHorarioIdx(slot, baseHour) : null;
-        if (slotRow === horarioIdx) return i;
+
+      // Se é ANP e está no sábado, aceita no próximo horário disponível
+      if (isAnpTurma(turma) && diaIdx === SATURDAY_INDEX) {
+        const nextHour = findNextAnpHour(materiasNoCalendario);
+        if (nextHour === hora) return i;
         continue;
       }
 
+      // Turma normal: verificar horários
       for (const h of (turma.horarios || [])) {
         const hd = normalizeDia(h.dia);
         const hStart = parseHour(h.inicio);
@@ -549,6 +554,8 @@ const Calendar = forwardRef(({
 
   // Inicia o drag
   const handleDragStart = async (e, materia) => {
+    console.log('🎯 Tentando arrastar matéria:', materia.nome, materia.codigo);
+
     // Use detailed prereq check
     const det = verificarPreRequisitosDetalhada(materia, materiasAprovadas, materiasNoCalendario, allMateriasList);
 
@@ -564,37 +571,37 @@ const Calendar = forwardRef(({
 
     // If missing forte prerequisites (after filtering confirmados) -> block silently (card already shows lock)
     if (faltandoForte.length > 0) {
+      console.log('❌ Bloqueado por pré-requisitos forte:', faltandoForte);
       return; // block
     }
 
     // If missing coreq (after filtering confirmados) -> block silently
     if (faltandoCoreq.length > 0) {
+      console.log('❌ Bloqueado por co-requisitos:', faltandoCoreq);
       return;
     }
 
     // If missing minimo prerequisites (after filtering confirmados) -> block silently
     if (faltandoMinimo.length > 0) {
+      console.log('❌ Bloqueado por pré-requisitos mínimos:', faltandoMinimo);
       return;
     }
 
     if (materiasNoCalendario[materia.codigo]) {
+      console.log('❌ Matéria já está no calendário');
       return;
     }
+
+    console.log('✅ Matéria passou nas verificações de pré-requisitos');
+    console.log('📚 Turmas da matéria:', materia.turmas?.map(t => ({
+      id: t.id,
+      horarios: t.horarios,
+      anp: t.anp
+    })));
 
     // Prevent default mouse/touch behavior early
     e.preventDefault();
 
-    // credit limit checks (before enabling drag state)
-    const currentTotal = calcTotalCreditos();
-    const materiaCred = materia.creditos || 0;
-    if (currentTotal >= CREDIT_MAX) {
-      triggerToast(`Limite de créditos atingido (${CREDIT_MAX}). Remova matérias para adicionar mais.`, 'error');
-      return;
-    }
-    if (currentTotal + materiaCred > CREDIT_MAX) {
-      triggerToast('Adicionar esta matéria excederia o limite de 32 créditos.', 'error');
-      return;
-    }
 
     // Suporte para touch e mouse
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -650,7 +657,6 @@ const Calendar = forwardRef(({
         if (isInsideSidebar) {
           // Remover a matéria do calendário
           onRemoveMateria(draggingMateria.codigo);
-          triggerToast(`${draggingMateria.nome} removida do calendário`, 'info');
           resetDrag();
           return;
         }
@@ -726,31 +732,16 @@ const Calendar = forwardRef(({
                   // Remover da posição atual e adicionar na nova
                   onRemoveMateria(draggingMateria.codigo);
 
-                  const isTurmaAnp = isAnpTurma(turma);
-                  if (isTurmaAnp) {
-                    const slot = conflitResult.suggestedAnpSlot || findFirstAvailableAnpSlot(materiasNoCalendario);
-                    if (!slot) {
-                      triggerToast('Sem vagas ANP disponíveis no sábado.', 'error');
-                    } else {
-                      const added = onAddMateria({
-                        ...materiaCompleta,
-                        turmaId: turma.id,
-                        horarios: turma.horarios,
-                        anpSlot: slot
-                      });
-                      if (added) {
-                        triggerToast(`${materiaCompleta.nome} realocada com sucesso!`, 'success');
-                      }
-                    }
-                  } else {
-                    const added = onAddMateria({
-                      ...materiaCompleta,
-                      turmaId: turma.id,
-                      horarios: turma.horarios
-                    });
-                    if (added) {
-                      triggerToast(`${materiaCompleta.nome} realocada com sucesso!`, 'success');
-                    }
+                  // O App.jsx vai lidar com a alocação ANP corretamente
+                  const added = onAddMateria({
+                    ...materiaCompleta,
+                    turmaId: turma.id,
+                    horarios: turma.horarios,
+                    anp: turma.anp === true,
+                    turmaAnp: turma.anp === true
+                  });
+                  if (added) {
+                    triggerToast(`${materiaCompleta.nome} realocada com sucesso!`, 'success');
                   }
                 }
               }
@@ -850,39 +841,28 @@ const Calendar = forwardRef(({
             if (temConflito) {
               triggerToast(`Conflito de horário com ${materiaConflito}!`, 'error');
             } else {
-              // credit limit check before adding
+              // Verificação de limite de crédito
               const currentTotal = calcTotalCreditos();
               const materiaCred = draggingMateria.creditos || 0;
+              const novoTotal = currentTotal + materiaCred;
+
               if (currentTotal >= CREDIT_MAX) {
                 triggerToast(`Limite de créditos atingido (${CREDIT_MAX}). Remova matérias para adicionar mais.`, 'error');
-              } else if (currentTotal + materiaCred > CREDIT_MAX) {
+              } else if (novoTotal > CREDIT_MAX) {
                 triggerToast('Adicionar esta matéria excederia o limite de 32 créditos.', 'error');
               } else {
-                const isTurmaAnp = isAnpTurma(turma);
-                if (isTurmaAnp) {
-                  const slot = conflitResult.suggestedAnpSlot || findFirstAvailableAnpSlot(materiasNoCalendario);
-                  if (!slot) {
-                    triggerToast('Sem vagas ANP disponíveis no sábado.', 'error');
-                  } else {
-                    const added = onAddMateria({
-                      ...draggingMateria,
-                      turmaId: turma.id,
-                      horarios: turma.horarios,
-                      anpSlot: slot
-                    });
-                    if (!added) {
-                      triggerToast('Não foi possível adicionar a matéria (conflito ou limite).', 'error');
-                    }
-                  }
-                } else {
-                  const added = onAddMateria({
-                    ...draggingMateria,
-                    turmaId: turma.id,
-                    horarios: turma.horarios
-                  });
-                  if (!added) {
-                    triggerToast('Não foi possível adicionar a matéria (conflito ou limite).', 'error');
-                  }
+                // Criar dados da matéria - o App.jsx vai lidar com a alocação ANP corretamente
+                const materiaData = {
+                  ...draggingMateria,
+                  turmaId: turma.id,
+                  horarios: turma.horarios,
+                  anp: turma.anp === true,
+                  turmaAnp: turma.anp === true
+                };
+
+                const added = onAddMateria(materiaData);
+                if (!added) {
+                  triggerToast('Não foi possível adicionar a matéria.', 'error');
                 }
               }
             }
@@ -910,22 +890,26 @@ const Calendar = forwardRef(({
 
     for (let i = 0; i < draggingMateria.turmas.length; i++) {
       const turma = draggingMateria.turmas[i];
-      // ANP handling: if turma is ANP and we're on saturday column, preview only on the first available ANP slot row
-      const turmaIsAnp = isAnpTurma(turma);
-      if (turmaIsAnp && diaIdx === SATURDAY_INDEX) {
-        const slot = findFirstAvailableAnpSlot(materiasNoCalendario);
-        if (!slot) return { turmaIndex: i, turmaId: turma.id, cor: getCorTurma(i), isSelected: false, hasConflict: true };
-        const slotRow = mapAnpSlotToHorarioIdx(slot, baseHour);
-        const { temConflito } = verificarConflito(turma);
+
+      // Se é ANP e está no sábado, preview no próximo horário disponível
+      if (isAnpTurma(turma) && diaIdx === SATURDAY_INDEX) {
+        const nextHour = findNextAnpHour(materiasNoCalendario);
+        if (!nextHour) {
+          return { turmaIndex: i, turmaId: turma.id, cor: getCorTurma(i), isSelected: false, hasConflict: true };
+        }
+        const isCorrectRow = (hora === nextHour);
+        if (!isCorrectRow) continue;
+
         return {
           turmaIndex: i,
           turmaId: turma.id,
           cor: getCorTurma(i),
-          isSelected: selectedTurmaIndex === i && slotRow === horarioIdx,
-          hasConflict: temConflito || (materiasExistentes.length > 0)
+          isSelected: selectedTurmaIndex === i,
+          hasConflict: false
         };
       }
 
+      // Turma normal: verificar horários
       for (const h of (turma.horarios || [])) {
         const hd = normalizeDia(h.dia);
         const hStart = parseHour(h.inicio);
