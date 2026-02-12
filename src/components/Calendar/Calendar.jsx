@@ -8,8 +8,9 @@ import './Calendar.css';
 const DIAS_SEMANA = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
 const CORES_MATERIAS = [
-  '#ff6b6b', '#4ecdc4', '#ffe66d', '#a29bfe', '#fd79a8',
-  '#00b894', '#e17055', '#74b9ff', '#ffeaa7', '#81ecec'
+  '#4ecdc4', '#ffe66d', '#a29bfe', '#fd79a8',
+  '#00b894', '#74b9ff', '#ffeaa7', '#81ecec',
+  '#6c5ce7', '#00cec9', '#55a3ff', '#fdcb6e'
 ];
 
 // Cores para diferenciar as turmas durante a seleção
@@ -17,9 +18,9 @@ const CORES_TURMAS = [
   '#00F0B5', // Tropical Mint
   '#3185FC', // Azure Blue
   '#F9DC5C', // Royal Gold
-  '#E84855', // Watermelon
   '#a29bfe', // Purple
   '#fd79a8', // Pink
+  '#00cec9'  // Turquoise
 ];
 
 // Gera horários de 7h até 23h
@@ -35,19 +36,6 @@ const gerarHorarios = (start = 7, end = 23) => {
 const SATURDAY_INDEX = 6;
 const ANP_START_HOUR = 9;
 
-// Normaliza dia da semana para índice 0-6
-const normalizeDiaStatic = (d) => {
-  if (d == null) return d;
-  const n = Number(d);
-  if (!Number.isNaN(n)) {
-    if (n >= 0 && n <= 6) return n;
-    if (n >= 1 && n <= 7) return ((n + 6) % 7 + 7) % 7;
-    return n;
-  }
-  const s = String(d).toLowerCase().slice(0,3);
-  const idx = DIAS_SEMANA.findIndex(x => x.toLowerCase().slice(0,3) === s);
-  return idx !== -1 ? idx : d;
-};
 
 // Parse hora de string ou número
 const parseHour = (val) => {
@@ -101,7 +89,7 @@ const Calendar = forwardRef(({
   const [eletivasQuery, setEletivasQuery] = useState('');
   const [futurasQuery, setFuturasQuery] = useState('');
   const [mostrarFuturas, setMostrarFuturas] = useState(false);
-  const [filtroHorario, setFiltroHorario] = useState({ ativo: false, dia: null, horaInicio: null, horaFim: null });
+  const [filtroHorario, setFiltroHorario] = useState({ ativo: false, dia: null, horaInicio: null, horaFim: null, isAnp: false });
   // Credit limits
   const CREDIT_WARN = 25;
   const CREDIT_MAX = 32;
@@ -119,6 +107,7 @@ const Calendar = forwardRef(({
 
   const calendarTableRef = useRef(null);
   const wrapperRef = useRef(null);
+  const handledDropRef = useRef(false);
 
   // Detecta se está em dispositivo mobile
   const [isMobile, setIsMobile] = useState(false);
@@ -194,15 +183,6 @@ const Calendar = forwardRef(({
       // last resort: console
       // eslint-disable-next-line no-console
       console.log(`[toast:${level}]`, message);
-    }
-
-    // Additional direct global fallback in case the App listener isn't attached yet
-    try {
-      if (typeof window !== 'undefined' && typeof window.gradeuflaAddToast === 'function') {
-        window.gradeuflaAddToast(message, level);
-      }
-    } catch (e) {
-      // ignore
     }
   };
 
@@ -345,8 +325,27 @@ const Calendar = forwardRef(({
     if (!filtroHorario.ativo) return true;
     if (!materia.turmas || materia.turmas.length === 0) return false;
 
-    const { dia, horaInicio, horaFim } = filtroHorario;
+    const { dia, horaInicio, horaFim, isAnp } = filtroHorario;
 
+    // Se filtro ANP está ativo: mostrar apenas matérias exclusivamente ANP
+    if (isAnp) {
+      return materia.turmas.some(turma => {
+        // Verificar se a turma é ANP
+        if (!isAnpTurma(turma)) return false;
+        
+        // Verificar se a matéria é EXCLUSIVAMENTE ANP (não tem horários em outros dias)
+        const horarios = turma.horarios || [];
+        const temHorarioNaoSabado = horarios.some(h => {
+          const hDia = normalizeDia(h.dia);
+          return hDia !== SATURDAY_INDEX && hDia !== null;
+        });
+        
+        // Retorna true apenas se é ANP E não tem horários em outros dias
+        return !temHorarioNaoSabado;
+      });
+    }
+
+    // Filtro de dia/horário normal (não ANP)
     return materia.turmas.some(turma => {
       if (!turma.horarios || turma.horarios.length === 0) return false;
 
@@ -459,8 +458,14 @@ const Calendar = forwardRef(({
 
   // Verifica se uma turma tem conflito de horário
   const verificarConflito = (turma) => {
-    // Turma ANP: só verifica se há horário disponível no sábado
-    if (isAnpTurma(turma)) {
+    const isAnpOnlyTurma = (t) => {
+      const horarios = t?.horarios || [];
+      if (horarios.length === 0) return true;
+      return horarios.every(h => normalizeDia(h.dia) === SATURDAY_INDEX);
+    };
+
+    // Turma ANP: só verifica se há horário disponível no sábado quando é ANP-only
+    if (isAnpTurma(turma) && isAnpOnlyTurma(turma)) {
       const nextHour = findNextAnpHour(materiasNoCalendario);
       if (nextHour === null) {
         return { temConflito: true, mensagem: 'Sem vagas ANP disponíveis no sábado' };
@@ -468,28 +473,55 @@ const Calendar = forwardRef(({
       return { temConflito: false };
     }
 
+    // Função helper para verificar se dois horários conflitam
+    const horariosConflitam = (horario1, horario2) => {
+      const dia1 = normalizeDia(horario1.dia);
+      const dia2 = normalizeDia(horario2.dia);
+
+      // Se dias são diferentes, não há conflito
+      if (dia1 !== dia2 || dia1 == null || dia2 == null) {
+        return false;
+      }
+
+      const inicio1 = parseHour(horario1.inicio);
+      const fim1 = parseHour(horario1.fim);
+      const inicio2 = parseHour(horario2.inicio);
+      const fim2 = parseHour(horario2.fim);
+
+      if (Number.isNaN(inicio1) || Number.isNaN(fim1) || Number.isNaN(inicio2) || Number.isNaN(fim2)) {
+        return false;
+      }
+
+      // Há conflito se: horario1 começa ANTES de horario2 terminar E horario1 termina DEPOIS de horario2 começar
+      return (inicio1 < fim2 && fim1 > inicio2);
+    };
+
     // Turma normal: verificar conflito de horários
-    for (const horario of turma.horarios || []) {
-      const hdHorario = normalizeDia(horario.dia);
-      const inicioHorario = parseHour(horario.inicio);
-      const fimHorario = parseHour(horario.fim);
+    const horariosNovos = turma.horarios || [];
 
-      if (Number.isNaN(inicioHorario) || Number.isNaN(fimHorario)) continue;
+    // Para cada matéria já na grade
+    for (const materia of Object.values(materiasNoCalendario)) {
+      // Ignorar matérias ANP apenas se forem ANP-only (sem horários em dias úteis)
+      if (materia.anp) {
+        const horarios = materia.horarios || [];
+        const onlySaturday = horarios.length === 0 || horarios.every(h => normalizeDia(h.dia) === SATURDAY_INDEX);
+        if (onlySaturday) continue;
+      }
 
-      for (let hora = inicioHorario; hora < fimHorario; hora++) {
-        for (const materia of Object.values(materiasNoCalendario)) {
-          // Ignorar matérias ANP (elas ficam no sábado separadas)
-          if (materia.anp) continue;
+      const horariosExistentes = materia.horarios || [];
 
-          for (const h of (materia.horarios || [])) {
-            if (!h) continue;
-            const hd = normalizeDia(h.dia);
-            const hStart = parseHour(h.inicio);
-            const hEnd = parseHour(h.fim);
+      // Para cada horário da nova turma
+      for (const novoHorario of horariosNovos) {
+        if (!novoHorario) continue;
 
-            if (hd === hdHorario && !Number.isNaN(hStart) && !Number.isNaN(hEnd) && hora >= hStart && hora < hEnd) {
-              return { temConflito: true, materiaConflito: materia.nome };
-            }
+        // Para cada horário da matéria existente
+        for (const horarioExistente of horariosExistentes) {
+          if (!horarioExistente) continue;
+
+          // Verifica se há conflito
+          const conflito = horariosConflitam(novoHorario, horarioExistente);
+          if (conflito) {
+            return { temConflito: true, materiaConflito: materia.nome };
           }
         }
       }
@@ -633,6 +665,8 @@ const Calendar = forwardRef(({
 
   // Finaliza o drag
   const handleMouseUp = (e) => {
+    handledDropRef.current = true;
+
     if (!isDragging || !draggingMateria) {
       resetDrag();
       return;
@@ -728,21 +762,21 @@ const Calendar = forwardRef(({
 
                 if (conflitResult.temConflito) {
                   triggerToast(`Conflito de horário com ${conflitResult.materiaConflito || conflitResult.mensagem}!`, 'error');
+                  resetDrag();
+                  return; // ✅ CRUCIAL: Não continuar se há conflito!
                 } else {
                   // Remover da posição atual e adicionar na nova
                   onRemoveMateria(draggingMateria.codigo);
 
                   // O App.jsx vai lidar com a alocação ANP corretamente
-                  const added = onAddMateria({
+                  onAddMateria({
                     ...materiaCompleta,
                     turmaId: turma.id,
                     horarios: turma.horarios,
                     anp: turma.anp === true,
                     turmaAnp: turma.anp === true
                   });
-                  if (added) {
-                    triggerToast(`${materiaCompleta.nome} realocada com sucesso!`, 'success');
-                  }
+                  // Removida notificação de realocação - não queremos isso
                 }
               }
             }
@@ -838,8 +872,11 @@ const Calendar = forwardRef(({
             const temConflito = conflitResult.temConflito;
             const materiaConflito = conflitResult.materiaConflito || conflitResult.mensagem;
 
+
             if (temConflito) {
               triggerToast(`Conflito de horário com ${materiaConflito}!`, 'error');
+              resetDrag();
+              return; // ✅ CRUCIAL: Não continuar se há conflito!
             } else {
               // Verificação de limite de crédito
               const currentTotal = calcTotalCreditos();
@@ -879,6 +916,7 @@ const Calendar = forwardRef(({
     setIsDragging(false);
     setSelectedTurmaIndex(null);
     setDraggingFromCalendar(false);
+    handledDropRef.current = false;
   };
 
   // Verifica se uma célula faz parte de alguma turma da matéria sendo arrastada
@@ -928,6 +966,19 @@ const Calendar = forwardRef(({
     }
     return null;
   };
+
+  // Componente de aviso quando não há matérias na seção filtrada
+  const renderEmptyFilterWarning = (sectionName) => (
+    <div className="calendar__empty-filter-warning">
+      <div className="calendar__empty-filter-icon">
+        <i className="fi fi-br-search"></i>
+      </div>
+      <div className="calendar__empty-filter-content">
+        <h5>Sem disciplinas</h5>
+        <p>Nenhuma disciplina {sectionName.toLowerCase()} encontrada para o filtro aplicado.</p>
+      </div>
+    </div>
+  );
 
   // ---------- Export to Google Calendar (.ics) helpers temporarily disabled ----------
   // Export functionality removed for now (unused) to avoid linting/CI failures.
@@ -1214,27 +1265,43 @@ const Calendar = forwardRef(({
             {filtroHorario.ativo && (
               <div className="calendar__time-filter-content">
                 <div className="calendar__time-filter-row">
-                  <label htmlFor="filter-dia">Dia:</label>
+                  <label htmlFor="filter-dia">Tipo:</label>
                   <select
                     id="filter-dia"
-                    value={filtroHorario.dia ?? ''}
+                    value={filtroHorario.isAnp ? 'anp' : (filtroHorario.dia ?? '')}
                     onChange={(e) => {
                       const val = e.target.value;
-                      setFiltroHorario({
-                        ...filtroHorario,
-                        dia: val === '' ? null : Number(val)
-                      });
+                      if (val === 'anp') {
+                        setFiltroHorario({
+                          ...filtroHorario,
+                          isAnp: true,
+                          dia: null,
+                          horaInicio: null,
+                          horaFim: null
+                        });
+                      } else {
+                        setFiltroHorario({
+                          ...filtroHorario,
+                          isAnp: false,
+                          dia: val === '' ? null : Number(val)
+                        });
+                      }
                     }}
                   >
                     <option value="">Qualquer dia</option>
-                    {DIAS_SEMANA.map((dia, idx) => (
-                      <option key={idx} value={idx}>{dia}</option>
+                    <option value="anp">ANP</option>
+                    {/* Remover Domingo (0) e Sábado (6) */}
+                    {DIAS_SEMANA.slice(1, 6).map((dia, idx) => (
+                      <option key={idx + 1} value={idx + 1}>{dia}</option>
                     ))}
                   </select>
                 </div>
 
-                <div className="calendar__time-filter-row">
-                  <label htmlFor="filter-inicio">Hora início:</label>
+                {/* Só mostrar horários se não for ANP */}
+                {!filtroHorario.isAnp && (
+                  <>
+                    <div className="calendar__time-filter-row">
+                      <label htmlFor="filter-inicio">Hora início:</label>
                   <select
                     id="filter-inicio"
                     value={filtroHorario.horaInicio ?? ''}
@@ -1272,11 +1339,13 @@ const Calendar = forwardRef(({
                     ))}
                   </select>
                 </div>
+                </>
+                )}
 
-                {(filtroHorario.dia !== null || filtroHorario.horaInicio !== null || filtroHorario.horaFim !== null) && (
+                {(filtroHorario.dia !== null || filtroHorario.horaInicio !== null || filtroHorario.horaFim !== null || filtroHorario.isAnp) && (
                   <button
                     className="calendar__time-filter-clear"
-                    onClick={() => setFiltroHorario({ ativo: true, dia: null, horaInicio: null, horaFim: null })}
+                    onClick={() => setFiltroHorario({ ativo: true, dia: null, horaInicio: null, horaFim: null, isAnp: false })}
                     title="Limpar filtros"
                   >
                     <i className="fi fi-br-broom"></i>
@@ -1285,9 +1354,11 @@ const Calendar = forwardRef(({
                 )}
 
                 <p className="calendar__time-filter-hint">
-                  {filtroHorario.dia !== null || filtroHorario.horaInicio !== null || filtroHorario.horaFim !== null
+                  {filtroHorario.isAnp
+                    ? 'Mostrando apenas matérias exclusivamente ANP'
+                    : filtroHorario.dia !== null || filtroHorario.horaInicio !== null || filtroHorario.horaFim !== null
                     ? `Mostrando matérias com turmas disponíveis${filtroHorario.dia !== null ? ` às ${DIAS_SEMANA[filtroHorario.dia]}s` : ''}${filtroHorario.horaInicio !== null ? ` das ${String(filtroHorario.horaInicio).padStart(2, '0')}:00` : ''}${filtroHorario.horaFim !== null ? ` às ${String(filtroHorario.horaFim).padStart(2, '0')}:00` : ''}`
-                    : 'Configure o filtro acima para buscar matérias em horários específicos'}
+                    : 'Configure o filtro acima para buscar matérias em horários específicos ou exclusivamente ANP'}
                 </p>
               </div>
             )}
@@ -1300,7 +1371,38 @@ const Calendar = forwardRef(({
               Obrigatórias
             </h4>
             <div className="calendar__materias">
-              {obrigatorias.map(materia => renderMateriaCard(materia, 'obrigatoria'))}
+              {(() => {
+                // Filtrar matérias que podem ser renderizadas (não estão no calendário e passam no filtro)
+                const materiasRenderizaveis = obrigatorias.filter(materia => {
+                  const jaNoCalendario = materiasNoCalendario[materia.codigo];
+                  if (jaNoCalendario) return false;
+                  return materiaSeEncaixaNoFiltro(materia);
+                });
+
+                // Se não há matérias renderizáveis
+                if (materiasRenderizaveis.length === 0) {
+                  // Se há obrigatórias mas filtro está ativo (filtrou todas)
+                  if (filtroHorario.ativo && obrigatorias.some(m => !materiasNoCalendario[m.codigo])) {
+                    return renderEmptyFilterWarning('obrigatórias');
+                  }
+                  // Se todas as obrigatórias estão no calendário OU não há obrigatórias, mostrar parabéns
+                  else {
+                    return (
+                      <div className="calendar__empty-filter-warning">
+                        <div className="calendar__empty-filter-icon">
+                          <i className="fi fi-br-check"></i>
+                        </div>
+                        <div className="calendar__empty-filter-content">
+                          <h5>Parabéns! 🎉</h5>
+                          <p>Todas as matérias obrigatórias do semestre ja estão na sua grade!</p>
+                        </div>
+                      </div>
+                    );
+                  }
+                }
+
+                return materiasRenderizaveis.map(materia => renderMateriaCard(materia, 'obrigatoria'));
+              })()}
             </div>
           </div>
 
@@ -1312,7 +1414,13 @@ const Calendar = forwardRef(({
                 Pendentes (Anteriores)
               </h4>
               <div className="calendar__materias">
-                {pendentes.map(materia => renderMateriaCard(materia, 'pendente'))}
+                {(() => {
+                  const materiasFiltradas = pendentes.filter(materia => materiaSeEncaixaNoFiltro(materia));
+                  if (filtroHorario.ativo && materiasFiltradas.length === 0) {
+                    return renderEmptyFilterWarning('pendentes');
+                  }
+                  return materiasFiltradas.map(materia => renderMateriaCard(materia, 'pendente'));
+                })()}
               </div>
             </div>
           )}
@@ -1363,12 +1471,29 @@ const Calendar = forwardRef(({
                     // order keys so consistent display (you can customize order later)
                     const orderedKeys = Object.keys(groups).sort((a,b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
 
-                    return orderedKeys.map(key => {
+                    const renderedGroups = orderedKeys.map(key => {
                       const label = key.toString();
-                      // show the raw label; hide the title if it's just 'Outros'
                       const title = label;
-                      const filteredMaterias = groups[key].filter(materia => materia.nome.toLowerCase().includes(eletivasQuery.toLowerCase()));
-                      if (filteredMaterias.length === 0) return null; // skip empty groups
+                      const filteredMaterias = groups[key]
+                        .filter(materia => materia.nome.toLowerCase().includes(eletivasQuery.toLowerCase()))
+                        .filter(materia => materiaSeEncaixaNoFiltro(materia));
+
+                      if (filteredMaterias.length === 0) {
+                        // Se o filtro de horário está ativo e não há matérias, mostrar aviso
+                        if (filtroHorario.ativo && groups[key].filter(materia => materia.nome.toLowerCase().includes(eletivasQuery.toLowerCase())).length > 0) {
+                          return (
+                            <div key={key} className="calendar__eletiva-group">
+                              {label.toLowerCase() !== 'outros' && (
+                                <h5 className="calendar__eletiva-group-title">{title}</h5>
+                              )}
+                              <div className="calendar__eletiva-group-list">
+                                {renderEmptyFilterWarning('eletivas')}
+                              </div>
+                            </div>
+                          );
+                        }
+                        return null; // skip empty groups
+                      }
 
                       return (
                         <div key={key} className="calendar__eletiva-group">
@@ -1380,7 +1505,14 @@ const Calendar = forwardRef(({
                           </div>
                         </div>
                       );
-                    });
+                    }).filter(group => group !== null);
+
+                    // Se não há grupos renderizados e o filtro está ativo, mostrar aviso geral
+                    if (renderedGroups.length === 0 && filtroHorario.ativo) {
+                      return renderEmptyFilterWarning('eletivas');
+                    }
+
+                    return renderedGroups;
                   })()
                  )}
                </div>
@@ -1433,23 +1565,46 @@ const Calendar = forwardRef(({
                    }
 
                    // filter each group's materias by futurasQuery (search by name or code)
-                   return Object.keys(grupos).sort((a,b)=>Number(a)-Number(b)).map(key => {
+                   const renderedGroups = Object.keys(grupos).sort((a,b)=>Number(a)-Number(b)).map(key => {
                      const sem = Number(key);
                      const lista = grupos[key];
                      const query = (futurasQuery || '').toLowerCase().trim();
-                     const filteredLista = query
+                     const filteredByQuery = query
                        ? lista.filter(m => (m.nome || '').toLowerCase().includes(query) || (m.codigo || '').toLowerCase().includes(query))
                        : lista;
-                     if (filteredLista.length === 0) return null;
+                     const filteredByHorario = filteredByQuery.filter(m => materiaSeEncaixaNoFiltro(m));
+
+                     if (filteredByHorario.length === 0) {
+                       // Se o filtro de horário está ativo e não há matérias, mostrar aviso
+                       if (filtroHorario.ativo && filteredByQuery.length > 0) {
+                         return (
+                           <div key={key} className="calendar__eletiva-group">
+                             <h5 className="calendar__eletiva-group-title">{sem}º Semestre</h5>
+                             <div className="calendar__eletiva-group-list">
+                               {renderEmptyFilterWarning('futuras')}
+                             </div>
+                           </div>
+                         );
+                       }
+                       return null;
+                     }
+
                      return (
                        <div key={key} className="calendar__eletiva-group">
                          <h5 className="calendar__eletiva-group-title">{sem}º Semestre</h5>
                          <div className="calendar__eletiva-group-list">
-                           {filteredLista.map(materia => renderMateriaCard(materia, 'futura'))}
+                           {filteredByHorario.map(materia => renderMateriaCard(materia, 'futura'))}
                          </div>
                        </div>
                      );
-                   });
+                   }).filter(group => group !== null);
+
+                   // Se não há grupos renderizados e o filtro está ativo, mostrar aviso geral
+                   if (renderedGroups.length === 0 && filtroHorario.ativo) {
+                     return renderEmptyFilterWarning('futuras');
+                   }
+
+                   return renderedGroups;
                  })()}
                </div>
              )}
