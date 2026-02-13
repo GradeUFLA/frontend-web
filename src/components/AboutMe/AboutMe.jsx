@@ -124,8 +124,8 @@ const AboutMe = () => {
           <div className="aboutme-card-inner">
             <h2><strong>Eae Beleza?</strong></h2>
             <p className="aboutme-card-content">
-              Esse site foi criado por <a href="https://github.com/FernandoScarabeli" target="_blank" rel="noopener noreferrer"><strong>Fernando Scarabeli</strong></a> com o objetivo de
-              facilitar a vida dos alunos da UFLA na montagem de seus horários semestrais. A plataforma nasceu da necessidade de tornar esse processo mais simples, rápido e organizado,
+              Esse site foi criado por <a href="https://github.com/FernandoScarabeli" target="_blank" rel="noopener noreferrer"><strong>Fernando Scarabeli</strong></a> com o objetivo de facilitar a montagem da grade de horários semestral dos estudantes da UFLA.
+              A plataforma nasceu da necessidade de tornar esse processo mais simples, rápido e organizado,
               oferecendo uma visão clara das disciplinas, pré-requisitos e possibilidades de grade.
             </p>
             <button className="aboutme-close" onClick={() => setOpen(false)}>Fechar</button>

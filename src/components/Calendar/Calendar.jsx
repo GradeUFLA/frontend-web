@@ -90,6 +90,7 @@ const Calendar = forwardRef(({
   const [futurasQuery, setFuturasQuery] = useState('');
   const [mostrarFuturas, setMostrarFuturas] = useState(false);
   const [filtroHorario, setFiltroHorario] = useState({ ativo: false, dia: null, horaInicio: null, horaFim: null, isAnp: false });
+  const [shakeErrorMateria, setShakeErrorMateria] = useState(null); // Para animação de erro
   // Credit limits
   const CREDIT_WARN = 25;
   const CREDIT_MAX = 32;
@@ -588,6 +589,29 @@ const Calendar = forwardRef(({
   const handleDragStart = async (e, materia) => {
     console.log('🎯 Tentando arrastar matéria:', materia.nome, materia.codigo);
 
+    // ✅ Verificar se a matéria tem turmas e horários
+    if (!materia.turmas || materia.turmas.length === 0) {
+      console.log('❌ Matéria sem turmas disponíveis');
+      setShakeErrorMateria(materia.codigo);
+      setTimeout(() => setShakeErrorMateria(null), 600);
+      triggerToast('Esta matéria não possui turmas disponíveis no momento.', 'error');
+      return;
+    }
+
+    // Verificar se pelo menos uma turma tem horários (exceto ANP)
+    const temTurmasComHorarios = materia.turmas.some(turma => {
+      if (turma.anp) return true; // ANP é válido mesmo sem horários
+      return turma.horarios && turma.horarios.length > 0;
+    });
+
+    if (!temTurmasComHorarios) {
+      console.log('❌ Nenhuma turma possui horários disponíveis');
+      setShakeErrorMateria(materia.codigo);
+      setTimeout(() => setShakeErrorMateria(null), 600);
+      triggerToast('Esta matéria não possui turmas com horários disponíveis.', 'error');
+      return;
+    }
+
     // Use detailed prereq check
     const det = verificarPreRequisitosDetalhada(materia, materiasAprovadas, materiasNoCalendario, allMateriasList);
 
@@ -1019,7 +1043,8 @@ const Calendar = forwardRef(({
       tipo === 'pendente' && 'materia-card--pending',
       tipo === 'eletiva' && 'materia-card--elective',
       !cumpridoAdjusted && 'materia-card--blocked',
-      isBeingDragged && 'materia-card--dragging-origin'
+      isBeingDragged && 'materia-card--dragging-origin',
+      shakeErrorMateria === materia.codigo && 'shake-error'
     ].filter(Boolean).join(' ');
 
     // determine visual indicator color for missing type
@@ -1241,8 +1266,8 @@ const Calendar = forwardRef(({
 
           <p className="calendar__instructions">
             <span className="calendar__instructions-desktop">
-              Arraste uma matéria da lista e solte no horário desejado.
-              Para remover ou realocar, arraste a matéria do calendário para a sidebar ou outro horário.
+              Arraste uma matéria da lista para o horário desejado.
+              Para mover ou remover, arraste a matéria no calendário para outro horário ou de volta para a lista
             </span>
             <span className="calendar__instructions-mobile">
               Clique na matéria da lista e selecione um horário.

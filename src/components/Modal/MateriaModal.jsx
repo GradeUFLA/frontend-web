@@ -94,6 +94,9 @@ const MateriaModal = ({
 
     const horariosNovos = turma.horarios || [];
     for (const [codigo, materiaExistente] of Object.entries(materiasNoCalendario || {})) {
+      // ✅ Ignorar a própria matéria ao verificar conflitos
+      if (codigo === materia?.codigo) continue;
+
       if (materiaExistente.anp && isAnpOnlyMateria(materiaExistente)) continue;
 
       const horariosExistentes = materiaExistente.horarios || [];
@@ -266,6 +269,9 @@ const MateriaModal = ({
           <span className="modal-label">Turmas disponíveis:</span>
           <div className="turmas-lista">
             {materia.turmas?.map((turma) => {
+              // Verificar se esta turma é a que está no calendário
+              const turmaAtual = jaNoCalendario && materiasNoCalendario[materia.codigo]?.turmaId === turma.id;
+
               const conflito = getConflitoParaTurma(turma);
               const conflitoLabel = conflito.temConflito
                 ? (() => {
@@ -279,17 +285,17 @@ const MateriaModal = ({
               return (
                 <div
                   key={turma.id}
-                  className={`turma-item ${conflito.temConflito ? 'turma-item--conflito' : ''}`}
+                  className={`turma-item ${conflito.temConflito ? 'turma-item--conflito' : ''} ${turmaAtual ? 'turma-item--selecionada' : ''}`}
                   onClick={(e) => {
                     e.stopPropagation();
-                    if (conflito.temConflito) return;
+                    if (conflito.temConflito || turmaAtual) return;
                     handleAddTurmaClick(turma);
                   }}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
                       e.stopPropagation();
-                      if (conflito.temConflito) return;
+                      if (conflito.temConflito || turmaAtual) return;
                       handleAddTurmaClick(turma);
                     }
                   }}
@@ -308,7 +314,13 @@ const MateriaModal = ({
                       <span className="horario-badge horario-badge--anp">ANP</span>
                     )}
                   </div>
-                  {conflito.temConflito && (
+                  {turmaAtual && (
+                    <div className="turma-selecionada">
+                      <i className="fi fi-br-check-circle" aria-hidden="true" />
+                      <span>Horário Escolhido</span>
+                    </div>
+                  )}
+                  {conflito.temConflito && !turmaAtual && (
                     <div className="turma-conflito">
                       <i className="fi fi-br-triangle-warning" aria-hidden="true" />
                       <span>{conflitoLabel}</span>

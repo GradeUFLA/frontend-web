@@ -172,3 +172,25 @@ body {
     transform: translateY(0);
   }
 }
+
+@keyframes shakeError {
+  0%, 100% {
+    transform: translateX(0);
+    box-shadow: 0 0 0 rgba(232, 72, 85, 0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-5px);
+    box-shadow: 0 0 20px rgba(232, 72, 85, 0.6);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(5px);
+    box-shadow: 0 0 20px rgba(232, 72, 85, 0.6);
+  }
+}
+
+.shake-error {
+  animation: shakeError 0.6s cubic-bezier(.36,.07,.19,.97) both;
+  border: 2px solid var(--color-watermelon) !important;
+  background: rgba(232, 72, 85, 0.1) !important;
+}
+
