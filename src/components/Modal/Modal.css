@@ -26,6 +26,8 @@
   width: 90%;
   position: relative;
   animation: slideUp 0.3s ease;
+  max-height: 80vh; /* keep modal inside viewport */
+  overflow: hidden; /* inner area will scroll when needed */
 }
 
 .modal-close {
@@ -101,6 +103,12 @@
   font-size: 0.8rem;
 }
 
+.horario-badge--anp {
+  background: rgba(116, 185, 255, 0.2);
+  color: #74b9ff;
+  font-weight: 600;
+}
+
 .modal-turmas {
   margin-bottom: 20px;
 }
@@ -110,12 +118,62 @@
   flex-direction: column;
   gap: 10px;
   margin-top: 10px;
+  /* keep a reasonable visible size; scroll when many turmas */
+  max-height: 40vh;
+  overflow-y: auto;
+  padding-right: 8px; /* room for scrollbar */
+}
+
+/* style scrollbar (WebKit) to match site */
+.turmas-lista::-webkit-scrollbar {
+  width: 10px;
+}
+.turmas-lista::-webkit-scrollbar-track {
+  background: transparent;
+}
+.turmas-lista::-webkit-scrollbar-thumb {
+  background: rgba(6,214,160,0.12);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.turmas-lista::-webkit-scrollbar-thumb:hover {
+  background: rgba(6,214,160,0.18);
+}
+
+/* small visual tweak for disabled turma items */
+.turma-item--disabled {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.turma-item--conflito {
+  opacity: 0.6;
+  cursor: not-allowed;
+  border: 1px solid rgba(232, 72, 85, 0.5);
+  background: rgba(232, 72, 85, 0.08);
+}
+
+.turma-item--selecionada {
+  border: 2px solid var(--color-tropical-mint);
+  background: rgba(0, 240, 181, 0.1);
+  cursor: default;
+}
+
+.turma-item--selecionada:hover {
+  background: rgba(0, 240, 181, 0.12);
 }
 
 .turma-item {
   background: rgba(255, 255, 255, 0.05);
   border-radius: 8px;
   padding: 10px 12px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.turma-item:hover {
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .turma-id {
@@ -158,5 +216,72 @@
 .prereq-badge--pending {
   background: rgba(232, 72, 85, 0.2);
   color: var(--color-watermelon);
+}
+
+/* Botão de remover do calendário */
+.modal-remover-container {
+  margin: 20px 0;
+  padding: 15px;
+  background: rgba(232, 72, 85, 0.1);
+  border-radius: 8px;
+  border: 1px solid rgba(232, 72, 85, 0.2);
+}
+
+.modal-remover-btn {
+  width: 100%;
+  background: var(--color-watermelon);
+  color: #fff;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.modal-remover-btn:hover {
+  background: #d63647;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(232, 72, 85, 0.3);
+}
+
+.modal-remover-btn:active {
+  transform: translateY(0);
+}
+
+.modal-remover-btn i {
+  font-size: 1.1rem;
+}
+
+.turma-conflito {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: #e84855;
+}
+
+.turma-conflito i {
+  font-size: 0.95rem;
+}
+
+.turma-selecionada {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--color-tropical-mint);
+  font-weight: 600;
+}
+
+.turma-selecionada i {
+  font-size: 1rem;
 }
 

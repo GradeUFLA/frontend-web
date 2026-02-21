@@ -1,7 +1,7 @@
 import { forwardRef, useState, useEffect } from 'react';
 import Stepper, { Step } from '../Stepper';
 import Dropdown from '../Dropdown';
-import { getCursoInfo, getMatrizesByCurso, getCursosImplementados, ensureCsvLoaded } from '../../data';
+import { getCursoInfo, getTotalSemestres, getMatrizesByCurso, getCursosImplementados, ensureCsvLoaded } from '../../data';
 import './SetupWizard.css';
 
 const SetupWizard = forwardRef(({
@@ -49,8 +49,13 @@ const SetupWizard = forwardRef(({
     label: `Matriz ${matriz.nome}`
   }));
 
-  const semestresOptions = cursoInfo
-    ? [...Array(cursoInfo.totalSemestres)].map((_, i) => ({
+  // Use getTotalSemestres with the selected matriz for accurate semester count
+  const totalSemestresParaMatriz = cursoSelecionado && matrizSelecionada
+    ? getTotalSemestres(cursoSelecionado, matrizSelecionada)
+    : (cursoInfo ? cursoInfo.totalSemestres : 8);
+
+  const semestresOptions = totalSemestresParaMatriz
+    ? [...Array(totalSemestresParaMatriz)].map((_, i) => ({
         value: i + 1,
         label: `${i + 1}º Módulo`
       }))

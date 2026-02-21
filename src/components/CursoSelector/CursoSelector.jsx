@@ -4,9 +4,17 @@ import { getCursos } from '../../data';
 import './CursoSelector.css';
 
 const CursoSelector = forwardRef(({ onCursoSelect, onVoltar }, ref) => {
-  const cursosOptions = getCursos().map((curso) => ({
+  const rawCursos = getCursos() || [];
+  const extractNum = (c) => {
+    if (!c || !c.id) return Number.POSITIVE_INFINITY;
+    const m = String(c.id).match(/\d+/);
+    return m ? Number(m[0]) : Number.POSITIVE_INFINITY;
+  };
+  const sortedCursos = rawCursos.slice().sort((a, b) => extractNum(a) - extractNum(b));
+
+  const cursosOptions = sortedCursos.map((curso) => ({
     value: curso.id,
-    label: `${curso.nome} (${curso.totalSemestres} semestres)`
+    label: `${curso.id} - ${curso.nome}`
   }));
 
   return (
