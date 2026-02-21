@@ -624,7 +624,9 @@ const Calendar = forwardRef(({
     }
 
     // Use detailed prereq check
-    const det = verificarPreRequisitosDetalhada(materia, materiasAprovadas, materiasNoCalendario, allMateriasList);
+    // Adiciona temporariamente a própria matéria ao calendário para permitir co-requisitos do mesmo período
+    const materiasNoCalendarioTemp = { ...materiasNoCalendario, [materia.codigo]: materia };
+    const det = verificarPreRequisitosDetalhada(materia, materiasAprovadas, materiasNoCalendarioTemp, allMateriasList);
 
     // Filter all prereq types using confirmed list
     const faltandoForteRaw = det.faltandoForte || [];
@@ -1027,7 +1029,9 @@ const Calendar = forwardRef(({
 
   const renderMateriaCard = (materia, tipo = 'obrigatoria') => {
     const jaNoCalendario = materiasNoCalendario[materia.codigo];
-    const det = verificarPreRequisitosDetalhada(materia, materiasAprovadas, materiasNoCalendario, allMateriasList);
+    // Adiciona temporariamente a própria matéria ao calendário para permitir co-requisitos do mesmo período
+    const materiasNoCalendarioTemp = { ...materiasNoCalendario, [materia.codigo]: materia };
+    const det = verificarPreRequisitosDetalhada(materia, materiasAprovadas, materiasNoCalendarioTemp, allMateriasList);
 
     // Filter ALL prereq types using confirmed list so confirmed prereqs are ignored
     const faltandoForteRaw = det.faltandoForte || [];
@@ -1274,6 +1278,7 @@ const Calendar = forwardRef(({
               <span>Créditos: <strong>{totalCreditos}</strong></span>
             </div>
           </div>
+
 
           <p className="calendar__instructions">
             <span className="calendar__instructions-desktop">
@@ -1847,7 +1852,10 @@ const Calendar = forwardRef(({
                               className="calendar__legend-color"
                               style={{ backgroundColor: getCorMateria(m.codigo) }}
                             ></span>
-                            <span className="calendar__legend-text">{m.nome}</span>
+                            <span className="calendar__legend-text">
+                              {m.nome}
+                              {m.turmaId && <span className="calendar__legend-turma"> - Turma {m.turmaId}</span>}
+                            </span>
                           </div>
                         ))}
                       </div>
@@ -1864,7 +1872,10 @@ const Calendar = forwardRef(({
                               className="calendar__legend-color calendar__legend-color--eletiva"
                               style={{ backgroundColor: getCorMateria(m.codigo) }}
                             ></span>
-                            <span className="calendar__legend-text">{m.nome}</span>
+                            <span className="calendar__legend-text">
+                              {m.nome}
+                              {m.turmaId && <span className="calendar__legend-turma"> - Turma {m.turmaId}</span>}
+                            </span>
                           </div>
                         ))}
                       </div>
@@ -1881,7 +1892,10 @@ const Calendar = forwardRef(({
                               className="calendar__legend-color calendar__legend-color--futura"
                               style={{ backgroundColor: getCorMateria(m.codigo) }}
                             ></span>
-                            <span className="calendar__legend-text">{m.nome}</span>
+                            <span className="calendar__legend-text">
+                              {m.nome}
+                              {m.turmaId && <span className="calendar__legend-turma"> - Turma {m.turmaId}</span>}
+                            </span>
                           </div>
                         ))}
                       </div>
