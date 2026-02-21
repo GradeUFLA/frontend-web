@@ -89,7 +89,7 @@ const Calendar = forwardRef(({
   const [eletivasQuery, setEletivasQuery] = useState('');
   const [futurasQuery, setFuturasQuery] = useState('');
   const [mostrarFuturas, setMostrarFuturas] = useState(false);
-  const [filtroHorario, setFiltroHorario] = useState({ ativo: false, dia: null, horaInicio: null, horaFim: null, isAnp: false });
+  const [filtroHorario, setFiltroHorario] = useState({ ativo: false, dia: null, horaInicio: null, horaFim: null, isAnp: false, creditos: null });
   const [shakeErrorMateria, setShakeErrorMateria] = useState(null); // Para animação de erro
   // Credit limits
   const CREDIT_WARN = 25;
@@ -326,7 +326,13 @@ const Calendar = forwardRef(({
     if (!filtroHorario.ativo) return true;
     if (!materia.turmas || materia.turmas.length === 0) return false;
 
-    const { dia, horaInicio, horaFim, isAnp } = filtroHorario;
+    const { dia, horaInicio, horaFim, isAnp, creditos } = filtroHorario;
+
+    // Verificar filtro de créditos (valor exato)
+    if (creditos !== null) {
+      const creditosMateria = materia.creditos || 0;
+      if (creditosMateria !== creditos) return false;
+    }
 
     // Se filtro ANP está ativo: mostrar apenas matérias exclusivamente ANP
     if (isAnp) {
@@ -344,6 +350,11 @@ const Calendar = forwardRef(({
         // Retorna true apenas se é ANP E não tem horários em outros dias
         return !temHorarioNaoSabado;
       });
+    }
+
+    // Se não há filtro de dia/horário, mas há filtro de créditos, já foi validado acima
+    if (dia === null && horaInicio === null && horaFim === null) {
+      return true;
     }
 
     // Filtro de dia/horário normal (não ANP)
@@ -1280,10 +1291,10 @@ const Calendar = forwardRef(({
             <button
               className={`calendar__time-filter-toggle ${filtroHorario.ativo ? 'active' : ''}`}
               onClick={() => setFiltroHorario({ ...filtroHorario, ativo: !filtroHorario.ativo })}
-              title="Filtrar matérias por horário"
+              title="Filtrar matérias por horário ou créditos"
             >
               <i className="fi fi-br-search-alt"></i>
-              <span>Filtrar por Horário</span>
+              <span>Filtrar Matérias</span>
               <i className={`fi fi-br-angle-${filtroHorario.ativo ? 'down' : 'right'}`} style={{ marginLeft: 'auto' }}></i>
             </button>
 
@@ -1367,10 +1378,31 @@ const Calendar = forwardRef(({
                 </>
                 )}
 
-                {(filtroHorario.dia !== null || filtroHorario.horaInicio !== null || filtroHorario.horaFim !== null || filtroHorario.isAnp) && (
+                {/* Filtro de Créditos */}
+                <div className="calendar__time-filter-row">
+                  <label htmlFor="filter-creditos">Créditos:</label>
+                  <select
+                    id="filter-creditos"
+                    value={filtroHorario.creditos ?? ''}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setFiltroHorario({
+                        ...filtroHorario,
+                        creditos: val === '' ? null : Number(val)
+                      });
+                    }}
+                  >
+                    <option value="">Qualquer</option>
+                    {[1, 2, 3, 4, 5, 6, 7, 8].map((cred) => (
+                      <option key={cred} value={cred}>{cred} crédito{cred > 1 ? 's' : ''}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {(filtroHorario.dia !== null || filtroHorario.horaInicio !== null || filtroHorario.horaFim !== null || filtroHorario.isAnp || filtroHorario.creditos !== null) && (
                   <button
                     className="calendar__time-filter-clear"
-                    onClick={() => setFiltroHorario({ ativo: true, dia: null, horaInicio: null, horaFim: null, isAnp: false })}
+                    onClick={() => setFiltroHorario({ ativo: true, dia: null, horaInicio: null, horaFim: null, isAnp: false, creditos: null })}
                     title="Limpar filtros"
                   >
                     <i className="fi fi-br-broom"></i>
@@ -1864,7 +1896,7 @@ const Calendar = forwardRef(({
             <p className="calendar__footer-text">
               Não se esqueça de fazer sua matrícula no SIG! Este aplicativo não tem nenhum vínculo com a UFLA.<br />
               Os horarios das turmas são baseados nos dados oficiais, mas podem sofrer alterações pela universidade. Use como guia, mas sempre confirme no SIG.<br />
-              Banco de dados atualizado em 01/02/26 - 15:50 | Matriz 2025/2
+              Banco de dados atualizado em 20/02/26 - 12:00 | Matriz 2026/1
             </p>
           </div>
         </div>
