@@ -94,7 +94,7 @@ const MateriaModal = ({
 
     const horariosNovos = turma.horarios || [];
     for (const [codigo, materiaExistente] of Object.entries(materiasNoCalendario || {})) {
-      // ✅ Ignorar a própria matéria ao verificar conflitos
+      // ✅ CRUCIAL: Ignorar a própria matéria ao verificar conflitos (permite trocar de turma)
       if (codigo === materia?.codigo) continue;
 
       if (materiaExistente.anp && isAnpOnlyMateria(materiaExistente)) continue;

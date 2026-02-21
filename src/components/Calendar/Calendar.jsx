@@ -512,7 +512,10 @@ const Calendar = forwardRef(({
     const horariosNovos = turma.horarios || [];
 
     // Para cada matéria já na grade
-    for (const materia of Object.values(materiasNoCalendario)) {
+    for (const [codigo, materia] of Object.entries(materiasNoCalendario)) {
+      // ✅ CRUCIAL: Ignorar a própria matéria ao verificar conflitos (permite trocar de turma via drag)
+      if (draggingMateria && codigo === draggingMateria.codigo) continue;
+
       // Ignorar matérias ANP apenas se forem ANP-only (sem horários em dias úteis)
       if (materia.anp) {
         const horarios = materia.horarios || [];
