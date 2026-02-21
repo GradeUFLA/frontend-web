@@ -164,6 +164,9 @@ const checkConflitoParaMateria = (materiaToCheck, materiasState) => {
 
   // Para cada matéria já na grade
   for (const [codigo, materiaExistente] of Object.entries(materiasState || {})) {
+    // ✅ CRUCIAL: Ignorar a própria matéria ao verificar conflitos (permite trocar de turma)
+    if (codigo === materiaToCheck.codigo) continue;
+
     // Ignorar matérias ANP apenas se forem ANP-only (sem horários em dias úteis)
     if (materiaExistente.anp && isAnpOnlyMateria(materiaExistente)) continue;
 
