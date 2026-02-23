@@ -1913,7 +1913,7 @@ const Calendar = forwardRef(({
             <p className="calendar__footer-text">
               Não se esqueça de fazer sua matrícula no SIG! Este aplicativo não tem nenhum vínculo com a UFLA.<br />
               Os horarios das turmas são baseados nos dados oficiais, mas podem sofrer alterações pela universidade. Use como guia, mas sempre confirme no SIG.<br />
-              Banco de dados atualizado em 20/02/26 - 12:00 | Matriz 2026/1
+              Banco de dados atualizado em 22/02/26 - 21:00 | Matriz 2026/1
             </p>
           </div>
         </div>
