@@ -1,7 +1,6 @@
 curso_id,nome,matriz
 G001,Agronomia,2005/02
 G001,Agronomia,2008/04
-G001,Agronomia,2008/07
 G001,Agronomia,2009/02
 G001,Agronomia,2013/02
 G001,Agronomia,2019/01
@@ -12,10 +11,8 @@ G002,Zootecnia,2013/02
 G002,Zootecnia,2018/01
 G002,Zootecnia,2020/02
 G002,Zootecnia,2023/01
-G003,Engenharia Agrícola,2009/02
 G003,Engenharia Agrícola,2013/02
 G003,Engenharia Agrícola,2023/01
-G005,Engenharia Florestal,2009/02
 G005,Engenharia Florestal,2009/03
 G005,Engenharia Florestal,2012/01
 G005,Engenharia Florestal,2013/02
@@ -26,21 +23,18 @@ G007,Medicina Veterinária,2016/01
 G007,Medicina Veterinária,2022/02
 G009,Administração,2009/02
 G009,Administração,2013/02
-G009,Administração,2014/01
 G009,Administração,2023/01
 G010,Ciência da Computação,2009/02
 G010,Ciência da Computação,2013/02
 G010,Ciência da Computação,2016/01
 G010,Ciência da Computação,2023/01
 G011,Engenharia de Alimentos,2011/01
-G011,Engenharia de Alimentos,2011/02
 G011,Engenharia de Alimentos,2013/02
 G011,Engenharia de Alimentos,2017/01
 G011,Engenharia de Alimentos,2020/01
 G011,Engenharia de Alimentos,2023/01
 G012,Ciências Biológicas,2009/02
 G012,Ciências Biológicas,2013/02
-G012,Ciências Biológicas,2020/01
 G012,Ciências Biológicas,2023/01
 G013,Química,2009/02
 G013,Química,2013/02
@@ -53,7 +47,6 @@ G014,Sistemas de Informação,2015/02
 G014,Sistemas de Informação,2023/01
 G015,Matemática,2009/02
 G015,Matemática,2014/01
-G015,Matemática,2016/01
 G015,Matemática,2018/02
 G015,Matemática,2023/01
 G015,Matemática,2024/01
