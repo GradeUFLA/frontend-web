@@ -1,34 +1,22 @@
 curso_id,nome,matriz
-G001,Agronomia,2005/02
-G001,Agronomia,2008/04
-G001,Agronomia,2008/07
-G001,Agronomia,2009/02
 G001,Agronomia,2013/02
 G001,Agronomia,2019/01
 G001,Agronomia,2023/01
-G002,Zootecnia,2008/04
-G002,Zootecnia,2009/02
 G002,Zootecnia,2013/02
 G002,Zootecnia,2018/01
 G002,Zootecnia,2020/02
 G002,Zootecnia,2023/01
-G003,Engenharia Agrícola,2009/02
 G003,Engenharia Agrícola,2013/02
 G003,Engenharia Agrícola,2023/01
-G005,Engenharia Florestal,2009/02
-G005,Engenharia Florestal,2009/03
 G005,Engenharia Florestal,2012/01
 G005,Engenharia Florestal,2013/02
 G005,Engenharia Florestal,2023/01
-G007,Medicina Veterinária,2009/02
 G007,Medicina Veterinária,2013/02
 G007,Medicina Veterinária,2016/01
 G007,Medicina Veterinária,2022/02
-G009,Administração,2009/02
 G009,Administração,2013/02
 G009,Administração,2014/01
 G009,Administração,2023/01
-G010,Ciência da Computação,2009/02
 G010,Ciência da Computação,2013/02
 G010,Ciência da Computação,2016/01
 G010,Ciência da Computação,2023/01
@@ -38,31 +26,25 @@ G011,Engenharia de Alimentos,2013/02
 G011,Engenharia de Alimentos,2017/01
 G011,Engenharia de Alimentos,2020/01
 G011,Engenharia de Alimentos,2023/01
-G012,Ciências Biológicas,2009/02
 G012,Ciências Biológicas,2013/02
 G012,Ciências Biológicas,2020/01
 G012,Ciências Biológicas,2023/01
-G013,Química,2009/02
 G013,Química,2013/02
 G013,Química,2018/02
 G013,Química,2023/01
 G013,Química,2024/01
-G014,Sistemas de Informação,2009/02
 G014,Sistemas de Informação,2013/02
 G014,Sistemas de Informação,2015/02
 G014,Sistemas de Informação,2023/01
-G015,Matemática,2009/02
 G015,Matemática,2014/01
 G015,Matemática,2016/01
 G015,Matemática,2018/02
 G015,Matemática,2023/01
 G015,Matemática,2024/01
-G018,Física,2009/02
 G018,Física,2014/01
 G018,Física,2018/02
 G018,Física,2023/01
 G018,Física,2024/01
-G019,Engenharia Ambiental e Sanitária,2009/02
 G019,Engenharia Ambiental e Sanitária,2013/02
 G019,Engenharia Ambiental e Sanitária,2019/02
 G019,Engenharia Ambiental e Sanitária,2023/01
@@ -74,7 +56,6 @@ G020,Ciências Biológicas,2024/01
 G021,Química,2013/02
 G021,Química,2018/02
 G021,Química,2023/01
-G022,Engenharia de Controle e Automação,2009/02
 G022,Engenharia de Controle e Automação,2013/02
 G022,Engenharia de Controle e Automação,2020/02
 G022,Engenharia de Controle e Automação,2023/01
@@ -152,7 +133,7 @@ G069,Automação Industrial,2026/02
 G070,Sistemas para Internet,2026/02
 G071,Viticultura e Enologia,2026/02
 G072,Fonoaudiologia,2026/02
-G073,Inteligência Artificial,2026/01
+G073,Inteligência Artificial,2026/02
 G074,Terapia Ocupacional,2026/02
 GCT039,"Bacharelado Interdisciplinar em Inovação, Ciência e Tecnologia",2022/01
 GCT039,"Bacharelado Interdisciplinar em Inovação, Ciência e Tecnologia",2023/02
