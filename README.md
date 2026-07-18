@@ -114,12 +114,3 @@ Próximos passos recomendados
 Contato / repositório remoto
 
 - Repositório recomendado: `git@github.com:oF0kus/GradeUFLA.git` (ver README original para remote atual).
-
----
-
-Se quiser, eu posso:
-- Validar e adaptar os `csv` de amostra para um formato definitivo (gerar templates CSV). 
-- Corrigir warns/lints que impedem o build no Netlify.
-- Fazer um README em inglês também.
-
-Diga qual desses itens deseja agora que eu execute.
