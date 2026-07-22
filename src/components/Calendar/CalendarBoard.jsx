@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { ACADEMIC_TERM, DATA_UPDATED_AT } from '../../config/academicTerm';
 import { DIAS_SEMANA } from './calendarUtils';
 
 function TurmasPopup({ materia, selectedTurmaIndex, verificarConflito, getCorTurma }) {
@@ -257,7 +258,7 @@ function CalendarBoard({
         <p className="calendar__footer-text">
           Não se esqueça de fazer sua matrícula no SIG! Este aplicativo não tem nenhum vínculo com a UFLA.<br />
           Os horarios das turmas são baseados nos dados oficiais, mas podem sofrer alterações pela universidade. Use como guia, mas sempre confirme no SIG.<br />
-          Banco de dados atualizado em 22/07/26 - 11:00 | Período letivo 2026/1
+          Banco de dados atualizado em {DATA_UPDATED_AT} | Período letivo {ACADEMIC_TERM}
         </p>
       </div>
     </div>

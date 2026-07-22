@@ -2,11 +2,11 @@ import { loadCsv, loadMaterias } from './csvLoader';
 
 describe('validação dos CSVs', () => {
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   test('rejeita erros estruturais informados pelo PapaParse', async () => {
-    jest.spyOn(global, 'fetch').mockResolvedValue({
+    vi.spyOn(global, 'fetch').mockResolvedValue({
       ok: true,
       text: async () => 'codigo,nome\nGCC001'
     });
@@ -15,7 +15,7 @@ describe('validação dos CSVs', () => {
   });
 
   test('rejeita linha de disciplina sem campos obrigatórios', async () => {
-    jest.spyOn(global, 'fetch').mockResolvedValue({
+    vi.spyOn(global, 'fetch').mockResolvedValue({
       ok: true,
       text: async () => 'curso_id,matriz,semestre,codigo,nome\nG001,2023/01,1,,Sem código'
     });
@@ -24,7 +24,7 @@ describe('validação dos CSVs', () => {
   });
 
   test('versiona URLs de dados para permitir cache busting controlado', async () => {
-    jest.spyOn(global, 'fetch').mockResolvedValue({
+    vi.spyOn(global, 'fetch').mockResolvedValue({
       ok: true,
       text: async () => 'codigo,nome\nGCC001,Disciplina'
     });
@@ -35,7 +35,7 @@ describe('validação dos CSVs', () => {
   });
 
   test('rejeita JSON de turmas corrompido em vez de aceitar uma linha parcial', async () => {
-    jest.spyOn(global, 'fetch').mockResolvedValue({
+    vi.spyOn(global, 'fetch').mockResolvedValue({
       ok: true,
       text: async () => 'curso,matriz,semestre,codigo,nome,turmas\nG001,2023/01,1,GCC001,Disciplina,[json-inválido]'
     });

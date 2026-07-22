@@ -10,20 +10,20 @@ const materias = [{
   turmas: []
 }];
 
-const carregarModuloComMocks = ({ loadCursos, loadMaterias }) => {
-  jest.resetModules();
-  jest.doMock('./csvLoader', () => ({
+const carregarModuloComMocks = async ({ loadCursos, loadMaterias }) => {
+  vi.resetModules();
+  vi.doMock('./csvLoader', () => ({
     loadCursos,
     loadMaterias,
-    computeTotalSemestres: jest.fn(lista => lista)
+    computeTotalSemestres: vi.fn(lista => lista)
   }));
-  return require('./index');
+  return import('./index');
 };
 
 describe('carregamento central dos CSVs', () => {
   afterEach(() => {
-    jest.resetModules();
-    jest.clearAllMocks();
+    vi.resetModules();
+    vi.clearAllMocks();
   });
 
   test('compartilha uma única Promise entre chamadas concorrentes', async () => {
@@ -31,9 +31,9 @@ describe('carregamento central dos CSVs', () => {
     const materiasPendentes = new Promise(resolve => {
       concluirMaterias = resolve;
     });
-    const loadCursos = jest.fn().mockResolvedValue(cursos);
-    const loadMaterias = jest.fn(() => materiasPendentes);
-    const { ensureCsvLoaded } = carregarModuloComMocks({ loadCursos, loadMaterias });
+    const loadCursos = vi.fn().mockResolvedValue(cursos);
+    const loadMaterias = vi.fn(() => materiasPendentes);
+    const { ensureCsvLoaded } = await carregarModuloComMocks({ loadCursos, loadMaterias });
 
     const primeira = ensureCsvLoaded();
     const segunda = ensureCsvLoaded();
@@ -50,9 +50,9 @@ describe('carregamento central dos CSVs', () => {
   });
 
   test('reutiliza os dados carregados sem executar um novo parse', async () => {
-    const loadCursos = jest.fn().mockResolvedValue(cursos);
-    const loadMaterias = jest.fn().mockResolvedValue(materias);
-    const { ensureCsvLoaded, getCursos, getNomeMateria } = carregarModuloComMocks({ loadCursos, loadMaterias });
+    const loadCursos = vi.fn().mockResolvedValue(cursos);
+    const loadMaterias = vi.fn().mockResolvedValue(materias);
+    const { ensureCsvLoaded, getCursos, getNomeMateria } = await carregarModuloComMocks({ loadCursos, loadMaterias });
 
     const primeiraCarga = await ensureCsvLoaded();
     const segundaCarga = await ensureCsvLoaded();
@@ -67,15 +67,15 @@ describe('carregamento central dos CSVs', () => {
 
   test('expõe a falha e permite tentar novamente', async () => {
     const erro = new Error('Falha de rede');
-    const loadCursos = jest.fn()
+    const loadCursos = vi.fn()
       .mockRejectedValueOnce(erro)
       .mockResolvedValueOnce(cursos);
-    const loadMaterias = jest.fn().mockResolvedValue(materias);
+    const loadMaterias = vi.fn().mockResolvedValue(materias);
     const {
       ensureCsvLoaded,
       getCsvLoadState,
       retryCsvLoad
-    } = carregarModuloComMocks({ loadCursos, loadMaterias });
+    } = await carregarModuloComMocks({ loadCursos, loadMaterias });
 
     await expect(ensureCsvLoaded()).rejects.toBe(erro);
     expect(getCsvLoadState()).toMatchObject({ status: 'error', error: erro });

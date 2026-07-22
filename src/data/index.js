@@ -1,4 +1,3 @@
-/* eslint-disable */
 // Central data loader: prefer CSVs from /public/data when available; do NOT fall back to in-memory mock modules
 
 import { loadCursos, loadMaterias, computeTotalSemestres } from './csvLoader';
@@ -103,9 +102,7 @@ export function ensureCsvLoaded() {
 
       try {
         // expose for debugging during development
-        // eslint-disable-next-line no-undef
         window.__csvCursos = csvCursos;
-        // eslint-disable-next-line no-undef
         window.__csvDadosPorCurso = csvDadosPorCurso;
       } catch (e) {
         // ignore if window not available

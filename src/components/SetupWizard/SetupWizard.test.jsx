@@ -11,15 +11,15 @@ import {
   subscribeCsvLoadState
 } from '../../data';
 
-jest.mock('../../data', () => ({
-  ensureCsvLoaded: jest.fn().mockRejectedValue(new Error('CSV inválido')),
-  retryCsvLoad: jest.fn().mockResolvedValue({}),
-  getCsvLoadState: jest.fn(() => ({ status: 'error', error: new Error('CSV inválido') })),
-  subscribeCsvLoadState: jest.fn(() => () => {}),
-  getCursoInfo: jest.fn(() => null),
-  getTotalSemestres: jest.fn(() => 8),
-  getMatrizesByCurso: jest.fn(() => []),
-  getCursosImplementados: jest.fn(() => [])
+vi.mock('../../data', () => ({
+  ensureCsvLoaded: vi.fn().mockRejectedValue(new Error('CSV inválido')),
+  retryCsvLoad: vi.fn().mockResolvedValue({}),
+  getCsvLoadState: vi.fn(() => ({ status: 'error', error: new Error('CSV inválido') })),
+  subscribeCsvLoadState: vi.fn(() => () => {}),
+  getCursoInfo: vi.fn(() => null),
+  getTotalSemestres: vi.fn(() => 8),
+  getMatrizesByCurso: vi.fn(() => []),
+  getCursosImplementados: vi.fn(() => [])
 }));
 
 const renderWizard = () => render(

@@ -1,116 +1,152 @@
-# GradeUFLA — Montador de Grade Horária (Frontend)
+# GradeUFLA — Montador de Grade Horária
 
-Descrição rápida
+Frontend do GradeUFLA para selecionar curso, matriz e semestre, revisar o histórico acadêmico e montar uma grade sem conflitos de horário. A aplicação funciona sem backend: cursos, disciplinas, pré-requisitos e turmas são carregados de CSVs versionados no próprio deploy.
 
-GradeUFLA é a interface frontend (React) de um montador de grade horária para cursos da UFLA. O projeto é implementado com Create React App e usa dados locais (CSV) para popular cursos, matrizes, disciplinas e horários.
+## Funcionalidades
 
-Status atual
+- fluxo guiado de curso, matriz e semestre;
+- histórico de disciplinas aprovadas;
+- montagem por drag and drop no desktop e por modal no mobile;
+- validação de pré-requisitos, correquisitos, conflitos, ANP e limite de 32 créditos;
+- filtros por dia, horário, modalidade e créditos;
+- exportação da grade em PNG;
+- navegação por teclado, dialogs acessíveis e suporte a reduced motion.
 
-- Frontend em React (sem backend nesta versão; dados são carregados por CSVs no diretório `data/`).
-- Drag & drop para montar a grade, ver conflitos de horário, exportação para .ics (Google Calendar).
+## Requisitos
 
-Pré-requisitos
+- Node.js `20.19.0` ou superior dentro da linha 20, ou Node `22.12.0+`;
+- npm compatível com a versão instalada do Node.
 
-- Node.js (versão LTS recomendada) e npm instalados.
-- Windows / macOS / Linux — comandos apresentados usam PowerShell/Bash conforme apropriado.
+O projeto usa React 19, Vite 8, Vitest 4 e Playwright.
 
-Instalação
-
-1. Instale dependências:
-
-```bash
-npm install
-```
-
-2. Inicie em modo desenvolvimento:
+## Desenvolvimento
 
 ```bash
+npm ci
 npm start
 ```
 
-A aplicação abrirá em `http://localhost:3000` por padrão.
+O servidor abre em `http://127.0.0.1:3000`.
 
-Scripts úteis
+Scripts disponíveis:
 
-- `npm start` — servidor de desenvolvimento com hot-reload.
-- `npm run build` — gera versão otimizada em `build/`.
-- `npm test` — roda testes (se houver).
-- `npm run eject` — ejetar configurações CRA (não recomendado sem necessidade).
+```bash
+npm start          # servidor Vite
+npm run build      # build de produção em dist/
+npm run preview    # serve o build localmente
+npm run lint       # ESLint
+npm test           # Vitest em watch mode
+npm run test:ci    # Vitest em execução única
+npm run e2e        # Playwright desktop e mobile
+npm run e2e:install
+```
 
-Estrutura principal do projeto
+## Dados acadêmicos
 
-- `public/` — arquivos estáticos (index.html, manifest, favicon, logos).
-- `src/` — código-fonte React
-  - `components/` — componentes reutilizáveis (Calendar, CursoSelector, Stepper, etc.)
-  - `data/` — loaders/CSV e utilitários para popular o app (ex: `csvLoader.js`, `cursos.js`, `materias.js` gerados a partir dos CSVs)
-  - `App.jsx`, `index.js` — entrada da aplicação
-  - `styles/` — CSS global
-- `data/` (raiz) — CSVs de amostra usados para popular a aplicação em tempo de execução (ex: `courses.csv`, `subjects.csv`)
+Os arquivos consumidos em produção ficam em:
 
-Dados (CSV)
+```text
+public/data/courses.csv
+public/data/subjects.csv
+```
 
-A versão atual carrega dados locais via um `csvLoader` dentro de `src/data/`.
-Arquivos CSV esperados (exemplo):
+### `courses.csv`
 
-- `courses.csv` — cursos
-- `matrizes.csv` — matrizes por curso (opcional)
-- `subjects.csv` — disciplinas (código, nome, créditos, tipo, subgrupo, pré-requisitos, turmas/horários em JSON)
+Colunas obrigatórias:
 
-Formato mínimo (exemplo de colunas para `subjects.csv`):
+| Coluna | Descrição | Exemplo |
+| --- | --- | --- |
+| `curso_id` | Identificador do curso | `G014` |
+| `nome` | Nome do curso | `Sistemas de Informação` |
+| `matriz` | Ano e período da matriz | `2023/01` |
 
-- course_code (ex: G014)
-- matrix (ex: 2023/01)
-- semester (número)
-- code (ex: GAC124)
-- name
-- credits
-- type (obrigatoria|eletiva)
-- subgroup (string)
-- preRequisites (JSON array de códigos)
-- turmas (JSON array: cada turma com id, horarios: [{ dia, inicio, fim, anp? }])
+O mesmo curso pode aparecer uma vez para cada matriz disponível.
 
-Observação: existem loaders no diretório `src/data` para transformar os CSVs em estruturas usadas pelo app. Mantenha o JSON nas colunas `turmas` e `preRequisitos` bem formatados.
+### `subjects.csv`
 
-Build / Deploy (Netlify)
+Colunas principais:
 
-- Para deploy manual: gere o build com `npm run build` e faça drag & drop da pasta `build/` no painel do Netlify.
-- Nota importante: Netlify define `CI=true`, e Create React App trata warnings do ESLint como erros na build. Se o build falhar na Netlify com mensagens de lint (ex: `no-unused-vars`), corrija os arquivos apontados ou defina a variável de ambiente `CI=false` (não recomendado). Recomendação: corrija os avisos de lint antes do deploy.
+| Coluna | Descrição |
+| --- | --- |
+| `curso` | Identificador correspondente ao curso |
+| `matriz` | Matriz curricular |
+| `semestre` | Módulo recomendado |
+| `codigo` | Código único da disciplina |
+| `nome` | Nome da disciplina |
+| `creditos` | Quantidade de créditos |
+| `tipo` | `obrigatoria` ou `eletiva` |
+| `subgrupo` | Agrupamento opcional de eletivas |
+| `preRequisitos` | Texto com grupos `Forte`, `Minimo` e `Co-requisito` |
+| `turmas` | Array JSON com `id`, `horarios` e flag `anp` |
 
-Problemas comuns e debug rápido
+Exemplo simplificado de `turmas`:
 
-- App não inicia / erro de compilação:
-  - Verifique mensagens no terminal; arquivos com `SyntaxError` costumam indicar erro de sintaxe JS/JSX (vírgula, parênteses, chaves sobrando).
-  - Use `npm start` e abra o devtools/console para ver erros em runtime.
+```json
+[
+  {
+    "id": "A",
+    "horarios": [{ "dia": 2, "inicio": 8, "fim": 10 }],
+    "anp": false
+  }
+]
+```
 
-- Dados CSV não sendo carregados:
-  - Confirme que os arquivos CSV existem em `data/` (raiz) e que as colunas JSON estão escapadas corretamente.
-  - Cheque `src/data/csvLoader.js` para ver os nomes esperados das colunas.
+O loader rejeita respostas HTTP inválidas, erros do PapaParse, campos obrigatórios ausentes e JSON inválido em `turmas`.
 
-- ESLint warnings travando build no Netlify:
-  - Corrija variáveis não utilizadas ou comente com `// eslint-disable-next-line no-unused-vars` quando intencional.
+## Versão dos dados
 
-Funcionalidades importantes (onde estão)
+As configurações públicas estão documentadas em `.env.example`:
 
-- `src/components/Calendar/` — componente principal da grade horária, drag/drop, preview, export .ics.
-- `src/components/CursoSelector/` — seleção de curso e matriz.
-- `src/components/Stepper/` — assistente de configuração (wizard de seleção de curso/matriz/semestre).
-- `src/data/` — loaders e modelos de dados (ponto central para ajustar entrada CSV).
+```text
+VITE_CSV_VERSION=2026-07-18
+VITE_DATA_UPDATED_AT="22/07/26 - 11:00"
+VITE_ACADEMIC_TERM=2026/1
+```
 
-Contribuindo / fluxo de trabalho Git
+Ao publicar um CSV novo:
 
-- Branches: use `feat/`, `fix/`, `hotfix/` conforme convenções.
-- Commits: siga o padrão `feat:`, `fix:`, `docs:`, `style:`, `refactor:`, `test:`, `chore:`.
+1. substitua somente o arquivo correspondente em `public/data`;
+2. atualize `VITE_CSV_VERSION` para invalidar caches antigos;
+3. atualize `VITE_DATA_UPDATED_AT` e, quando necessário, `VITE_ACADEMIC_TERM`;
+4. execute os testes e faça um recarregamento forçado no navegador.
 
-Exportação de calendário
+Variáveis prefixadas com `VITE_` são públicas e não devem conter segredos.
 
-- O app oferece um botão para gerar um arquivo `.ics` com os horários do calendário. O arquivo é baixado e a página de import do Google Calendar é aberta para que o usuário importe manualmente.
+## Validação
 
-Próximos passos recomendados
+```bash
+npm run lint
+npm run test:ci
+npm run build
+npm run e2e
+npm audit
+```
 
-- Padronizar os CSVs de entrada e adicionar scripts de validação para garantir dados consistentes.
-- Adicionar testes unitários para as transformações de dados (`src/data/*`).
-- Refatorar alguns componentes grandes (Calendar, SetupWizard) em unidades menores para facilitar testes.
+A cobertura inclui regras acadêmicas, carregamento e retry dos CSVs, fluxo completo do App, dialogs, drag, exportação PNG e E2E em Chromium desktop `1440x1000` e mobile `390x844`.
 
-Contato / repositório remoto
+## Deploy no Netlify
 
-- Repositório recomendado: `git@github.com:oF0kus/GradeUFLA.git` (ver README original para remote atual).
+O arquivo `netlify.toml` configura:
+
+- comando `npm run build`;
+- publicação do diretório `dist`;
+- fallback de SPA para `index.html`;
+- headers de segurança;
+- cache longo para assets com hash e cache controlado para CSVs.
+
+O deploy não depende de `CI=false`. Pull requests e pushes na `main` também executam lint, Vitest, build e Playwright por GitHub Actions.
+
+## Estrutura
+
+```text
+src/App.jsx                 fluxo e estado principal
+src/components/             interface e interações
+src/data/                   carregamento e indexação dos CSVs
+src/domain/gradeRules.js    fonte única das regras acadêmicas
+src/hooks/                  hooks compartilhados
+e2e/                       testes Playwright e fixtures
+public/data/                dados acadêmicos publicados
+docs/                       especificações e plano de revisão
+```
+
+O scraper pertence a outro projeto e não deve ser executado a partir deste repositório.

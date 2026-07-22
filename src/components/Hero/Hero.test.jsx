@@ -1,11 +1,13 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import Hero from './Hero';
 
-jest.mock('../RotatingText', () => () => <span>prática</span>);
+vi.mock('../RotatingText', () => ({
+  default: () => <span>prática</span>
+}));
 
 describe('carregamento de dados no início', () => {
   test('impede cliques repetidos enquanto os CSVs estão carregando', () => {
-    const onGetStartedClick = jest.fn();
+    const onGetStartedClick = vi.fn();
     render(
       <Hero
         onGetStartedClick={onGetStartedClick}
@@ -20,7 +22,7 @@ describe('carregamento de dados no início', () => {
   });
 
   test('mostra erro claro e permite tentar novamente', () => {
-    const onRetry = jest.fn();
+    const onRetry = vi.fn();
     render(
       <Hero
         onGetStartedClick={() => {}}

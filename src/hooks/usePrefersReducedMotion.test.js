@@ -5,13 +5,13 @@ test('acompanha a preferência de movimento reduzido do sistema', () => {
   let changeListener;
   const mediaQuery = {
     matches: true,
-    addEventListener: jest.fn((event, listener) => {
+    addEventListener: vi.fn((event, listener) => {
       if (event === 'change') changeListener = listener;
     }),
-    removeEventListener: jest.fn()
+    removeEventListener: vi.fn()
   };
   const originalMatchMedia = window.matchMedia;
-  window.matchMedia = jest.fn(() => mediaQuery);
+  window.matchMedia = vi.fn(() => mediaQuery);
 
   const { result, unmount } = renderHook(() => usePrefersReducedMotion());
   expect(result.current).toBe(true);

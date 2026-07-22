@@ -51,7 +51,6 @@ const Calendar = forwardRef(({
         onShowToast(message, level);
         return;
       } catch (error) {
-        // eslint-disable-next-line no-console
         console.warn('onShowToast handler threw an error, using fallback:', error);
       }
     }
@@ -59,7 +58,6 @@ const Calendar = forwardRef(({
     try {
       window.dispatchEvent(new CustomEvent('gradeufla-toast', { detail: { message, level } }));
     } catch (error) {
-      // eslint-disable-next-line no-console
       console.log(`[toast:${level}]`, message);
     }
   }, [onShowToast]);

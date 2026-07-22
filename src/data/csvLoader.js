@@ -1,6 +1,6 @@
 import Papa from 'papaparse';
 
-const CSV_DATA_VERSION = process.env.REACT_APP_CSV_VERSION || '2026-07-18';
+const CSV_DATA_VERSION = import.meta.env.VITE_CSV_VERSION || '2026-07-18';
 
 const versionCsvPath = path => {
   if (!path.startsWith('/data/')) return path;
@@ -58,7 +58,6 @@ function parsePreRequisitosString(preField) {
 
   if (!hasLabel) {
     // split by commas or slashes or pipes as fallback (use RegExp constructor to avoid needing to escape '/').
-    /* eslint-disable-next-line no-useless-escape */
     const items = s.split(new RegExp('[,|/]+')).map(x => x.trim()).filter(Boolean);
     result.forte = items;
     return result;
@@ -83,7 +82,6 @@ function parsePreRequisitosString(preField) {
   });
 
   // normalize codes (trim and remove stray punctuation)
-  /* eslint-disable-next-line no-useless-escape */
   ['forte', 'minimo', 'coreq'].forEach(k => {
     result[k] = result[k].map(code => (code || '').toString().replace(/[^A-Za-z0-9_-]/g, '').toUpperCase()).filter(Boolean);
   });

@@ -4,7 +4,7 @@ import useCalendarDrag, {
   resolveTurmaIndexParaCelula
 } from './useCalendarDrag';
 
-jest.mock('../../data', () => ({
+vi.mock('../../data', () => ({
   verificarPreRequisitosDetalhada: () => ({
     faltandoForte: [],
     faltandoMinimo: [],
@@ -15,8 +15,8 @@ jest.mock('../../data', () => ({
 const pointerEvent = (x, y) => ({
   clientX: x,
   clientY: y,
-  preventDefault: jest.fn(),
-  stopPropagation: jest.fn()
+  preventDefault: vi.fn(),
+  stopPropagation: vi.fn()
 });
 
 const rect = (left, right, top, bottom) => ({
@@ -43,9 +43,9 @@ const createTable = () => {
 const renderDrag = ({
   materiasNoCalendario = {},
   allMateriasList = [],
-  onAddMateria = jest.fn(() => true),
-  onRemoveMateria = jest.fn(),
-  triggerToast = jest.fn()
+  onAddMateria = vi.fn(() => true),
+  onRemoveMateria = vi.fn(),
+  triggerToast = vi.fn()
 } = {}) => {
   const calendarTableRef = { current: createTable() };
   const { result } = renderHook(() => useCalendarDrag({
@@ -197,7 +197,7 @@ describe('arraste do calendário', () => {
 
   test('finaliza uma única vez quando o mouseup local chega ao listener global por bubbling', () => {
     const materia = { codigo: 'GCC001', nome: 'Na grade', horarios: [] };
-    const onRemoveMateria = jest.fn();
+    const onRemoveMateria = vi.fn();
     render(<DragBubblingHarness materia={materia} onRemoveMateria={onRemoveMateria} />);
 
     fireEvent.mouseDown(screen.getByRole('button', { name: 'Arrastar' }), {
@@ -211,7 +211,7 @@ describe('arraste do calendário', () => {
 
   test('touchcancel encerra o gesto sem remover a matéria', () => {
     const materia = { codigo: 'GCC001', nome: 'Na grade', horarios: [] };
-    const onRemoveMateria = jest.fn();
+    const onRemoveMateria = vi.fn();
     render(<DragBubblingHarness materia={materia} onRemoveMateria={onRemoveMateria} />);
 
     fireEvent.touchStart(screen.getByRole('button', { name: 'Arrastar' }), {
@@ -234,7 +234,7 @@ describe('arraste do calendário', () => {
     };
     const utils = renderDrag({ allMateriasList: [materia] });
     let scheduledFrame;
-    const requestFrame = jest.spyOn(window, 'requestAnimationFrame').mockImplementation(callback => {
+    const requestFrame = vi.spyOn(window, 'requestAnimationFrame').mockImplementation(callback => {
       scheduledFrame = callback;
       return 1;
     });

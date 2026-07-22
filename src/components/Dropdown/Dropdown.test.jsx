@@ -26,7 +26,7 @@ describe('Dropdown acessível', () => {
   });
 
   test('expõe listbox/options e permite Home, End, Enter e Escape', () => {
-    const onChange = jest.fn();
+    const onChange = vi.fn();
     render(
       <Dropdown
         options={options}
@@ -55,7 +55,7 @@ describe('Dropdown acessível', () => {
   });
 
   test('combobox sem busca abre e seleciona uma opção pelo teclado', () => {
-    const onChange = jest.fn();
+    const onChange = vi.fn();
     render(
       <Dropdown
         options={options}

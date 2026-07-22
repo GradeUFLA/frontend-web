@@ -1,13 +1,13 @@
 import { act, renderHook } from '@testing-library/react';
 import useCalendarExport from './useCalendarExport';
 
-jest.mock('../../data', () => ({
+vi.mock('../../data', () => ({
   getNomeMateria: codigo => codigo
 }));
 
 describe('exportação do calendário', () => {
   test('bloqueia o PNG enquanto houver correquisito pendente', async () => {
-    const triggerToast = jest.fn();
+    const triggerToast = vi.fn();
     const wrapperRef = {
       get current() {
         throw new Error('a captura não deveria ser iniciada');

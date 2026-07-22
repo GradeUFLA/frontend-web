@@ -109,7 +109,6 @@ export default function useCalendarExport({
       link.remove();
       triggerToast('Grade baixada com sucesso!', 'success');
     } catch (error) {
-      // eslint-disable-next-line no-console
       console.error('Erro ao gerar imagem do calendário', error);
       triggerToast('Erro ao gerar imagem. Tente novamente.', 'error');
     } finally {

@@ -45,19 +45,22 @@ Neste documento, `Concluído` indica implementação finalizada com testes autom
 - FE-08: regras de dias, horas, conflitos, ANP, seleção e créditos centralizadas no domínio e adotadas pelo App, modal e drag.
 - FE-09: fluxos integrados do App e E2E em Chromium desktop/mobile, incluindo CSV real, teclado, modal, ANP, conflitos, créditos e PNG.
 - FE-10 a FE-13: ocupação indexada, ghost sem render por pixel, busca de nomes em `Map`, componentes memorizados, animações pausáveis/reduced motion e CSS seletivo de ícones.
+- FE-14: CRA substituído por Vite/Vitest, dependências separadas e dependências diretas sem uso removidas.
+- FE-15: README, metadados acadêmicos, Netlify e pipeline do GitHub Actions atualizados.
 
 ### Cobertura atual
 
-- 19 suítes e 56 testes Jest passando.
-- 10 cenários Playwright passando: 5 em Chromium desktop `1440x1000` e 5 em Chromium mobile `390x844`.
-- Build de produção compilando.
+- 19 arquivos e 56 testes Vitest passando.
+- 11 cenários Playwright passando: 6 em Chromium desktop `1440x1000` e 5 em Chromium mobile `390x844`; o cenário de drag é ignorado no mobile por projeto.
+- Build Vite de produção compilando, com JavaScript principal de 145,90 KB gzip e CSS de 8,96 KB gzip.
 - ESLint passando.
-- `git diff --check -- src docs e2e package.json package-lock.json playwright.config.js .gitignore` passando.
+- `npm audit` e `npm audit --omit=dev` reportando 0 vulnerabilidades.
+- Pipeline versionado com lint, Vitest, build e Playwright.
 - Validação manual completa com zoom de 200% e leitor de tela continua pendente; reduced motion está coberto em navegador real pelo Playwright.
 
 ### Próximo passo
 
-**FE-14 e FE-15 — toolchain e produção.** Separar dependências de runtime/desenvolvimento, remover dependências diretas sem uso, migrar CRA para Vite em etapa isolada e corrigir CI, Netlify e documentação.
+**Validação externa e manual.** Após o push, acompanhar a primeira execução do GitHub Actions e o deploy no Netlify; concluir também a verificação manual com zoom de 200% e leitor de tela.
 
 ## Fórmula de ataque
 
@@ -115,8 +118,8 @@ Melhorias importantes para produção, mas que devem ser feitas sobre uma base f
 | FE-11 | P2 | Concluído | Busca de nomes percorre todo o dataset | Custo repetido para cards e modais |
 | FE-12 | P2 | Concluído | Flaticon completo no CSS | CSS de aproximadamente 1,2 MB bruto |
 | FE-13 | P2 | Concluído | Animações ignoram reduced motion | Acessibilidade e consumo de bateria |
-| FE-14 | P2 | Pendente | Toolchain com vulnerabilidades | Risco no ambiente de desenvolvimento/build |
-| FE-15 | P2 | Pendente | README e deploy desatualizados | Operação e onboarding incorretos |
+| FE-14 | P2 | Concluído | Toolchain com vulnerabilidades | Risco no ambiente de desenvolvimento/build |
+| FE-15 | P2 | Concluído | README e deploy desatualizados | Operação e onboarding incorretos |
 
 ## Etapa 1 — estabilizar o carregamento dos dados [CONCLUÍDA]
 
@@ -377,7 +380,7 @@ Validação da etapa em 22/07/2026:
 - o payload e o TBT do carregamento inicial continuam dominados pelo CSV real de aproximadamente 6,3 MB;
 - 19 suítes/56 testes Jest e 10 testes E2E desktop/mobile passando.
 
-## Etapa 8 — dependências e toolchain
+## Etapa 8 — dependências e toolchain [CONCLUÍDA]
 
 ### Problema
 
@@ -387,12 +390,12 @@ Ferramentas de teste e build estão em `dependencies`, portanto `npm audit --omi
 
 ### Ataque
 
-1. Remover dependências diretas não utilizadas.
-2. Separar runtime de desenvolvimento.
-3. Atualizar dependências compatíveis sem mudança de toolchain.
-4. Criar branch/PR separado para migrar CRA para Vite.
-5. Validar build, assets públicos, imports CSS, variáveis de ambiente e Netlify.
-6. Rodar auditoria novamente e documentar riscos restantes.
+1. [x] Remover `react-scripts`, `ajv` e `web-vitals` da lista de dependências diretas.
+2. [x] Separar runtime de desenvolvimento.
+3. [x] Substituir CRA/Jest por Vite/Vitest.
+4. [x] Migrar o entrypoint, HTML, setup dos testes e variáveis `REACT_APP_*` para `VITE_*`.
+5. [x] Validar build, assets públicos, imports CSS, variáveis de ambiente e configuração do Netlify.
+6. [x] Rodar auditoria novamente e documentar o resultado.
 
 Não executar `npm audit fix --force` sem revisar o plano de atualização.
 
@@ -404,20 +407,30 @@ Não executar `npm audit fix --force` sem revisar o plano de atualização.
 - Netlify compilando com o novo toolchain.
 - Testes, ESLint e build executados em CI.
 
-## Etapa 9 — operação e documentação
+Validação da etapa em 22/07/2026:
+
+- `npm ls --depth=0` sem dependências diretas ausentes ou inválidas;
+- `npm audit` e `npm audit --omit=dev` com 0 vulnerabilidades;
+- 19 arquivos/56 testes Vitest, ESLint e build Vite passando;
+- 11 cenários Playwright passando e 1 ignorado no mobile por não haver drag nesse fluxo;
+- artefatos produzidos em `dist/`, com assets públicos e fonte de ícones resolvidos pelo Vite.
+
+## Etapa 9 — operação e documentação [CONCLUÍDA]
 
 ### Ações
 
-- Atualizar README para o estado real do projeto.
-- Remover menções à exportação `.ics` enquanto ela não existir.
-- Corrigir caminhos dos CSVs para `public/data`.
-- Documentar formato e validação dos CSVs.
+- [x] Atualizar README para o estado real do projeto.
+- [x] Remover menções à exportação `.ics` enquanto ela não existir.
+- [x] Corrigir caminhos dos CSVs para `public/data`.
+- [x] Documentar formato e validação dos CSVs.
 - [x] Criar scripts `lint`, `test:ci` e `e2e`.
-- Remover `CI=false` do Netlify depois de eliminar warnings.
-- Criar pipeline com testes, lint e build.
-- Adicionar cabeçalhos de segurança no Netlify.
-- Mover data, hora e período letivo para metadados/configuração da coleta.
-- Documentar procedimento de cache busting do CSV.
+- [x] Remover `CI=false` do Netlify depois de eliminar warnings.
+- [x] Criar pipeline com testes, lint, build e E2E.
+- [x] Adicionar cabeçalhos de segurança e políticas de cache no Netlify.
+- [x] Mover data, hora e período letivo para variáveis de configuração.
+- [x] Documentar procedimento de cache busting do CSV.
+
+O funcionamento remoto da pipeline e do deploy deve ser observado após o primeiro push desta etapa.
 
 ## Ordem recomendada de PRs
 
@@ -458,7 +471,7 @@ Não executar `npm audit fix --force` sem revisar o plano de atualização.
 - FE-10, FE-11, FE-12 e FE-13.
 - Medidas antes/depois anexadas ao PR.
 
-### PR 7 — toolchain e produção
+### PR 7 — toolchain e produção [CONCLUÍDO]
 
 - FE-14 e FE-15.
 - Dependências, Vite, CI, Netlify e documentação.
@@ -466,10 +479,11 @@ Não executar `npm audit fix --force` sem revisar o plano de atualização.
 ## Validação obrigatória em todos os PRs
 
 ```bash
-npm test -- --watchAll=false
-./node_modules/.bin/eslint src
+npm run test:ci
+npm run lint
 npm run build
-git diff --check -- src
+npm run e2e
+git diff --check
 git status --short
 ```
 

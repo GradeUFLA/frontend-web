@@ -2,9 +2,9 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import Historico from './Historico';
 
 test('persiste cada confirmação de pré-requisito mínimo feita no histórico', () => {
-  const onConfirmMinimo = jest.fn();
-  const onToggleMateria = jest.fn();
-  jest.spyOn(window, 'confirm').mockReturnValue(true);
+  const onConfirmMinimo = vi.fn();
+  const onToggleMateria = vi.fn();
+  vi.spyOn(window, 'confirm').mockReturnValue(true);
 
   const materia = {
     codigo: 'GCC003',
@@ -29,7 +29,7 @@ test('persiste cada confirmação de pré-requisito mínimo feita no histórico'
     />
   );
 
-  fireEvent.click(screen.getByRole('checkbox', { name: /disciplina avançada/i }));
+  fireEvent.click(screen.getByLabelText(/disciplina avançada/i));
 
   expect(onConfirmMinimo).toHaveBeenCalledTimes(2);
   expect(onConfirmMinimo).toHaveBeenNthCalledWith(1, 'GCC001');

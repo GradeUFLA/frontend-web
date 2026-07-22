@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import './Toast.css';
 
 function ToastItem({ id, message, type = 'error', onClose }) {

@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import CalendarBoard from './CalendarBoard';
 
 test('renderiza a grade extraída e mantém o download conectado', () => {
-  const onDownload = jest.fn();
+  const onDownload = vi.fn();
   const materia = { codigo: 'GCC001', nome: 'Teste', turmaId: 'A' };
 
   render(

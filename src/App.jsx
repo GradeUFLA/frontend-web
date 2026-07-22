@@ -167,7 +167,6 @@ function App() {
         const level = detail.level || detail.type || 'info';
         addToast(message, level);
       } catch (err) {
-        // eslint-disable-next-line no-console
         console.warn('gradeufla-toast handler error', err);
       }
     };
@@ -176,7 +175,6 @@ function App() {
     // also expose a direct global function fallback for legacy callers
     // set on window so other modules can call window.gradeuflaAddToast(msg, level)
     // This is cleaned up on unmount
-    // eslint-disable-next-line no-undef
     window.gradeuflaAddToast = (msg, level = 'info') => addToast(msg, level);
 
     return () => {

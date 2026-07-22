@@ -1,12 +1,12 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import SubjectCard from './SubjectCard';
 
-jest.mock('../../data', () => ({
+vi.mock('../../data', () => ({
   getNomeMateria: codigo => codigo,
   verificarPreRequisitosDetalhada: materia => materia.detalhes
 }));
 
-const renderCard = (materia, onDragStart = jest.fn()) => {
+const renderCard = (materia, onDragStart = vi.fn()) => {
   render(
     <SubjectCard
       materia={materia}

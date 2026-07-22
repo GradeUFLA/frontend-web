@@ -2,7 +2,8 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import Stepper, { Step } from './Stepper';
 
-test('indicadores anteriores são buttons acessíveis e operáveis por teclado', () => {
+test('indicadores anteriores são buttons acessíveis e operáveis por teclado', async () => {
+  const user = userEvent.setup();
   render(
     <Stepper initialStep={2}>
       <Step>Conteúdo 1</Step>
@@ -15,7 +16,7 @@ test('indicadores anteriores são buttons acessíveis e operáveis por teclado',
   expect(screen.getByRole('button', { name: 'Etapa 2 de 3, atual' })).toHaveAttribute('aria-current', 'step');
 
   previousStep.focus();
-  userEvent.keyboard('{Enter}');
+  await user.keyboard('{Enter}');
 
   expect(screen.getByText('Conteúdo 1')).toBeInTheDocument();
 });

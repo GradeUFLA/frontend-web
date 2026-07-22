@@ -12,7 +12,7 @@ module.exports = defineConfig({
     timeout: 10_000
   },
   use: {
-    baseURL: 'http://127.0.0.1:3000',
+    baseURL: 'http://127.0.0.1:4173',
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure'
@@ -36,12 +36,9 @@ module.exports = defineConfig({
     }
   ],
   webServer: {
-    command: 'npm start',
-    url: 'http://127.0.0.1:3000',
+    command: 'npm run dev -- --port 4173',
+    url: 'http://127.0.0.1:4173',
     reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
-    env: {
-      BROWSER: 'none'
-    }
+    timeout: 120_000
   }
 });

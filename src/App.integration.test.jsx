@@ -2,34 +2,40 @@ import { act, fireEvent, render, screen, waitFor, within } from '@testing-librar
 import App from './App';
 import * as data from './data';
 
-jest.mock('./components', () => {
-  const toast = jest.requireActual('./components/Toast/Toast');
+vi.mock('./components', async () => {
+  const [toast, hero, historico, calendar, materiaModal] = await Promise.all([
+    vi.importActual('./components/Toast/Toast'),
+    vi.importActual('./components/Hero/Hero'),
+    vi.importActual('./components/Historico/Historico'),
+    vi.importActual('./components/Calendar/Calendar'),
+    vi.importActual('./components/Modal/MateriaModal')
+  ]);
   return {
     Particles: () => null,
     AboutMe: () => null,
-    Hero: jest.requireActual('./components/Hero/Hero').default,
-    Historico: jest.requireActual('./components/Historico/Historico').default,
-    Calendar: jest.requireActual('./components/Calendar/Calendar').default,
-    MateriaModal: jest.requireActual('./components/Modal/MateriaModal').default,
+    Hero: hero.default,
+    Historico: historico.default,
+    Calendar: calendar.default,
+    MateriaModal: materiaModal.default,
     ToastContainer: toast.default,
     useToast: toast.useToast
   };
 });
 
-jest.mock('./data', () => {
-  const gradeRules = jest.requireActual('./domain/gradeRules');
+vi.mock('./data', async () => {
+  const gradeRules = await vi.importActual('./domain/gradeRules');
   return {
-    ensureCsvLoaded: jest.fn(),
-    getCsvLoadState: jest.fn(),
-    getCursoInfo: jest.fn(),
-    getCursosImplementados: jest.fn(),
-    getEletivas: jest.fn(),
-    getMateriasPorSemestre: jest.fn(),
-    getMatrizesByCurso: jest.fn(),
-    getNomeMateria: jest.fn(),
-    getTotalSemestres: jest.fn(),
-    retryCsvLoad: jest.fn(),
-    subscribeCsvLoadState: jest.fn(),
+    ensureCsvLoaded: vi.fn(),
+    getCsvLoadState: vi.fn(),
+    getCursoInfo: vi.fn(),
+    getCursosImplementados: vi.fn(),
+    getEletivas: vi.fn(),
+    getMateriasPorSemestre: vi.fn(),
+    getMatrizesByCurso: vi.fn(),
+    getNomeMateria: vi.fn(),
+    getTotalSemestres: vi.fn(),
+    retryCsvLoad: vi.fn(),
+    subscribeCsvLoadState: vi.fn(),
     verificarPreRequisitos: gradeRules.verificarPreRequisitos,
     verificarPreRequisitosDetalhada: gradeRules.verificarPreRequisitosDetalhada
   };
@@ -104,7 +110,7 @@ const openAlgoritmosModal = () => {
 };
 
 beforeAll(() => {
-  Element.prototype.scrollIntoView = jest.fn();
+  Element.prototype.scrollIntoView = vi.fn();
 });
 
 beforeEach(() => {
@@ -139,7 +145,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
 });
 
 test('percorre Hero, Setup, Histórico e Montagem preservando o histórico acadêmico', async () => {
@@ -147,7 +153,7 @@ test('percorre Hero, Setup, Histórico e Montagem preservando o histórico acad�
 
   await completeSetup();
 
-  const introducaoCheckbox = screen.getByRole('checkbox', { name: /introdução à computação/i });
+  const introducaoCheckbox = screen.getByLabelText(/introdução à computação/i);
   expect(introducaoCheckbox).toBeChecked();
 
   fireEvent.click(screen.getByRole('button', { name: /continuar para montagem/i }));

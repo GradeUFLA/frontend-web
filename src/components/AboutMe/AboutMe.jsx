@@ -85,7 +85,6 @@ const AboutMe = () => {
         resizeObserverRef.current = null;
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   useEffect(() => {
