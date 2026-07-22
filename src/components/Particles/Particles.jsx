@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Renderer, Camera, Geometry, Program, Mesh } from 'ogl';
+import usePrefersReducedMotion from '../../hooks/usePrefersReducedMotion';
 import './Particles.css';
 
 const defaultColors = ['#00F0B5', '#00F0B5', '#00F0B5'];
@@ -99,10 +100,11 @@ const Particles = ({
 }) => {
   const containerRef = useRef(null);
   const mouseRef = useRef({ x: 0, y: 0 });
+  const prefersReducedMotion = usePrefersReducedMotion();
 
   useEffect(() => {
     const container = containerRef.current;
-    if (!container) return;
+    if (!container || prefersReducedMotion) return undefined;
 
     const renderer = new Renderer({
       dpr: pixelRatio,
@@ -179,12 +181,12 @@ const Particles = ({
 
     const particles = new Mesh(gl, { mode: gl.POINTS, geometry, program });
 
-    let animationFrameId;
+    let animationFrameId = null;
     let lastTime = performance.now();
     let elapsed = 0;
 
     const update = (t) => {
-      animationFrameId = requestAnimationFrame(update);
+      animationFrameId = null;
       const delta = t - lastTime;
       lastTime = t;
       elapsed += delta * speed;
@@ -206,16 +208,31 @@ const Particles = ({
       }
 
       renderer.render({ scene: particles, camera });
+      animationFrameId = requestAnimationFrame(update);
     };
 
-    animationFrameId = requestAnimationFrame(update);
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        if (animationFrameId !== null) cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+        return;
+      }
+      if (animationFrameId === null) {
+        lastTime = performance.now();
+        animationFrameId = requestAnimationFrame(update);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    handleVisibilityChange();
 
     return () => {
       window.removeEventListener('resize', resize);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       if (moveParticlesOnHover) {
         container.removeEventListener('mousemove', handleMouseMove);
       }
-      cancelAnimationFrame(animationFrameId);
+      if (animationFrameId !== null) cancelAnimationFrame(animationFrameId);
       if (container.contains(gl.canvas)) {
         container.removeChild(gl.canvas);
       }
@@ -232,7 +249,8 @@ const Particles = ({
     sizeRandomness,
     cameraDistance,
     disableRotation,
-    pixelRatio
+    pixelRatio,
+    prefersReducedMotion
   ]);
 
   return <div ref={containerRef} className={`particles-container ${className || ''}`} />;

@@ -1,0 +1,9 @@
+curso,matriz,semestre,codigo,nome,creditos,tipo,subgrupo,preRequisitos,turmas
+G014,2023/01,1,BAS101,Fundamentos de Computação,4,obrigatoria,,,"[{""id"":""A"",""horarios"":[{""dia"":1,""inicio"":8,""fim"":10}],""anp"":false}]"
+G014,2023/01,2,NOR201,Programação Web,4,obrigatoria,,,"[{""id"":""A"",""horarios"":[{""dia"":2,""inicio"":8,""fim"":10}],""anp"":false},{""id"":""B"",""horarios"":[{""dia"":4,""inicio"":10,""fim"":12}],""anp"":false}]"
+G014,2023/01,2,CON202,Banco de Dados,4,obrigatoria,,,"[{""id"":""A"",""horarios"":[{""dia"":2,""inicio"":9,""fim"":11}],""anp"":false}]"
+G014,2023/01,2,ANP203,Projeto Integrador ANP,4,obrigatoria,,,"[{""id"":""ANP"",""horarios"":[],""anp"":true}]"
+G014,2023/01,2,HYB204,Sistemas Híbridos,4,obrigatoria,,,"[{""id"":""H"",""horarios"":[{""dia"":2,""inicio"":9,""fim"":11}],""anp"":true}]"
+G014,2023/01,2,CRD205,Projeto de 20 Créditos,20,obrigatoria,,,"[{""id"":""A"",""horarios"":[{""dia"":1,""inicio"":12,""fim"":13}],""anp"":false}]"
+G014,2023/01,2,CRD206,Projeto de 12 Créditos,12,obrigatoria,,,"[{""id"":""A"",""horarios"":[{""dia"":3,""inicio"":12,""fim"":13}],""anp"":false}]"
+G014,2023/01,2,CRD207,Projeto Excedente,2,obrigatoria,,,"[{""id"":""A"",""horarios"":[{""dia"":5,""inicio"":12,""fim"":13}],""anp"":false}]"

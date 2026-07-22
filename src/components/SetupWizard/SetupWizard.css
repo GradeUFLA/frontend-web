@@ -28,3 +28,26 @@
   width: 100%;
   max-width: 600px;
 }
+
+.setup-wizard__data-state {
+  width: min(100%, 600px);
+  padding: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 18px;
+  background: rgba(20, 29, 39, 0.88);
+  color: #fff;
+  text-align: center;
+}
+
+.setup-wizard__data-state--error {
+  border-color: rgba(255, 107, 107, 0.55);
+}
+
+.setup-wizard__data-state h2 {
+  margin: 0 0 12px;
+}
+
+.setup-wizard__data-state p {
+  margin: 0 0 20px;
+  color: var(--color-text-muted);
+}

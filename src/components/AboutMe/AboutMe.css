@@ -48,6 +48,13 @@
   box-shadow: 0 8px 20px rgba(0,0,0,0.5), 0 0 0 6px rgba(6,214,160,0.06);
 }
 
+.aboutme-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483648;
+  background: rgba(0, 0, 0, 0.35);
+}
+
 /* Popup card positioned above the button (centered) */
 .aboutme-card {
   position: fixed; /* use fixed so JS calculates viewport coords correctly */
@@ -61,7 +68,7 @@
   width: min(300px, 86vw); /* smaller max width */
   max-width: 300px;
   box-shadow: 0 10px 34px rgba(0,0,0,0.7);
-  z-index: 2147483650;
+  z-index: 2147483649;
   pointer-events: auto;
 }
 

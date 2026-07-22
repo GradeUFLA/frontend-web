@@ -1,7 +1,14 @@
 import RotatingText from '../RotatingText';
 import './Hero.css';
 
-const Hero = ({ onGetStartedClick }) => {
+const Hero = ({
+  onGetStartedClick,
+  csvLoadStatus = 'success',
+  onRetryCsv
+}) => {
+  const isLoading = csvLoadStatus === 'idle' || csvLoadStatus === 'loading';
+  const hasError = csvLoadStatus === 'error';
+
   return (
     <section className="hero-section">
       <div className="hero-content">
@@ -29,10 +36,30 @@ const Hero = ({ onGetStartedClick }) => {
         </p>
 
         <div className="hero-buttons">
-          <button className="btn-primary" onClick={onGetStartedClick}>
-            Vamos lá
+          <button
+            className="btn-primary"
+            onClick={onGetStartedClick}
+            disabled={csvLoadStatus !== 'success'}
+          >
+            {isLoading ? 'Carregando dados…' : 'Vamos lá'}
           </button>
         </div>
+
+        {isLoading && (
+          <p className="hero-data-status" role="status">
+            Preparando cursos, matrizes e disciplinas…
+          </p>
+        )}
+
+        {hasError && (
+          <div className="hero-data-error" role="alert">
+            <p>Não foi possível carregar os dados acadêmicos.</p>
+            <p>Verifique sua conexão e tente novamente.</p>
+            <button className="btn-secondary" type="button" onClick={onRetryCsv}>
+              Tentar novamente
+            </button>
+          </div>
+        )}
       </div>
     </section>
   );

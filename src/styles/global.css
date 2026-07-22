@@ -36,6 +36,20 @@ html {
   scroll-behavior: smooth;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 body {
   /* Slightly lighter onyx with a soft glass gradient */
   background: linear-gradient(180deg, rgba(18,18,22,0.98) 0%, rgba(28,28,32,0.98) 100%);
@@ -193,4 +207,3 @@ body {
   border: 2px solid var(--color-watermelon) !important;
   background: rgba(232, 72, 85, 0.1) !important;
 }
-

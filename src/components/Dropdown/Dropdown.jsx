@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import './Dropdown.css';
 
 const Dropdown = ({
@@ -6,126 +6,182 @@ const Dropdown = ({
   value,
   onChange,
   placeholder = 'Selecione uma opção',
+  label = placeholder,
   renderOption,
   error = false,
-  searchable = false,
+  searchable = false
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [highlight, setHighlight] = useState(-1);
   const containerRef = useRef(null);
+  const inputRef = useRef(null);
+  const reactId = useId().replace(/:/g, '');
+  const listboxId = `dropdown-${reactId}-listbox`;
 
-  const handleSelect = (option) => {
-    // option is the full option object { value, label }
+  const selectedOption = options.find(option => option.value === value);
+  const normalizedQuery = query.trim().toLowerCase();
+  const queryIsSelectedLabel = selectedOption?.label === query;
+  const filteredOptions = searchable && normalizedQuery.length > 0 && !queryIsSelectedLabel
+    ? options.filter(option => (option.label || '').toLowerCase().includes(normalizedQuery))
+    : options;
+
+  const optionId = index => `dropdown-${reactId}-option-${index}`;
+
+  const openDropdown = preferLast => {
+    const selectedIndex = filteredOptions.findIndex(option => option.value === value);
+    const fallbackIndex = preferLast ? filteredOptions.length - 1 : 0;
+    setHighlight(selectedIndex >= 0 ? selectedIndex : fallbackIndex);
+    setIsOpen(true);
+  };
+
+  const closeDropdown = () => {
+    setIsOpen(false);
+    setHighlight(-1);
+    if (searchable) setQuery(selectedOption?.label || '');
+  };
+
+  const handleSelect = option => {
     onChange(option.value);
     setQuery(option.label || '');
     setIsOpen(false);
+    setHighlight(-1);
   };
 
-  const selectedOption = options.find(opt => opt.value === value);
-  const normalizedQuery = query.trim().toLowerCase();
-  const filteredOptions = searchable && normalizedQuery.length > 0
-    ? options.filter(o => (o.label || '').toLowerCase().includes(normalizedQuery))
-    : options;
-
-  // sync highlight with filteredOptions/open
-  useEffect(() => {
-    if (!isOpen) return;
-    setHighlight(filteredOptions.length > 0 ? 0 : -1);
-  }, [isOpen, filteredOptions.length]);
-
-  const displayedInput = searchable ? (query !== '' ? query : (selectedOption ? selectedOption.label : '')) : '';
-
-  const handleButtonClick = () => {
-    setIsOpen((p) => !p);
-  };
-
-  const handleKeyDown = (e) => {
-    if (!isOpen && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
-      setIsOpen(true);
-      e.preventDefault();
+  const handleKeyDown = event => {
+    const opensDropdown = ['ArrowDown', 'ArrowUp', 'Enter', ' '].includes(event.key);
+    if (!isOpen && opensDropdown) {
+      event.preventDefault();
+      openDropdown(event.key === 'ArrowUp');
       return;
     }
 
     if (!isOpen) return;
 
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      setHighlight((h) => (Math.min(Math.max(h, 0) + 1, filteredOptions.length - 1)));
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      setHighlight((h) => (h <= 0 ? 0 : h - 1));
-    } else if (e.key === 'Enter') {
-      e.preventDefault();
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      setHighlight(current => Math.min(current + 1, filteredOptions.length - 1));
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      setHighlight(current => Math.max(current - 1, 0));
+    } else if (event.key === 'Home') {
+      event.preventDefault();
+      setHighlight(filteredOptions.length > 0 ? 0 : -1);
+    } else if (event.key === 'End') {
+      event.preventDefault();
+      setHighlight(filteredOptions.length - 1);
+    } else if (event.key === 'Enter' || (!searchable && event.key === ' ')) {
+      event.preventDefault();
       if (highlight >= 0 && highlight < filteredOptions.length) {
         handleSelect(filteredOptions[highlight]);
       }
-    } else if (e.key === 'Escape') {
-      e.preventDefault();
-      setIsOpen(false);
-      // restore input to selected label
-      setQuery(selectedOption ? selectedOption.label || '' : '');
+    } else if (event.key === 'Escape') {
+      event.preventDefault();
+      closeDropdown();
+    } else if (event.key === 'Tab') {
+      closeDropdown();
     }
   };
 
-  // close when clicking outside
   useEffect(() => {
-    const handleDocClick = (e) => {
-      if (!containerRef.current) return;
-      if (!containerRef.current.contains(e.target)) {
-        setIsOpen(false);
-        setQuery(selectedOption ? selectedOption.label || '' : '');
+    if (!isOpen && searchable) setQuery(selectedOption?.label || '');
+  }, [isOpen, searchable, selectedOption]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    if (filteredOptions.length === 0) {
+      setHighlight(-1);
+    } else if (highlight >= filteredOptions.length) {
+      setHighlight(filteredOptions.length - 1);
+    }
+  }, [filteredOptions.length, highlight, isOpen]);
+
+  useEffect(() => {
+    const handleDocClick = event => {
+      if (containerRef.current && !containerRef.current.contains(event.target)) {
+        closeDropdown();
       }
     };
     document.addEventListener('mousedown', handleDocClick);
     return () => document.removeEventListener('mousedown', handleDocClick);
+    // selectedOption is intentionally captured so the visible label is restored.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedOption]);
+
+  const comboboxProps = {
+    role: 'combobox',
+    'aria-label': label,
+    'aria-expanded': isOpen,
+    'aria-controls': listboxId,
+    'aria-activedescendant': isOpen && highlight >= 0 ? optionId(highlight) : undefined,
+    'aria-invalid': error || undefined,
+    onKeyDown: handleKeyDown
+  };
 
   return (
     <div ref={containerRef} className={`dropdown-container ${error ? 'dropdown-error' : ''}`}>
-      <button
-        className={`dropdown-btn ${error ? 'error' : ''}`}
-        onClick={handleButtonClick}
-        onKeyDown={!searchable ? handleKeyDown : undefined}
-        type="button"
-      >
-        {searchable ? (
+      {searchable ? (
+        <div
+          className={`dropdown-btn dropdown-control ${error ? 'error' : ''}`}
+          onClick={() => {
+            inputRef.current?.focus();
+            if (!isOpen) openDropdown(false);
+          }}
+        >
           <input
+            {...comboboxProps}
+            ref={inputRef}
             className="dropdown-search-input"
-            value={displayedInput}
-            onChange={(e) => {
-              const v = e.target.value;
-              setQuery(v);
+            value={query}
+            onChange={event => {
+              const nextQuery = event.target.value;
+              setQuery(nextQuery);
               setIsOpen(true);
-              // If user cleared the field or changed the text away from the selected label,
-              // clear the current selection so the dropdown value matches the input
-              if ((selectedOption && v !== selectedOption.label) || v.trim() === '') {
+              setHighlight(0);
+              if ((selectedOption && nextQuery !== selectedOption.label) || nextQuery.trim() === '') {
                 onChange(null);
               }
             }}
-            onFocus={() => setIsOpen(true)}
-            onKeyDown={handleKeyDown}
-            onClick={(e) => { e.stopPropagation(); setIsOpen(true); }}
-            placeholder="Buscar curso..."
+            onFocus={() => {
+              if (!isOpen) openDropdown(false);
+            }}
+            placeholder={placeholder}
+            aria-autocomplete="list"
           />
-        ) : (
+          <i className={`fi fi-br-angle-${isOpen ? 'up' : 'down'} dropdown-arrow`} aria-hidden="true" />
+        </div>
+      ) : (
+        <button
+          {...comboboxProps}
+          className={`dropdown-btn ${error ? 'error' : ''}`}
+          onClick={() => {
+            if (isOpen) closeDropdown();
+            else openDropdown(false);
+          }}
+          type="button"
+        >
           <span>{selectedOption ? selectedOption.label : placeholder}</span>
-        )}
-        <i className={`fi fi-br-angle-${isOpen ? 'up' : 'down'} dropdown-arrow`}></i>
-      </button>
+          <i className={`fi fi-br-angle-${isOpen ? 'up' : 'down'} dropdown-arrow`} aria-hidden="true" />
+        </button>
+      )}
 
       {isOpen && (
-        <div className="dropdown-menu">
+        <div className="dropdown-menu" id={listboxId} role="listbox" aria-label={label}>
           {filteredOptions.length === 0 ? (
-            <div className="dropdown-empty">Curso não encontrado</div>
+            <div className="dropdown-empty" role="status">Nenhuma opção encontrada</div>
           ) : (
-            filteredOptions.map((option, idx) => (
+            filteredOptions.map((option, index) => (
               <button
                 key={option.value}
-                className={`dropdown-item ${value === option.value ? 'selected' : ''} ${highlight === idx ? 'highlighted' : ''}`}
-                onMouseEnter={() => setHighlight(idx)}
-                onClick={() => { handleSelect(option); }}
+                id={optionId(index)}
+                className={`dropdown-item ${value === option.value ? 'selected' : ''} ${highlight === index ? 'highlighted' : ''}`}
+                onMouseEnter={() => setHighlight(index)}
+                onMouseDown={event => event.preventDefault()}
+                onClick={() => handleSelect(option)}
                 type="button"
+                role="option"
+                aria-selected={value === option.value}
+                tabIndex={-1}
               >
                 {renderOption ? renderOption(option) : option.label}
               </button>

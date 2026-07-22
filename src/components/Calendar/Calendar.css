@@ -851,6 +851,8 @@
 /* Drag Ghost - elemento que segue o mouse */
 .drag-ghost {
   position: fixed;
+  top: 0;
+  left: 0;
   pointer-events: none;
   z-index: 9999;
   padding: 10px 16px;
@@ -863,7 +865,8 @@
   align-items: center;
   gap: 2px;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
-  transform: rotate(-2deg);
+  transform: translate3d(-9999px, -9999px, 0) rotate(-2deg);
+  will-change: transform;
   opacity: 0.95;
   touch-action: none;
   user-select: none;
@@ -1297,6 +1300,16 @@
 }
 
 /* ========== ESTILOS PARA CAPTURA DE IMAGEM ========== */
+.calendar__export-host {
+  position: fixed;
+  top: 0;
+  left: -100000px;
+  z-index: -1;
+  pointer-events: none;
+  overflow: visible;
+  background: #121216;
+}
+
 .calendar__wrapper.capturing {
   padding: 50px;
   width: 100% !important;
@@ -1307,6 +1320,12 @@
   align-items: stretch;
   box-sizing: border-box;
   background-color: #121216;
+}
+
+.calendar__wrapper.capturing,
+.calendar__wrapper.capturing * {
+  animation: none !important;
+  transition: none !important;
 }
 
 .calendar__wrapper.capturing .calendar__title-container {
@@ -1346,6 +1365,37 @@
   max-width: none !important;
   margin: 0;
   table-layout: fixed;
+  font-size: 0.9rem;
+}
+
+.calendar__wrapper.capturing .calendar__table th {
+  padding: 16px 12px;
+}
+
+.calendar__wrapper.capturing .calendar__col-time {
+  width: 72px;
+  min-width: 72px;
+}
+
+.calendar__wrapper.capturing .calendar__col-day {
+  width: auto;
+  min-width: 0;
+}
+
+.calendar__wrapper.capturing .calendar__table td {
+  width: auto;
+  height: 56px;
+  padding: 5px;
+}
+
+.calendar__wrapper.capturing .calendar__cell-time {
+  position: static;
+  font-size: 0.85rem;
+}
+
+.calendar__wrapper.capturing .calendar__cell-subject {
+  padding: 4px;
+  font-size: 0.72rem;
 }
 
 .calendar__wrapper.capturing .calendar__legend {
@@ -1392,7 +1442,8 @@
 
 /* Esconder elementos de interação durante captura */
 .calendar__wrapper.capturing .calendar__cell-remove,
-.calendar__wrapper.capturing .calendar__cell-options {
+.calendar__wrapper.capturing .calendar__cell-options,
+.calendar__wrapper.capturing .calendar__cell-info {
   display: none !important;
 }
 
@@ -1531,6 +1582,18 @@
   border-radius: 8px;
   color: var(--color-text-muted);
   font-size: 0.75rem;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.calendar__time-filter-error {
+  margin: 0 0 12px;
+  padding: 10px;
+  border: 1px solid rgba(232, 72, 85, 0.4);
+  border-radius: 8px;
+  background: rgba(232, 72, 85, 0.12);
+  color: var(--color-watermelon);
+  font-size: 0.78rem;
   line-height: 1.4;
   text-align: center;
 }

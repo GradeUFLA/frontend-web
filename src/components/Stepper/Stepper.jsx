@@ -81,6 +81,7 @@ export default function Stepper({
                   step={stepNumber}
                   disableStepIndicators={disableStepIndicators}
                   currentStep={currentStep}
+                  totalSteps={totalSteps}
                   onClickStep={clicked => {
                     if (clicked < currentStep) {
                       updateStep(clicked);
@@ -128,21 +129,32 @@ export function Step({ children }) {
   return <div className="stepper-step-default">{children}</div>;
 }
 
-function StepIndicator({ step, currentStep, onClickStep, disableStepIndicators }) {
+function StepIndicator({ step, currentStep, totalSteps, onClickStep, disableStepIndicators }) {
   const status = currentStep === step ? 'active' : currentStep < step ? 'inactive' : 'complete';
+  const canNavigate = step < currentStep && !disableStepIndicators;
 
   const handleClick = () => {
-    if (step !== currentStep && !disableStepIndicators && step < currentStep) {
+    if (canNavigate) {
       onClickStep(step);
     }
   };
 
+  const ariaLabel = canNavigate
+    ? `Voltar para etapa ${step}`
+    : status === 'active'
+      ? `Etapa ${step} de ${totalSteps}, atual`
+      : `Etapa ${step} de ${totalSteps}`;
+
   return (
-    <motion.div
+    <motion.button
+      type="button"
       onClick={handleClick}
-      className={`stepper-indicator ${step < currentStep ? 'clickable' : ''}`}
+      className={`stepper-indicator ${canNavigate ? 'clickable' : ''}`}
       animate={status}
       initial={false}
+      disabled={!canNavigate}
+      aria-label={ariaLabel}
+      aria-current={status === 'active' ? 'step' : undefined}
     >
       <motion.div
         variants={{
@@ -161,7 +173,7 @@ function StepIndicator({ step, currentStep, onClickStep, disableStepIndicators }
           <span className="stepper-step-number">{step}</span>
         )}
       </motion.div>
-    </motion.div>
+    </motion.button>
   );
 }
 
@@ -195,4 +207,3 @@ function CheckIcon(props) {
     </svg>
   );
 }
-

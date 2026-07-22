@@ -30,6 +30,7 @@ const MatrizSelector = forwardRef(({ cursoId, onMatrizSelect, onVoltar }, ref) =
           value={null}
           onChange={onMatrizSelect}
           placeholder="Selecione a Matriz"
+          label="Matriz curricular"
         />
       </div>
     </section>

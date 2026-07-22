@@ -2,6 +2,7 @@
 
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import usePrefersReducedMotion from '../../hooks/usePrefersReducedMotion';
 
 import './RotatingText.css';
 
@@ -34,6 +35,7 @@ const RotatingText = forwardRef((props, ref) => {
   } = props;
 
   const [currentTextIndex, setCurrentTextIndex] = useState(0);
+  const prefersReducedMotion = usePrefersReducedMotion();
 
   const splitIntoCharacters = text => {
     if (typeof Intl !== 'undefined' && Intl.Segmenter) {
@@ -139,10 +141,18 @@ const RotatingText = forwardRef((props, ref) => {
   );
 
   useEffect(() => {
-    if (!auto) return;
+    if (!auto || prefersReducedMotion) return undefined;
     const intervalId = setInterval(next, rotationInterval);
     return () => clearInterval(intervalId);
-  }, [next, rotationInterval, auto]);
+  }, [next, rotationInterval, auto, prefersReducedMotion]);
+
+  if (prefersReducedMotion) {
+    return (
+      <span className={cn('text-rotate', mainClassName)} {...rest}>
+        {texts[0]}
+      </span>
+    );
+  }
 
   return (
     <motion.span className={cn('text-rotate', mainClassName)} {...rest}>

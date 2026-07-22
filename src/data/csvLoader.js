@@ -1,17 +1,45 @@
 import Papa from 'papaparse';
 
+const CSV_DATA_VERSION = process.env.REACT_APP_CSV_VERSION || '2026-07-18';
+
+const versionCsvPath = path => {
+  if (!path.startsWith('/data/')) return path;
+  const separator = path.includes('?') ? '&' : '?';
+  return `${path}${separator}v=${encodeURIComponent(CSV_DATA_VERSION)}`;
+};
+
+class CsvFetchError extends Error {
+  constructor(path, status) {
+    super(`Falha ao buscar ${path} (${status})`);
+    this.name = 'CsvFetchError';
+    this.status = status;
+  }
+}
+
+const formatParseError = (path, parseError) => {
+  const line = Number.isInteger(parseError?.row) ? ` na linha ${parseError.row + 2}` : '';
+  const detail = parseError?.message ? `: ${parseError.message}` : '';
+  return new Error(`CSV inválido em ${path}${line}${detail}`);
+};
+
 // helper to fetch csv from public/data and parse it
 export function loadCsv(path) {
-  return fetch(path)
+  return fetch(versionCsvPath(path))
     .then(res => {
-      if (!res.ok) throw new Error('Failed to fetch ' + path + ' - ' + res.status);
+      if (!res.ok) throw new CsvFetchError(path, res.status);
       return res.text();
     })
     .then(text => new Promise((resolve, reject) => {
       Papa.parse(text, {
         header: true,
         skipEmptyLines: true,
-        complete: (res) => resolve(res.data),
+        complete: (res) => {
+          if (res.errors?.length) {
+            reject(formatParseError(path, res.errors[0]));
+            return;
+          }
+          resolve(res.data);
+        },
         error: (err) => reject(err)
       });
     }));
@@ -69,12 +97,18 @@ async function tryLoad(paths) {
       const rows = await loadCsv(p);
       if (rows && rows.length) return rows;
     } catch (e) {
-      // continue trying other paths
-      // console.warn('CSV load failed for', p, e.message);
+      // Alternate filenames are only valid when the previous file does not exist.
+      // Parse, permission and network errors must remain visible to the UI.
+      if (!(e instanceof CsvFetchError) || e.status !== 404) throw e;
     }
   }
-  throw new Error('None of the CSV paths could be loaded: ' + paths.join(', '));
+  throw new Error('Nenhum dos CSVs foi encontrado: ' + paths.join(', '));
 }
+
+const assertRequired = (value, { entity, field, rowIndex }) => {
+  if (value !== undefined && value !== null && String(value).trim() !== '') return;
+  throw new Error(`CSV inválido: linha ${rowIndex + 2} de ${entity} sem ${field}.`);
+};
 
 export async function loadCursos() {
   // try common filenames and languages
@@ -91,12 +125,14 @@ export async function loadCursos() {
 
   // Build unique courses by id
   const map = new Map();
-  rows.forEach(r => {
+  rows.forEach((r, rowIndex) => {
     const id = (r.curso_id || r.id || r.curso || '').toString().trim();
     const nome = (r.nome || r.name || '').toString().trim();
     const matrizRaw = (r.matriz || r.matrix || r.matriz_curricular || '').toString().trim();
     const matriz = normalizeMatriz(matrizRaw);
-    if (!id) return;
+    assertRequired(id, { entity: 'cursos', field: 'identificador', rowIndex });
+    assertRequired(nome, { entity: 'cursos', field: 'nome', rowIndex });
+    assertRequired(matriz, { entity: 'cursos', field: 'matriz', rowIndex });
     if (!map.has(id)) {
       map.set(id, {
         id,
@@ -184,7 +220,7 @@ export async function loadMaterias() {
   const paths = ['/data/subjects.csv', '/data/materias.csv', '/data/example_materias.csv'];
   const rows = await tryLoad(paths);
 
-  return rows.map(r => {
+  return rows.map((r, rowIndex) => {
     // normalize keys (accept curso_id / course_id as well)
     const cursoRaw = (r.curso_id || r.course_id || r.curso || r.course || '').toString().trim() || undefined;
     const curso = cursoRaw ? cursoRaw.toString().trim() : undefined;
@@ -207,6 +243,12 @@ export async function loadMaterias() {
     const creditos = Number(r.creditos || r.credits || 0) || 0;
     const tipo = (r.tipo || r.type || 'obrigatoria').toString().trim();
     const subgrupo = (r.subgrupo || r.subgroup || '').toString().trim() || undefined;
+
+    assertRequired(curso, { entity: 'disciplinas', field: 'curso', rowIndex });
+    assertRequired(matriz, { entity: 'disciplinas', field: 'matriz', rowIndex });
+    assertRequired(semestre, { entity: 'disciplinas', field: 'semestre', rowIndex });
+    assertRequired(codigo, { entity: 'disciplinas', field: 'código', rowIndex });
+    assertRequired(nome, { entity: 'disciplinas', field: 'nome', rowIndex });
 
     // preRequisitos may be a labeled string in the CSV; parse into structured object
     const preField = r.preRequisitos || r.prerequisitos || r.prereqs || r.requisitos || '';
@@ -254,6 +296,9 @@ export async function loadMaterias() {
       } catch (e) {
         // not JSON, attempt simple parsing: format like "id:10A|horarios:3-8,5-8,7-9;anp:false"
         const raw = (typeof turmasField === 'string' ? turmasField.trim() : '');
+        if (raw.startsWith('[') || raw.startsWith('{')) {
+          throw new Error(`CSV inválido: linha ${rowIndex + 2} de disciplinas com JSON de turmas inválido.`);
+        }
         if (raw) {
           const items = raw.split(/\s*;\s*/).filter(Boolean);
           turmas = items.map(it => {

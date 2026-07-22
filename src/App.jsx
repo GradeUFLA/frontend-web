@@ -14,7 +14,23 @@ import { AboutMe } from './components';
 import SetupWizard from './components/SetupWizard';
 
 // Data
-import { getMateriasPorSemestre, getEletivas, ensureCsvLoaded } from './data';
+import {
+  ensureCsvLoaded,
+  getCsvLoadState,
+  getEletivas,
+  getMateriasPorSemestre,
+  retryCsvLoad,
+  subscribeCsvLoadState
+} from './data';
+import {
+  findNextAnpHour,
+  isAnpTurma,
+  isTurmaSelecionavel,
+  normalizarDia,
+  normalizarHora,
+  SATURDAY_INDEX,
+  verificarConflitoMateria
+} from './domain/gradeRules';
 
 // Styles
 import './styles/global.css';
@@ -27,39 +43,6 @@ const ETAPAS = {
   MONTAGEM: 'montagem'
 };
 
-// helper to normalize day values (0=Dom .. 6=Sab)
-const normalizeDiaValue = (d) => {
-  if (d == null) return null;
-  const n = Number(d);
-  if (!Number.isNaN(n)) {
-    if (n >= 0 && n <= 6) return n;
-    if (n >= 1 && n <= 7) return ((n + 6) % 7 + 7) % 7; // map 1..7 => 0..6
-  }
-  // Normalize strings: lowercase, remove diacritics, take first 3 letters
-  const raw = String(d).toLowerCase();
-  const normalized = raw.normalize ? raw.normalize('NFD').replace(/\p{Diacritic}/gu, '') : raw.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-  const s = normalized.slice(0,3);
-  const dias = ['dom','seg','ter','qua','qui','sex','sab'];
-  const idx = dias.findIndex(x => x === s);
-  return idx !== -1 ? idx : null;
-};
-
-// parse hour value safely: accepts number or strings like '08:00' or '8'
-const parseHour = (v) => {
-  if (v == null) return null;
-  const n = Number(v);
-  if (!Number.isNaN(n)) return Math.floor(n);
-  const s = String(v).trim();
-  // match HH or HH:MM
-  const m = s.match(/^(\d{1,2})(?::(\d{2}))?$/);
-  if (m) return parseInt(m[1], 10);
-  return null;
-};
-
-// ----------------- helpers for conflict detection -----------------
-const SATURDAY_INDEX = 6;
-const ANP_START_HOUR = 9; // ANP começa às 9h
-
 const DIAS_SEMANA_NOMES = {
   0: 'Domingo',
   1: 'Segunda-feira',
@@ -70,130 +53,12 @@ const DIAS_SEMANA_NOMES = {
   6: 'Sábado'
 };
 
-// Verifica se uma matéria é ANP (pela tag anp na turma ou no objeto)
-const isAnpMateria = (materia) => {
-  if (!materia) return false;
-  // Verificar se a matéria ou turma tem flag ANP
-  return materia.anp === true || materia.turmaAnp === true;
-};
-
-// Encontra o primeiro horário disponível para ANP no sábado (9h, 10h, 11h...)
-const findNextAnpHour = (materiasState) => {
-  const usedHours = new Set();
-  for (const m of Object.values(materiasState || {})) {
-    if (m.anp && m.anpHour != null) {
-      usedHours.add(Number(m.anpHour));
-    }
-  }
-  // Procurar primeiro horário livre começando às 9h
-  for (let hour = ANP_START_HOUR; hour <= 22; hour++) {
-    if (!usedHours.has(hour)) return hour;
-  }
-  return null; // Sem horários disponíveis
-};
-
-/**
- * Função que verifica se dois horários conflitam (se sobrepõem)
- * @param {Object} horario1 - {dia: number, inicio: number, fim: number}
- * @param {Object} horario2 - {dia: number, inicio: number, fim: number}
- * @returns {boolean} - true se há conflito
- */
-const horariosConflitam = (horario1, horario2) => {
-  // Normalizar dia para número 0-6
-  const dia1 = normalizeDiaValue(horario1.dia);
-  const dia2 = normalizeDiaValue(horario2.dia);
-
-  // Se dias são diferentes, não há conflito
-  if (dia1 !== dia2 || dia1 === null || dia2 === null) {
-    return false;
-  }
-
-  // Normalizar horas para números
-  const inicio1 = parseHour(horario1.inicio);
-  const fim1 = parseHour(horario1.fim);
-  const inicio2 = parseHour(horario2.inicio);
-  const fim2 = parseHour(horario2.fim);
-
-  // Se alguma hora é inválida, não podemos verificar
-  if (inicio1 === null || fim1 === null || inicio2 === null || fim2 === null) {
-    return false;
-  }
-
-  // Verifica sobreposição de tempo
-  // Há conflito se: horario1 começa ANTES de horario2 terminar E horario1 termina DEPOIS de horario2 começar
-  return (inicio1 < fim2 && fim1 > inicio2);
-};
-
-/**
- * Formata horário para exibição
- */
 const formatarHorario = (horario) => {
-  const dia = normalizeDiaValue(horario.dia);
+  const dia = normalizarDia(horario?.dia);
   const diaNome = DIAS_SEMANA_NOMES[dia] || 'Dia desconhecido';
-  const inicio = parseHour(horario.inicio);
-  const fim = parseHour(horario.fim);
+  const inicio = normalizarHora(horario?.inicio);
+  const fim = normalizarHora(horario?.fim);
   return `${diaNome} das ${inicio}:00 às ${fim}:00`;
-};
-
-/**
- * Verifica conflito de horário para matérias normais (não-ANP)
- * @param {Object} materiaToCheck - Matéria que está sendo adicionada (com horarios)
- * @param {Object} materiasState - Objeto com matérias já no calendário
- * @returns {{temConflito: boolean, materiaConflito?: string, horarioConflito?: string}}
- */
-const checkConflitoParaMateria = (materiaToCheck, materiasState) => {
-  if (!materiaToCheck) return { temConflito: false };
-
-  const isAnpOnlyMateria = (m) => {
-    const horarios = m?.horarios || [];
-    if (horarios.length === 0) return true;
-    return horarios.every(h => normalizeDiaValue(h.dia) === SATURDAY_INDEX);
-  };
-
-  // Matérias ANP nunca têm conflito de horário normal (só quando são ANP-only)
-  if (isAnpMateria(materiaToCheck) && isAnpOnlyMateria(materiaToCheck)) {
-    const nextHour = findNextAnpHour(materiasState);
-    if (nextHour === null) {
-      return { temConflito: true, mensagem: 'Sem vagas ANP disponíveis no sábado' };
-    }
-    return { temConflito: false };
-  }
-
-  // Pegar os horários da matéria que está sendo adicionada
-  const horariosNovos = materiaToCheck.horarios || [];
-
-  // Para cada matéria já na grade
-  for (const [codigo, materiaExistente] of Object.entries(materiasState || {})) {
-    // ✅ CRUCIAL: Ignorar a própria matéria ao verificar conflitos (permite trocar de turma)
-    if (codigo === materiaToCheck.codigo) continue;
-
-    // Ignorar matérias ANP apenas se forem ANP-only (sem horários em dias úteis)
-    if (materiaExistente.anp && isAnpOnlyMateria(materiaExistente)) continue;
-
-    // Pegar os horários da matéria existente
-    const horariosExistentes = materiaExistente.horarios || [];
-
-    // Para cada horário da nova matéria
-    for (const novoHorario of horariosNovos) {
-      if (!novoHorario) continue;
-
-      // Para cada horário da matéria existente
-      for (const horarioExistente of horariosExistentes) {
-        if (!horarioExistente) continue;
-
-        // Verifica se há conflito
-        if (horariosConflitam(novoHorario, horarioExistente)) {
-          return {
-            temConflito: true,
-            materiaConflito: materiaExistente.nome || codigo,
-            horarioConflito: formatarHorario(horarioExistente)
-          };
-        }
-      }
-    }
-  }
-
-  return { temConflito: false };
 };
 
 
@@ -222,11 +87,24 @@ function App() {
   const [minimoConfirmados, setMinimoConfirmados] = useState([]); // lista de prereqs 'mínimo' que o usuário confirmou
   const [materiasNoCalendario, setMateriasNoCalendario] = useState({});
   const [modalMateria, setModalMateria] = useState(null);
-  const [csvLoaded, setCsvLoaded] = useState(false);
+  const [csvLoadState, setCsvLoadState] = useState(getCsvLoadState);
   const [setupInitialStep, setSetupInitialStep] = useState(1);
 
   // Hook de toast para notificações
   const { toasts, addToast, removeToast } = useToast();
+
+  // Inicia uma única carga e acompanha o estado compartilhado pelo App e pelo wizard.
+  useEffect(() => {
+    const unsubscribe = subscribeCsvLoadState(setCsvLoadState);
+    const currentState = getCsvLoadState();
+    setCsvLoadState(currentState);
+    if (currentState.status === 'idle') {
+      ensureCsvLoaded().catch(() => {
+        // O erro permanece no estado central e é apresentado na interface.
+      });
+    }
+    return unsubscribe;
+  }, []);
 
   // Integração com histórico do navegador (botões voltar/avançar)
   useEffect(() => {
@@ -318,16 +196,19 @@ function App() {
 
   // Handlers de navegação
   const handleGetStartedClick = async () => {
-    if (!csvLoaded) {
-      await ensureCsvLoaded();
-      setCsvLoaded(true);
-    }
+    if (csvLoadState.status !== 'success') return;
     // default to first step when starting flow
     setSetupInitialStep(1);
     navegarParaEtapa(ETAPAS.SETUP);
     setTimeout(() => {
       calendarioRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, 100);
+  };
+
+  const handleRetryCsv = () => {
+    retryCsvLoad().catch(() => {
+      // O novo erro é publicado pelo estado central e continua visível no Hero.
+    });
   };
 
   const handleSetupComplete = ({ curso, matriz, semestre }) => {
@@ -408,13 +289,29 @@ function App() {
   const handleAddMateria = (materia) => {
     if (!materia) return false;
 
-    // Verificar conflito de forma SÍNCRONA usando o estado atual
-    // Verifica se é ANP pela tag
-    const isAnp = isAnpMateria(materia);
+    if (!isTurmaSelecionavel(materia)) {
+      addToast('Esta turma não possui horário informado.', 'error');
+      return false;
+    }
+
+    // Validação central: vale tanto para turmas normais quanto para ANP híbridas.
+    const conflitoCheck = verificarConflitoMateria(materia, materiasNoCalendario, {
+      ignorarCodigo: materia.codigo
+    });
+    if (conflitoCheck.temConflito) {
+      const mensagem = conflitoCheck.horarioConflito
+        ? `Conflito de horário com "${conflitoCheck.materiaConflito}" - ${formatarHorario(conflitoCheck.horarioConflito)}`
+        : conflitoCheck.mensagem || `Conflito de horário com ${conflitoCheck.materiaConflito}`;
+      addToast(mensagem, 'error');
+      return false;
+    }
+
+    const isAnp = isAnpTurma(materia);
 
     if (isAnp) {
-      // ANP: verificar se há horário disponível
-      const nextHour = findNextAnpHour(materiasNoCalendario);
+      const nextHour = findNextAnpHour(materiasNoCalendario, {
+        ignorarCodigo: materia.codigo
+      });
       if (nextHour === null) {
         addToast('Sem vagas ANP disponíveis no sábado.', 'error');
         return false;
@@ -433,16 +330,6 @@ function App() {
 
       setMateriasNoCalendario(prevState => ({ ...prevState, [materia.codigo]: toAdd }));
       return true;
-    }
-
-    // Matéria normal: verificar conflito ANTES de adicionar
-    const conflitoCheck = checkConflitoParaMateria(materia, materiasNoCalendario);
-    if (conflitoCheck.temConflito) {
-      const mensagem = conflitoCheck.horarioConflito
-        ? `Conflito de horário com "${conflitoCheck.materiaConflito}" - ${conflitoCheck.horarioConflito}`
-        : `Conflito de horário com ${conflitoCheck.materiaConflito || conflitoCheck.mensagem}`;
-      addToast(mensagem, 'error');
-      return false;
     }
 
     setMateriasNoCalendario(prevState => ({ ...prevState, [materia.codigo]: materia }));
@@ -516,7 +403,11 @@ function App() {
         <AboutMe />
         <div className="calendario-container" ref={calendarioRef}>
           {etapa === ETAPAS.INICIO && (
-            <Hero onGetStartedClick={handleGetStartedClick} />
+            <Hero
+              onGetStartedClick={handleGetStartedClick}
+              csvLoadStatus={csvLoadState.status}
+              onRetryCsv={handleRetryCsv}
+            />
           )}
           {etapa === ETAPAS.SETUP && (
             <SetupWizard
@@ -574,14 +465,7 @@ function App() {
               // Add the turma to calendar but do NOT show toast here (modal actions are silent)
               handleAddMateria(novaMateria);
              }}
-            onRemove={(codigo) => {
-              // Remove matéria do calendário
-              setMateriasNoCalendario(prev => {
-                const updated = { ...prev };
-                delete updated[codigo];
-                return updated;
-              });
-            }}
+            onRemove={handleRemoveMateria}
             materiasAprovadas={materiasAprovadas}
             materiasNoCalendario={materiasNoCalendario}
             materiasMinimoConfirmadas={minimoConfirmados}

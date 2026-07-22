@@ -3,8 +3,8 @@ import ReactDOM from 'react-dom/client';
 import App from './App.jsx';
 import reportWebVitals from './reportWebVitals';
 
-// Flaticon uicons
-import '@flaticon/flaticon-uicons/css/all/all.css';
+// Apenas os glifos Flaticon realmente usados pela interface.
+import './styles/icons.css';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

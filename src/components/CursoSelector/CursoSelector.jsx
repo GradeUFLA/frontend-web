@@ -32,6 +32,7 @@ const CursoSelector = forwardRef(({ onCursoSelect, onVoltar }, ref) => {
           value={null}
           onChange={onCursoSelect}
           placeholder="Selecione o Curso"
+          label="Curso"
         />
       </div>
     </section>

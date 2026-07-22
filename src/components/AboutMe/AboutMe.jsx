@@ -1,4 +1,5 @@
 import { useState, useRef, useLayoutEffect, useEffect } from 'react';
+import useAccessibleDialog from '../../hooks/useAccessibleDialog';
 import './AboutMe.css';
 
 const AboutMe = () => {
@@ -6,7 +7,18 @@ const AboutMe = () => {
   const [cardStyle, setCardStyle] = useState(null);
   const buttonRef = useRef(null);
   const cardRef = useRef(null);
+  const closeButtonRef = useRef(null);
   const resizeObserverRef = useRef(null);
+
+  useAccessibleDialog({
+    open,
+    onClose: () => {
+      setOpen(false);
+      setCardStyle(null);
+    },
+    dialogRef: cardRef,
+    initialFocusRef: closeButtonRef
+  });
 
   // compute placement whenever open toggles, or window resizes/scrolls
   const computePlacement = () => {
@@ -114,21 +126,34 @@ const AboutMe = () => {
       </button>
 
       {open && (
-        <div
-          ref={cardRef}
-          className={`aboutme-card ${cardStyle?.openAbove === false ? 'aboutme-card--down' : ''} ${cardStyle ? 'aboutme-card--visible' : 'aboutme-card--hidden'}`}
-          role="dialog"
-          aria-modal="true"
-          style={{ ...(cardStyle || { left: '-9999px', top: '-9999px', width: 'auto' }), visibility: cardStyle ? 'visible' : 'hidden', opacity: cardStyle ? 1 : 0, '--aboutme-caret-left': cardStyle?.caretLeft || '50%' }}
-        >
-          <div className="aboutme-card-inner">
-            <h2><strong>Eae Beleza?</strong></h2>
-            <p className="aboutme-card-content">
-              Esse site foi criado por <a href="https://github.com/FernandoScarabeli" target="_blank" rel="noopener noreferrer"><strong>Fernando Scarabeli</strong></a> com o objetivo de facilitar a montagem da grade de horários semestral dos estudantes da UFLA.
-              A plataforma nasceu da necessidade de tornar esse processo mais simples, rápido e organizado,
-              oferecendo uma visão clara das disciplinas, pré-requisitos e possibilidades de grade.
-            </p>
-            <button className="aboutme-close" onClick={() => setOpen(false)}>Fechar</button>
+        <div className="aboutme-overlay" onMouseDown={event => {
+          if (event.target === event.currentTarget) {
+            setOpen(false);
+            setCardStyle(null);
+          }
+        }}>
+          <div
+            ref={cardRef}
+            className={`aboutme-card ${cardStyle?.openAbove === false ? 'aboutme-card--down' : ''} aboutme-card--visible`}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="aboutme-title"
+            aria-describedby="aboutme-description"
+            tabIndex={-1}
+            style={{ ...(cardStyle || { left: '8px', top: 'auto', bottom: '64px', width: 'min(300px, 86vw)' }), '--aboutme-caret-left': cardStyle?.caretLeft || '22px' }}
+          >
+            <div className="aboutme-card-inner">
+              <h2 id="aboutme-title"><strong>Sobre o GradeUFLA</strong></h2>
+              <p className="aboutme-card-content" id="aboutme-description">
+                Esse site foi criado por <a href="https://github.com/FernandoScarabeli" target="_blank" rel="noopener noreferrer"><strong>Fernando Scarabeli</strong></a> com o objetivo de facilitar a montagem da grade de horários semestral dos estudantes da UFLA.
+                A plataforma nasceu da necessidade de tornar esse processo mais simples, rápido e organizado,
+                oferecendo uma visão clara das disciplinas, pré-requisitos e possibilidades de grade.
+              </p>
+              <button ref={closeButtonRef} className="aboutme-close" onClick={() => {
+                setOpen(false);
+                setCardStyle(null);
+              }}>Fechar</button>
+            </div>
           </div>
         </div>
       )}

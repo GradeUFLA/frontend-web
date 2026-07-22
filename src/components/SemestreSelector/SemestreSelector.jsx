@@ -23,6 +23,7 @@ const SemestreSelector = forwardRef(({ semestreAtual, totalSemestres = 8, onSeme
           value={semestreAtual}
           onChange={onSemestreSelect}
           placeholder="Selecione o Semestre"
+          label="Semestre"
         />
       </div>
     </section>
@@ -32,4 +33,3 @@ const SemestreSelector = forwardRef(({ semestreAtual, totalSemestres = 8, onSeme
 SemestreSelector.displayName = 'SemestreSelector';
 
 export default SemestreSelector;
-

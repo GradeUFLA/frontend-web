@@ -118,10 +118,22 @@
 .stepper-indicator {
   position: relative;
   outline: none;
+  padding: 0;
+  border: 0;
+  background: transparent;
 }
 
 .stepper-indicator.clickable {
   cursor: pointer;
+}
+
+.stepper-indicator:disabled {
+  cursor: default;
+}
+
+.stepper-indicator:focus-visible {
+  border-radius: 9999px;
+  box-shadow: 0 0 0 4px rgba(0, 240, 181, 0.3);
 }
 
 .stepper-indicator-inner {
@@ -194,4 +206,3 @@
   position: absolute;
   z-index: 100;
 }
-

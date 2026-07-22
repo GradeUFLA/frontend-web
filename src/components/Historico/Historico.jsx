@@ -7,6 +7,7 @@ const Historico = forwardRef(({
   materiasAprovadas,
   materiasPorSemestre,
   onToggleMateria,
+  onConfirmMinimo,
   onVoltar,
   onContinuar,
   onShowToast
@@ -40,6 +41,7 @@ const Historico = forwardRef(({
           onShowToast?.(`Necessário ter cursado: ${nomes} (mínimo).`, 'warn');
           return;
         }
+        det.faltandoMinimo.forEach(codigo => onConfirmMinimo?.(codigo));
       }
 
       if (det.faltandoCoreq && det.faltandoCoreq.length > 0) {
