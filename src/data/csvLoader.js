@@ -1,6 +1,6 @@
 import Papa from 'papaparse';
 
-const CSV_DATA_VERSION = import.meta.env.VITE_CSV_VERSION || '2026-07-18';
+const CSV_DATA_VERSION = import.meta.env.VITE_CSV_VERSION || '2026-07-27';
 
 const versionCsvPath = path => {
   if (!path.startsWith('/data/')) return path;
